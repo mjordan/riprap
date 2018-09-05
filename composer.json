@@ -9,6 +9,8 @@
         "symfony/flex": "^1.1",
         "symfony/framework-bundle": "*",
         "symfony/monolog-bundle": "*",
+        "symfony/orm-pack": "*",
+        "symfony/maker-bundle": "*", 
         "symfony/yaml": "*"
     },
     "require-dev": {
