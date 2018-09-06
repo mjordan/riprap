@@ -6,6 +6,8 @@ parameters:
     app.fixity.host: 'https://example.com/fcrepo'    
     app.fixity.method: 'HEAD'
 
+    app.plugins: ['app:riprap:plugin_foo']
+
 services:
     # default configuration for services in *this* file
     _defaults:

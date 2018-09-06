@@ -6,7 +6,10 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+
 use Psr\Log\LoggerInterface;
+use Ramsey\Uuid\Uuid;
+use Ramsey\Uuid\Exception\UnsatisfiedDependencyException;
 
 class CheckFixity extends Command
 {
@@ -16,11 +19,12 @@ class CheckFixity extends Command
     {
         $this->params = $params;
 
-        // Set output in config/packages/{environment}/monolog.yaml
+        // Set log output path in config/packages/{environment}/monolog.yaml
         $this->logger = $logger;
 
         // Set in the parameters section of config/services.yaml.
         $this->fixityHost = $this->params->get('app.fixity.host');
+        $this->plugins = $this->params->get('app.plugins');
 
         parent::__construct();
     }
@@ -34,35 +38,24 @@ class CheckFixity extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $start = $this->startTimer();
+        $uuid4 = Uuid::uuid4();
+        $uuid4_string = $uuid4->toString();
+
         $now = date(DATE_RFC2822);
-        $output->writeln("Hi, it's $now. Your host is ". $this->fixityHost);
-        $seconds = $this->startTimer($start);
+        $output->writeln("Hi, it's $now, and your UUID is " . $uuid4_string . ".");
+        $output->writeln("Your fixity host is set to ". $this->fixityHost . ".");
 
-        $this->logger->info("check_fixity ran, took $seconds seconds.");
-    }
+        $this->logger->info("check_fixity ran.", array('uuid' => $uuid4_string));
 
-    /**
-     * Starts the benchmark timer.
-     */
-    private function startTimer() {
-        return microtime(true);
-    }
-
-    /**
-     * Stops the benchmark timer and reports the results.
-     *
-     * @param float $time_start
-     *   The current time in seconds since the Unix epoch accurate
-     *   to the nearest microsecond.
-     *
-     * @return int
-     *   The number of seconds.
-     */
-    private function stopTimer($time_start) {
-        $time_end = microtime(true);
-        $time = $time_end - $time_start;
-        return $time;
+        // @todo: Fire plugins using https://symfony.com/doc/current/console/calling_commands.html?
+        // Maybe we can configure a set of command names and parameters in services.yaml?
+        if (count($this->plugins) > 0) {
+            foreach ($this->plugins as $plugin) {
+                $command = $this->getApplication()->find('app:riprap:plugin_foo');
+                $returnCode = $command->run($input, $output);
+                $this->logger->info("Plugin ran.", array('plugin' => $plugin, 'return_code' => $returnCode));
+            }
+        }
     }
 
 }
