@@ -21,7 +21,7 @@ We will eventually support deployment via Ansible.
 
 ## Configuration
 
-Since this is a Symfony application, you need to configure some thinngs:
+Since this is a Symfony application, you need to configure some things:
 
 * In `.env`, set `DATABASE_URL`. We use SQLite for now but will support MySQL/MariaDB and PostgreSQL.
 * In `config/services.yaml`, set `app.fixity.host`. You probably don't need to set `app.fixity.method`.
@@ -37,7 +37,11 @@ e.g.,
 
 ## Plugins
 
-We have a very basic plugin architecture.
+We have a very basic plugin architecture. Some ideas:
+
+* Make a set of plugins to assist in migrating fixity data from legacy sources.
+* Make a set of plugins that persist data (e.g., to a RDBMS, to the Fedora repository, etc.)
+* Make a set of plugins that fetch a set of Fedora resource URLs to fixity check.
 
 ## License
 
