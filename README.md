@@ -8,11 +8,11 @@ A microservice that addresses https://github.com/Islandora-CLAW/CLAW/issues/847.
 
 ## Usage
 
-`php [path to riprap]/bin/console app:riprap:say_hi`
+`php [path to riprap]/bin/console app:riprap:check_fixity`
 
 e.g.,
 
-`php /home/mark/Documents/hacking/riprap/bin/console app:riprap:say_hi`
+`php /home/mark/Documents/hacking/riprap/bin/console app:riprap:check_fixity`
 
 ## License
 
