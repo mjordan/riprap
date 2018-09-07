@@ -43,6 +43,14 @@ We have a very basic plugin architecture. Some ideas:
 * Make a set of plugins that persist data (e.g., to a RDBMS, to the Fedora repository, etc.)
 * Make a set of plugins that fetch a set of Fedora resource URLs to fixity check.
 
+## REST API
+
+Not started yet, but we plan to expose an HTTP REST API that will allow external clients to retrieve fixity validation data on particular resources. For example, a `GET` request to:
+
+`http://riprap.example.com/api/resource/96ea3c35-d08e-4812-8c9e-cd0d6d1bd839`
+
+would return a list of all fixity events for the Fedora resource `http://fedorarepo.example.net:8080/fcrepo/rest/96/ea/3c/35/96ea3c35-d08e-4812-8c9e-cd0d6d1bd839`.
+
 ## License
 
 [MIT](https://opensource.org/licenses/MIT)
