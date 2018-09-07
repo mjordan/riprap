@@ -6,11 +6,11 @@ use Symfony\Component\HttpFoundation\Response;
 
 class FixityController
 {
-    public function resource()
+    public function resource($id)
     {
         $response = new Response();
 
-        $data = array('fixity event 1', 'fixity event 2', 'fixity event 3');
+        $data = array('fixity event 1 for resource ' . $id, 'fixity event 2 for resource ' . $id, 'fixity event 3 for resource ' . $id);
         $content = json_encode($data);
         $response->setContent($content);
 

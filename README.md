@@ -54,7 +54,7 @@ would return a list of all fixity events for the Fedora resource `http://fedorar
 If you want to see the API in action,
 
 1. run `php bin/console server:start`
-1. run `curl -v "http://localhost:8000/api/resource"`
+1. run `curl -v "http://localhost:8000/api/resource/123456"`
 
 You should get a response like this:
 
@@ -78,7 +78,7 @@ You should get a response like this:
 < Content-Type: application/json
 < 
 * Closing connection 0
-["fixity event 1","fixity event 2","fixity event 3"]["fixity event 1","fixity event 2","fixity event 3"]
+["fixity event 1 for resource 123456","fixity event 2 for resource 123456","fixity event 3 for resource 123456"]
 ```
 
 ## License
