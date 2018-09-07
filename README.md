@@ -51,6 +51,36 @@ Not started yet, but we plan to expose an HTTP REST API that will allow external
 
 would return a list of all fixity events for the Fedora resource `http://fedorarepo.example.net:8080/fcrepo/rest/96/ea/3c/35/96ea3c35-d08e-4812-8c9e-cd0d6d1bd839`.
 
+If you want to see the API in action,
+
+1. run `php bin/console server:start`
+1. run `curl -v "http://localhost:8000/api/resource"`
+
+You should get a response like this:
+
+```
+*   Trying 127.0.0.1...
+* TCP_NODELAY set
+* Connected to localhost (127.0.0.1) port 8000 (#0)
+> GET /api/resource HTTP/1.1
+> Host: localhost:8000
+> User-Agent: curl/7.58.0
+> Accept: */*
+> 
+* HTTP 1.0, assume close after body
+< HTTP/1.0 200 OK
+< Host: localhost:8000
+< Date: Fri, 07 Sep 2018 07:01:01 -0700
+< Connection: close
+< X-Powered-By: PHP/7.2.7-0ubuntu0.18.04.2
+< Cache-Control: no-cache, private
+< Date: Fri, 07 Sep 2018 14:01:01 GMT
+< Content-Type: application/json
+< 
+* Closing connection 0
+["fixity event 1","fixity event 2","fixity event 3"]["fixity event 1","fixity event 2","fixity event 3"]
+```
+
 ## License
 
 [MIT](https://opensource.org/licenses/MIT)

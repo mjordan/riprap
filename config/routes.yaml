@@ -1,3 +1,7 @@
 #index:
 #    path: /
 #    controller: App\Controller\DefaultController::index
+
+app_resource_fixity_events:
+    path: /api/resource
+    controller: App\Controller\FixityController::resource
