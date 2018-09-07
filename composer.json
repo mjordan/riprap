@@ -7,16 +7,18 @@
         "ramsey/uuid": "~3.0",
         "ext-ctype": "*",
         "ext-iconv": "*",
+        "symfony/yaml": "*",
+        "symfony/maker-bundle": "*", 
         "symfony/console": "*",
         "symfony/flex": "^1.1",
         "symfony/framework-bundle": "*",
         "symfony/monolog-bundle": "*",
         "symfony/orm-pack": "*",
-        "symfony/maker-bundle": "*", 
-        "symfony/yaml": "*"
+        "symfony/security-bundle": "*"
     },
     "require-dev": {
-        "symfony/dotenv": "*"
+        "symfony/dotenv": "*",
+        "symfony/web-server-bundle": "*"
     },
     "config": {
         "preferred-install": {
