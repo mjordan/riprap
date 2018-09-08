@@ -1,6 +1,14 @@
 {
+    "name": "riprap",
     "type": "project",
+    "description": "A fixity-auditing microservice for Fedora-based repositories.",
     "license": "MIT",
+    "authors": [
+        {
+            "name": "Mark Jordan",
+            "email": "mjordan@sfu.ca"
+        }
+    ],
     "require": {
         "php": "^7.1.3",
         "guzzlehttp/guzzle": "~6.0",

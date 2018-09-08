@@ -47,13 +47,13 @@ class CheckFixity extends Command
 
         $this->logger->info("check_fixity ran.", array('uuid' => $uuid4_string));
 
-        // Fire plugins using https://symfony.com/doc/current/console/calling_commands.html?
-        // @todo: Figure out how to pass in configuration parameters to plugins in services.yaml?
+        // Execute plugins using https://symfony.com/doc/current/console/calling_commands.html?
+        // @todo: Figure out how to provide configuration parameters for plugins, e.g., in services.yaml.
         if (count($this->plugins) > 0) {
             foreach ($this->plugins as $plugin_name) {
                 $command = $this->getApplication()->find($plugin_name);
                 $returnCode = $command->run($input, $output);
-                $this->logger->info("Plugin ran.", array('plugin' => $plugin_name, 'return_code' => $returnCode));
+                $this->logger->info("Plugin ran.", array('plugin_name' => $plugin_name, 'return_code' => $returnCode));
             }
         }
     }

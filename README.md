@@ -1,10 +1,10 @@
 # Riprap
 
-A fixity-checking service for Fedora-based repositories.
+A fixity-auditing microservice for Fedora-based repositories.
 
 ## Overview
 
-A microservice that addresses https://github.com/Islandora-CLAW/CLAW/issues/847.
+Addresses https://github.com/Islandora-CLAW/CLAW/issues/847.
 
 ## Requirements
 
@@ -35,17 +35,21 @@ e.g.,
 
 `php /home/mark/Documents/hacking/riprap/bin/console app:riprap:check_fixity`
 
+## Logging
+
+Riprap uses Monolog, and will provide a variety of ways to log activity, e.g., email someone if a fixity mismatch is detected.
+
 ## Plugins
 
-We have a very basic plugin architecture. Some ideas:
+Riprap has a very basic plugin architecture. Some potential uses:
 
-* Make a set of plugins to assist in migrating fixity data from legacy sources.
-* Make a set of plugins that persist data (e.g., to a RDBMS, to the Fedora repository, etc.)
-* Make a set of plugins that fetch a set of Fedora resource URLs to fixity check.
+* Provide plugins to assist in migrating fixity data from legacy sources (e.g., Fedora 3.x repositories)
+* Provide plugins that fetch a set of Fedora resource URLs to fixity check (e.g., from the repository, from Drupal, from a CSV file).
+* Provide plugins that persist data (e.g., to a RDBMS, to the Fedora repository, etc.)
 
 ## REST API
 
-Not started yet, but we plan to expose an HTTP REST API that will allow external clients to retrieve fixity validation data on particular resources. For example, a `GET` request to:
+Preliminary scaffolding is in place for an HTTP REST API, which will allow external clients like Drupal to retrieve fixity validation data on particular Fedora resources. For example, a `GET` request to:
 
 `http://riprap.example.com/api/resource/96ea3c35-d08e-4812-8c9e-cd0d6d1bd839`
 
@@ -80,6 +84,12 @@ You should get a response like this:
 * Closing connection 0
 ["fixity event 1 for resource 123456","fixity event 2 for resource 123456","fixity event 3 for resource 123456"]
 ```
+
+Using Symfony's firewall to provide IP-based access to the API should provide sufficient security.
+
+## Maintainer
+
+Mark Jordan (https://github.com/mjordan)
 
 ## License
 
