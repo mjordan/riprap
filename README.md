@@ -1,6 +1,6 @@
 # Riprap
 
-A fixity-auditing microservice for Fedora-based repositories.
+A fixity-auditing microservice for [Fedora](https://fedora.info/spec/)-based repositories.
 
 ## Overview
 
@@ -26,6 +26,7 @@ Since this is a Symfony application, you need to configure some things:
 * In `.env`, set `DATABASE_URL`. We use SQLite for now but will support MySQL/MariaDB and PostgreSQL.
 * In `config/services.yaml`, set `app.fixity.host`. You probably don't need to set `app.fixity.method`.
 * In `config/packages/{environment}/monolog.yaml`, set the path for the main Monolog handler.
+* In `config/packages/security.yaml`, configure access to the REST API (see below).
 
 ## Usage
 
@@ -37,7 +38,7 @@ e.g.,
 
 ## Logging
 
-Riprap uses Monolog, and will provide a variety of ways to log activity, e.g., email someone if a fixity mismatch is detected.
+Riprap will provide a variety of ways to log activity, e.g., email someone if a fixity mismatch is detected.
 
 ## Plugins
 
@@ -49,13 +50,13 @@ Riprap has a very basic plugin architecture. Some potential uses:
 
 ## REST API
 
-Preliminary scaffolding is in place for an HTTP REST API, which will allow external clients like Drupal to retrieve fixity validation data on particular Fedora resources. For example, a `GET` request to:
+Preliminary scaffolding is in place for a read-only HTTP REST API, which will allow external applications like Drupal to retrieve fixity validation data on particular Fedora resources. For example, a `GET` request to:
 
 `http://riprap.example.com/api/resource/96ea3c35-d08e-4812-8c9e-cd0d6d1bd839`
 
 would return a list of all fixity events for the Fedora resource `http://fedorarepo.example.net:8080/fcrepo/rest/96/ea/3c/35/96ea3c35-d08e-4812-8c9e-cd0d6d1bd839`.
 
-If you want to see the API in action,
+To see the API in action,
 
 1. run `php bin/console server:start`
 1. run `curl -v "http://localhost:8000/api/resource/123456"`
