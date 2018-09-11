@@ -26,7 +26,9 @@
     },
     "require-dev": {
         "symfony/dotenv": "*",
-        "symfony/web-server-bundle": "*"
+        "symfony/web-server-bundle": "*",
+        "symfony/phpunit-bridge": "*",
+        "symfony/browser-kit": "*"
     },
     "config": {
         "preferred-install": {

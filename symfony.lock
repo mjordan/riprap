@@ -107,6 +107,9 @@
     "ramsey/uuid": {
         "version": "3.8.0"
     },
+    "symfony/browser-kit": {
+        "version": "v4.1.4"
+    },
     "symfony/cache": {
         "version": "v4.1.4"
     },
@@ -129,6 +132,9 @@
         "version": "v4.1.4"
     },
     "symfony/doctrine-bridge": {
+        "version": "v4.1.4"
+    },
+    "symfony/dom-crawler": {
         "version": "v4.1.4"
     },
     "symfony/dotenv": {
@@ -193,6 +199,15 @@
     },
     "symfony/orm-pack": {
         "version": "v1.0.5"
+    },
+    "symfony/phpunit-bridge": {
+        "version": "4.1",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "master",
+            "version": "4.1",
+            "ref": "1a47f76dcd9d5d4da1fab54fb15450bae3704c5e"
+        }
     },
     "symfony/polyfill-mbstring": {
         "version": "v1.9.0"
