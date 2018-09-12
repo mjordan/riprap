@@ -15,7 +15,9 @@ class CheckFixity extends Command
 {
     private $params;
 
-    public function __construct(ParameterBagInterface $params, LoggerInterface $logger)
+    private $logger;
+
+    public function __construct(ParameterBagInterface $params = null, LoggerInterface $logger = null)
     {
         $this->params = $params;
 

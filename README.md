@@ -88,6 +88,10 @@ You should get a response like this:
 
 Using Symfony's firewall to provide IP-based access to the API should provide sufficient security.
 
+## Running tests
+
+`php bin/phpunit` from within the `riprap` directory.
+
 ## Maintainer
 
 Mark Jordan (https://github.com/mjordan)
