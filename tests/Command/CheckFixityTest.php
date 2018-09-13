@@ -7,7 +7,6 @@ use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Console\Tester\CommandTester;
 
-
 class CheckFixityTest extends KernelTestCase
 {
     public function testExecute()
@@ -17,11 +16,16 @@ class CheckFixityTest extends KernelTestCase
 
         $application->add(new CheckFixity());
 
+
+        // We need to use configuration parameters, e.g. app.fixity.host. How?
+
         $command = $application->find('app:riprap:check_fixity');
+
         $commandTester = new CommandTester($command);
-        $commandTester->execute(array(
-            'command'  => $command->getName(),
-        ));
+        // $commandTester->execute(array(
+            // 'command'  => $command->getName(),
+        // ));
+        $commandTester->execute();
 
         // The output of the command in the console.
         $output = $commandTester->getDisplay();
