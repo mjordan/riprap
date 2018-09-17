@@ -30,7 +30,7 @@ Since this is a Symfony application, you need to configure some things:
 
 ## Usage
 
-`php [path to riprap]/bin/console app:riprap:check_fixity --fixity_host=http://foo.com`
+`php [path to riprap]/bin/console app:riprap:check_fixity`
 
 e.g.,
 

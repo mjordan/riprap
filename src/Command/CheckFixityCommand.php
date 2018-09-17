@@ -5,7 +5,6 @@ namespace App\Command;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-// use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Console\Input\ArrayInput;
@@ -22,12 +21,12 @@ class CheckFixityCommand extends Command
     {
         $this->params = $params;
 
-        // Set log output path in config/packages/{environment}/monolog.yaml
-        $this->logger = $logger;
-
         // Set in the parameters section of config/services.yaml.
         $this->fixityHost = $this->params->get('app.fixity.host');
         $this->plugins = $this->params->get('app.plugins');
+
+        // Set log output path in config/packages/{environment}/monolog.yaml
+        $this->logger = $logger;
 
         parent::__construct();
     }
@@ -61,9 +60,6 @@ class CheckFixityCommand extends Command
         if (count($this->plugins) > 0) {
             foreach ($this->plugins as $plugin_name) {
                 $plugin_command = $this->getApplication()->find($plugin_name);
-                // @todo: It would be great to be able to provide plugins with options passed to riprap.
-                // $input->getOptions() gets the list, but plugins complain that "The "x" argument does not exist."
-                // Until we figure this out, we pass in an empty array to prevent those errors.
                 $plugin_input = new ArrayInput(array());
                 $returnCode = $plugin_command->run($plugin_input, $output);
                 $this->logger->info("Plugin ran.", array('plugin_name' => $plugin_name, 'return_code' => $returnCode));

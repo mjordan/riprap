@@ -7,9 +7,6 @@ use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Console\Tester\CommandTester;
 
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use Psr\Log\LoggerInterface;
-
 class CheckFixityCommandTest extends KernelTestCase
 {
     public function testExecute()
@@ -27,7 +24,9 @@ class CheckFixityCommandTest extends KernelTestCase
         $command = $application->find('app:riprap:check_fixity');
 
         $commandTester = new CommandTester($command);
-        $commandTester->execute();
+        $commandTester->execute(array(
+            'command'  => $command->getName(),
+        ));
 
         // The output of the command in the console.
         $output = $commandTester->getDisplay();
