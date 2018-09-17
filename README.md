@@ -32,11 +32,14 @@ Since this is a Symfony application, you need to configure some things:
 
 ## Usage
 
+
 `php [path to riprap]/bin/console app:riprap:check_fixity`
 
 e.g.,
 
-`php /home/mark/Documents/hacking/riprap/bin/console app:riprap:check_fixity --fixity_host=http://foo.com`
+`php /home/mark/Documents/hacking/riprap/bin/console app:riprap:check_fixity`
+
+For ongoing fixity checking, riprap should be run from a cronjob.
 
 ## Logging
 
@@ -47,8 +50,9 @@ Riprap will provide a variety of ways to log activity, e.g., email someone if a 
 Riprap has a very basic plugin architecture. Some potential uses:
 
 * Provide plugins to assist in migrating fixity data from legacy sources (e.g., Fedora 3.x repositories)
-* Provide plugins that fetch a set of Fedora resource URLs to fixity check (e.g., from the repository, from Drupal, from a CSV file).
+* Provide plugins that fetch a set of Fedora resource URLs to fixity check (e.g., from the Fedora repository's triplestore, from Drupal, from a CSV file).
 * Provide plugins that persist data (e.g., to a RDBMS, to the Fedora repository, etc.)
+* Provide plugins that react to a fixity check failure (e.g., email an administrator)
 
 ## REST API
 
