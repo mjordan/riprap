@@ -14,7 +14,7 @@ use Psr\Log\LoggerInterface;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\Exception\UnsatisfiedDependencyException;
 
-class CheckFixity extends Command
+class CheckFixityCommand extends Command
 {
     private $params;
 
@@ -38,8 +38,8 @@ class CheckFixity extends Command
             ->setName('app:riprap:check_fixity')
             ->setDescription('Says Hello world.');
 
-        $this
-            ->addOption('fixity_host', 'f', InputOption::VALUE_REQUIRED, 'Fully qualifid URL of the repository host', false);
+        // $this
+            // ->addOption('fixity_host', 'f', InputOption::VALUE_REQUIRED, 'Fully qualifid URL of the repository host', false);
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -51,9 +51,9 @@ class CheckFixity extends Command
         $output->writeln("Hi, it's $now, and your UUID is " . $uuid4_string . ".");
         $output->writeln("Your fixity host is set to ". $this->fixityHost . ".");
 
-        if ($input->getOption('fixity_host')) {
-            $output->writeln("You indicated that your preferred host is " . $input->getOption('fixity_host'));
-        }
+        // if ($input->getOption('fixity_host')) {
+            // $output->writeln("You indicated that your preferred host is " . $input->getOption('fixity_host'));
+        // }
 
         $this->logger->info("check_fixity ran.", array('uuid' => $uuid4_string));
 
