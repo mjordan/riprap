@@ -6,6 +6,8 @@ A fixity-auditing microservice for [Fedora](https://fedora.info/spec/)-based rep
 
 Addresses https://github.com/Islandora-CLAW/CLAW/issues/847.
 
+![Overview](docs/images/overview.png)
+
 ## Requirements
 
 * PHP 7.1.3 or higher
