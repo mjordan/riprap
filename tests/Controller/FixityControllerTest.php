@@ -11,5 +11,11 @@ class FixityControllerTest extends WebTestCase
         $client = static::createClient();
         $client->request('GET', '/api/resource/foo');
         $this->assertEquals(200, $client->getResponse()->getStatusCode());
+
+        $client->request('POST', '/api/resource/foo');
+        $this->assertEquals(200, $client->getResponse()->getStatusCode());
+
+        $client->request('PATCH', '/api/resource/foo');
+        $this->assertEquals(200, $client->getResponse()->getStatusCode());
     }
 }
