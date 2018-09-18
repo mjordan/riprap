@@ -65,7 +65,6 @@ class CheckFixityCommand extends Command
                 $this->logger->info("Plugin ran.", array('plugin_name' => $plugin_name, 'return_code' => $returnCode));
             }
         }
-
     }
 
 }

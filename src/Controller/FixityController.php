@@ -6,7 +6,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 
 class FixityController
 {
-    public function resource($id)
+    public function read($id)
     {
         // Dummy data.
         $data = array(
@@ -18,4 +18,23 @@ class FixityController
         return $response;
     }
 
+    public function add($id)
+    {
+        // Dummy data.
+        $data = array(
+            'new fixity event for resource ' . $id,
+        );
+        $response = new JsonResponse($data);
+        return $response;
+    }
+
+    public function update($id)
+    {
+        // Dummy data.
+        $data = array(
+            'updated fixity event for resource ' . $id,
+        );
+        $response = new JsonResponse($data);
+        return $response;
+    }
 }

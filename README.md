@@ -56,7 +56,7 @@ Riprap has a very basic plugin architecture. Some potential uses:
 
 ## REST API
 
-Preliminary scaffolding is in place for a read-only HTTP REST API, which will allow external applications like Drupal to retrieve fixity validation data on particular Fedora resources. For example, a `GET` request to:
+Preliminary scaffolding is in place for a simple HTTP REST API, which will allow external applications like Drupal to retrieve fixity validation data on particular Fedora resources and to add new and updated fixity validation data. For example, a `GET` request to:
 
 `http://riprap.example.com/api/resource/96ea3c35-d08e-4812-8c9e-cd0d6d1bd839`
 
@@ -90,6 +90,31 @@ You should get a response like this:
 < 
 * Closing connection 0
 ["fixity event 1 for resource 123456","fixity event 2 for resource 123456","fixity event 3 for resource 123456"]
+```
+
+HTTP `POST` and `PUT` are also supported, e.g.:
+
+```
+curl -v -X PATCH http://localhost:8000/api/resource/iamupdated
+*   Trying 127.0.0.1...
+* TCP_NODELAY set
+* Connected to localhost (127.0.0.1) port 8000 (#0)
+> PATCH /api/resource/iamupdated HTTP/1.1
+> Host: localhost:8000
+> User-Agent: curl/7.58.0
+> Accept: */*
+> 
+< HTTP/1.1 200 OK
+< Host: localhost:8000
+< Date: Tue, 18 Sep 2018 04:42:38 -0700
+< Connection: close
+< X-Powered-By: PHP/7.2.7-0ubuntu0.18.04.2
+< Cache-Control: no-cache, private
+< Date: Tue, 18 Sep 2018 11:42:38 GMT
+< Content-Type: application/json
+< 
+* Closing connection 0
+["updated fixity event for resource iamupdated"]
 ```
 
 Using Symfony's firewall to provide IP-based access to the API should provide sufficient security.
