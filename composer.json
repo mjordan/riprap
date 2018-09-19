@@ -22,7 +22,8 @@
         "symfony/framework-bundle": "*",
         "symfony/monolog-bundle": "*",
         "symfony/orm-pack": "*",
-        "symfony/security-bundle": "*"
+        "symfony/security-bundle": "*",
+        "symfony/messenger": "*"
     },
     "require-dev": {
         "symfony/dotenv": "*",

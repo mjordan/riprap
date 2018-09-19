@@ -120,6 +120,10 @@ curl -v -X PATCH http://localhost:8000/api/resource/iamupdated
 
 Using Symfony's firewall to provide IP-based access to the API should provide sufficient security.
 
+# Message queue listener
+
+Riprap will also be able to listen to an ActiveMQ queue and generate corresponding fixity events for newly added or updated resources. Not implemented yet.
+
 # Generating sample events
 
 As stated above, for now we use SQLite as our database. You do not need to create or populate the database; it is just a placeholder for now until we integrate it into our tests.
