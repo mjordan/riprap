@@ -28,7 +28,8 @@
         "symfony/dotenv": "*",
         "symfony/web-server-bundle": "*",
         "symfony/phpunit-bridge": "*",
-        "symfony/browser-kit": "*"
+        "symfony/browser-kit": "*",
+        "doctrine/doctrine-fixtures-bundle": "*"
     },
     "config": {
         "preferred-install": {

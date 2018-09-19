@@ -119,6 +119,35 @@ curl -v -X PATCH http://localhost:8000/api/resource/iamupdated
 
 Using Symfony's firewall to provide IP-based access to the API should provide sufficient security.
 
+# Generating sample events
+
+As stated above, for now we use SQLite as our database. You do not need to create or populate the database; it is just a placeholder for now until we integrate it into our tests.
+
+If you would like to generate some sample events, run the following commands:
+
+1. `rm src/Migrations/*`
+1. `php bin/console -n make:migration`
+1. `php bin/console -n doctrine:migrations:migrate`
+1. `php bin/console -n doctrine:fixtures:load`
+
+At this point you will have five rows in your database's `event` table. If you query the table you will see output similar to this (the `event_uuid` and `hash_value` values are randomly generated):
+
+```
+sqlite3 var/data.db 
+SQLite version 3.22.0 2018-01-22 18:45:57
+Enter ".help" for usage hints.
+sqlite> .headers on
+sqlite> select * from event;
+id|event_uuid|event_type|resource_id|datestamp|hash_algorithm|hash_value|event_outcome
+1|2a40d01e-d0fc-49c0-8755-990c90e21f13|verification|http://example.net/resource/93|2018-09-19 05:23:20|sha1|5a5b0f9b7d3f8fc84c3cef8fd8efaaa6c70d75ab|success
+2|27099e67-e355-4308-b618-e880900ee16a|verification|http://example.net/resource/56|2018-09-19 05:23:20|sha1|b1d5781111d84f7b3fe45a0852e59758cd7a87e5|success
+3|b64d7dac-db2d-4984-b72e-46f6f33d1d0a|verification|http://example.net/resource/56|2018-09-19 05:23:20|sha1|310b86e0b62b828562fc91c7be5380a992b2786a|success
+4|f1ff2644-6f6d-4765-84ee-ae2e6ea85b1b|verification|http://example.net/resource/47|2018-09-19 05:23:20|sha1|08a35293e09f508494096c1c1b3819edb9df50db|success
+5|59d47475-3c47-412e-a94a-dc5356e9ec14|verification|http://example.net/resource/98|2018-09-19 05:23:20|sha1|450ddec8dd206c2e2ab1aeeaa90e85e51753b8b7|success
+sqlite> 
+```
+
+
 ## Running tests
 
 `php bin/phpunit` from within the `riprap` directory.
