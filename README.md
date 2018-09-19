@@ -12,6 +12,7 @@ Addresses https://github.com/Islandora-CLAW/CLAW/issues/847.
 
 * PHP 7.1.3 or higher
 * [composer](https://getcomposer.org/)
+* Optionally, SQLite if you want to generate sample fixity event data.
 
 ## Installation
 
