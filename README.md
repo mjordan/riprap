@@ -25,7 +25,7 @@ We will eventually support deployment via Ansible.
 
 Since this is a Symfony application, you need to configure some things:
 
-* In `.env`, set `DATABASE_URL`. We use SQLite for now but will support MySQL/MariaDB and PostgreSQL.
+* In `.env`, set `DATABASE_URL`, e.g., `DATABASE_URL=sqlite:///%kernel.project_dir%/var/data.db`. We use SQLite for now but will support MySQL/MariaDB and PostgreSQL.
 * In `config/services.yaml`, set `app.fixity.host`. You probably don't need to set `app.fixity.method`.
 * In `config/packages/{environment}/monolog.yaml`, set the path for the main Monolog handler.
 * In `config/packages/security.yaml`, configure access to the REST API (see below).
@@ -123,7 +123,9 @@ Using Symfony's firewall to provide IP-based access to the API should provide su
 
 As stated above, for now we use SQLite as our database. You do not need to create or populate the database; it is just a placeholder for now until we integrate it into our tests.
 
-If you would like to generate some sample events, run the following commands:
+If you would like to generate some sample events, follow these instructions from within the `riprap` directory:
+
+In `.env`, open an editor and add the following line in the `doctrine-bundle` section: `DATABASE_URL=sqlite:///%kernel.project_dir%/var/data.db`. Then run the following commands:
 
 1. `rm src/Migrations/*`
 1. `php bin/console -n make:migration`
@@ -132,8 +134,9 @@ If you would like to generate some sample events, run the following commands:
 
 At this point you will have five rows in your database's `event` table. If you query the table you will see output similar to this (the `event_uuid` and `hash_value` values are randomly generated):
 
+`sqlite3 var/data.db`
+
 ```
-sqlite3 var/data.db 
 SQLite version 3.22.0 2018-01-22 18:45:57
 Enter ".help" for usage hints.
 sqlite> .headers on
@@ -146,7 +149,6 @@ id|event_uuid|event_type|resource_id|datestamp|hash_algorithm|hash_value|event_o
 5|59d47475-3c47-412e-a94a-dc5356e9ec14|verification|http://example.net/resource/98|2018-09-19 05:23:20|sha1|450ddec8dd206c2e2ab1aeeaa90e85e51753b8b7|success
 sqlite> 
 ```
-
 
 ## Running tests
 
