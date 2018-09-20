@@ -7,6 +7,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Console\Output\BufferedOutput;
 
 use Psr\Log\LoggerInterface;
 use Ramsey\Uuid\Uuid;
@@ -24,6 +25,7 @@ class CheckFixityCommand extends ContainerAwareCommand
 
         // Set in the parameters section of config/services.yaml.
         $this->fixityHost = $this->params->get('app.fixity.host'); // Do we need this if we are providing full resource URLs?
+        $this->fetchPlugins = $this->params->get('app.plugins.fetch');
         $this->persistPlugins = $this->params->get('app.plugins.persist');
 
         // Set log output path in config/packages/{environment}/monolog.yaml
@@ -41,26 +43,45 @@ class CheckFixityCommand extends ContainerAwareCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        // @todo: Fire plugins that get a list of resource URIs to validate.
+        // Fire plugins that get a list of resource URIs to validate.
+        $resource_ids = array();
+        if (count($this->fetchPlugins) > 0) {
+            foreach ($this->fetchPlugins as $plugin_name) {
+                $plugin_command = $this->getApplication()->find($plugin_name);
+                // This class of plugin doesn't take any command-line options.
+                $plugin_input = new ArrayInput(array());
+                $output = new BufferedOutput();
+                // @todo: Check $returnCode and log+continue if non-0.
+                $returnCode = $plugin_command->run($plugin_input, $output);
+                $ids_from_plugin = $output->fetch();
+                $this->logger->info("Fetch plugin ran.", array('plugin_name' => $plugin_name, 'return_code' => $returnCode));
+            }
 
-        // @todo: Loop through the list and validate them. Test data:
-        $resource_uris = array('http:foo.com');
-        foreach ($resource_uris as $resource_id) {
+            // Split $ids_from_plugin on newline to get an array of URLs. Assumes that all
+            // fetchPlugins will return a string, which is probably correct since that seems
+            // to be a Symfony console command behavior.
+            $ids_from_plugin = $array = preg_split("/\r\n|\n|\r/", trim($ids_from_plugin));
+            // Combine the output of all fetchPlugins.
+            $resource_ids = array_merge($resource_ids, $ids_from_plugin);
+        }
+
+        // Loop through the list of resource IDs and perform a fixity validation event on them.
+        foreach ($resource_ids as $resource_id) {
             $uuid4 = Uuid::uuid4();
             $event_uuid = $uuid4->toString();
             $now_iso8601 = date('c');
 
             // @todo: Query the Fedora repository and get a resource's digest.
-            if (!$digest_value = $this->get_resource_digest($resource_id)) {
+            // if (!$digest_value = $this->get_resource_digest($resource_id)) {
                 // @todo: Log failure?
-                continue;
-            }
+                // continue;
+            // }
 
-            if (compare_digests($digest_value)) {
+            // if (compare_digests($digest_value)) {
                 $outcome = 'success';
-            } else {
+            // } else {
                 $outcome = 'failure';
-            }
+            // }
 
             // Print output and log it.
             $this->logger->info("check_fixity ran.", array('event_uuid' => $event_uuid));

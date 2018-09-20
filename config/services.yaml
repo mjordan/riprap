@@ -6,6 +6,9 @@ parameters:
     app.fixity.host: 'https://localhost:8000/examplerepository/rest/'    
     app.fixity.method: 'HEAD'
 
+    app.plugins.fetch: ['app:riprap:plugin:fetch:from:file']
+    app.plugins.fetch.from.file.paths: ['Resources/riprap_resource_ids.txt']
+
     app.plugins.persist: ['app:riprap:plugin:persist:to:database']
 
 services:
