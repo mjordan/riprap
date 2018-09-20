@@ -168,7 +168,7 @@ In `.env`, open an editor and add the following line in the `doctrine-bundle` se
 1. `php bin/console -n doctrine:migrations:migrate`
 1. `php bin/console -n doctrine:fixtures:load`
 
-At this point you will have five rows in your database's `event` table. If you query the table you will see output similar to this (the `event_uuid` and `hash_value` values are randomly generated):
+At this point you will have five rows in your database's `event` table. If you query the table you will see the following output:
 
 `sqlite3 var/data.db`
 
