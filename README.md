@@ -44,11 +44,11 @@ For ongoing fixity checking, riprap should be run from a cronjob.
 
 ## Logging
 
-Riprap will provide a variety of ways to log activity, e.g., email someone if a fixity mismatch is detected.
+The location of Riprap's general log is conigurable in `config/packages/{environment}/monolog.yaml`. Riprap will provide a variety of ways to log activity, e.g., email someone if a fixity mismatch is detected.
 
 ## Plugins
 
-Riprap has a very basic plugin architecture. Some potential uses:
+Riprap relies on plugins to do most of its input and output. It will:
 
 * Provide plugins that fetch a set of Fedora resource URLs to fixity check (e.g., from the Fedora repository's triplestore, from Drupal, from a CSV file). A plugin to read resource URLs from a text file, `app:riprap:plugin:fetch:from:file`, already exists and is configured in `config/services.yaml`.
 * Provide plugins that persist data (e.g., to a RDBMS, to the Fedora repository, etc.). A plugin to persist fixity events to a relational database, `app:riprap:plugin:persist:to:database`, already exists and is configured in `config/services.yaml`.
@@ -121,7 +121,7 @@ Using Symfony's firewall to provide IP-based access to the API should provide su
 
 # Sample Fedora API Specification endpoint
 
-To assist in development and testing, Riprap includes an enpoint that simulates the behaviour described in section [7.2](https://fcrepo.github.io/fcrepo-specification/#persistence-fixity) of the spec. If you start Symfony's test server as described above, this endpoint is available via `GET` or `HEAD` requests at `http://localhost:8000/examplerepository/rest/{id}`, where `{id}` is a number from 1-20. Calls to it should include a `Want-Digest` header with the value `SHA-1`, e.g.:
+To assist in development and testing, Riprap includes an endpoint that simulates the behaviour described in section [7.2](https://fcrepo.github.io/fcrepo-specification/#persistence-fixity) of the spec. If you start Symfony's test server as described above, this endpoint is available via `GET` or `HEAD` requests at `http://localhost:8000/examplerepository/rest/{id}`, where `{id}` is a number from 1-20 (these are mock "resource IDs" included in the sample data). Calls to it should include a `Want-Digest` header with the value `SHA-1`, e.g.:
 
 `curl -v -X HEAD -H 'Want-Digest: SHA-1' http://localhost:8000/examplerepository/rest/2`
 
@@ -150,6 +150,8 @@ If the `{id}` is valid, the response will contain the `Digest` header containing
 * Closing connection 0
 ```
 
+If the resource is not found, the response will be `404`. If the `{id}` is not valid for some other reason, the HTTP response will be `400`.
+
 # Message queue listener
 
 Riprap will also be able to listen to an ActiveMQ queue and generate corresponding fixity events for newly added or updated resources. Not implemented yet.
@@ -162,13 +164,13 @@ If you would like to generate some sample events, follow these instructions from
 
 In `.env`, open an editor and add the following line in the `doctrine-bundle` section: `DATABASE_URL=sqlite:///%kernel.project_dir%/var/data.db`. Then run the following commands:
 
-1. `rm var/data.db`
-1. `rm src/Migrations/*`
+1. `rm var/data.db` (might not exist)
+1. `rm src/Migrations/*` (might be empty)
 1. `php bin/console -n make:migration`
 1. `php bin/console -n doctrine:migrations:migrate`
 1. `php bin/console -n doctrine:fixtures:load`
 
-At this point you will have five rows in your database's `event` table. If you query the table you will see the following output:
+At this point you will have 20 rows in your database's `event` table. If you query the table you will see the following output:
 
 `sqlite3 var/data.db`
 
@@ -189,7 +191,14 @@ sqlite>
 
 ## Running tests
 
-`php bin/phpunit` from within the `riprap` directory.
+Tests for the HTTP interfaces exist and work as intended. If you want to run the HTTP tests, from within the `riprap` directory, run:
+
+* `php bin/phpunit tests/Controller/FixityControllerTest.php`
+* `php bin/phpunit tests/Controller/ExampleRepositoryEndpointTest.php`
+
+Tests for console commands are still in development (I can't figure out how to read configuration values from `config/services.yaml` in tests, if you know how, I'd love to talk to you).
+
+When I figure that out, all tests can be run with `php bin/phpunit` from within the `riprap` directory.
 
 ## Maintainer
 
