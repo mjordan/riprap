@@ -50,10 +50,9 @@ Riprap will provide a variety of ways to log activity, e.g., email someone if a 
 
 Riprap has a very basic plugin architecture. Some potential uses:
 
-* Provide plugins to assist in migrating fixity data from legacy sources (e.g., Fedora 3.x repositories)
-* Provide plugins that fetch a set of Fedora resource URLs to fixity check (e.g., from the Fedora repository's triplestore, from Drupal, from a CSV file).
+* Provide plugins that fetch a set of Fedora resource URLs to fixity check (e.g., from the Fedora repository's triplestore, from Drupal, from a CSV file). A plugin to read resource URLs from a text file, `app:riprap:plugin:fetch:from:file`, already exists and is configured in `config/services.yaml`.
 * Provide plugins that persist data (e.g., to a RDBMS, to the Fedora repository, etc.). A plugin to persist fixity events to a relational database, `app:riprap:plugin:persist:to:database`, already exists and is configured in `config/services.yaml`.
-* Provide plugins that react to a fixity check failure (e.g., email an administrator)
+* Provide plugins that react to a fixity check failure (e.g., email an administrator, migrate fixity data from legacy sources such as Fedora 3.x repositories, etc.)
 
 ## REST API
 

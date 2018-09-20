@@ -43,7 +43,7 @@ class CheckFixityCommand extends ContainerAwareCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        // Fire plugins that get a list of resource URIs to validate.
+        // Fire plugins that get a list of resource URLs to validate.
         $resource_ids = array();
         if (count($this->fetchPlugins) > 0) {
             foreach ($this->fetchPlugins as $plugin_name) {
@@ -58,14 +58,14 @@ class CheckFixityCommand extends ContainerAwareCommand
             }
 
             // Split $ids_from_plugin on newline to get an array of URLs. Assumes that all
-            // fetchPlugins will return a string, which is probably correct since that seems
-            // to be a Symfony console command behavior.
+            // fetchPlugins will return a string, which is probably the case since Symfony
+            // console commands output strings, not arrays.
             $ids_from_plugin = $array = preg_split("/\r\n|\n|\r/", trim($ids_from_plugin));
             // Combine the output of all fetchPlugins.
             $resource_ids = array_merge($resource_ids, $ids_from_plugin);
         }
 
-        // Loop through the list of resource IDs and perform a fixity validation event on them.
+        // Loop through the list of resource URLs and perform a fixity validation event on them.
         foreach ($resource_ids as $resource_id) {
             $uuid4 = Uuid::uuid4();
             $event_uuid = $uuid4->toString();
@@ -78,16 +78,14 @@ class CheckFixityCommand extends ContainerAwareCommand
             // }
 
             // if (compare_digests($digest_value)) {
-                $outcome = 'success';
+                $outcome = 'success'; // test data
             // } else {
-                $outcome = 'failure';
+                // $outcome = 'failure';
             // }
 
             // Print output and log it.
             $this->logger->info("check_fixity ran.", array('event_uuid' => $event_uuid));
-            // test data
-            $result = 'success';
-            $output->writeln("Event $event_uuid validated fixity of $resource_id (result: $result).");
+            $output->writeln("Event $event_uuid validated fixity of $resource_id (result: $outcome).");
 
             // Execute plugins that persist event data.
             if (count($this->persistPlugins) > 0) {
@@ -105,7 +103,7 @@ class CheckFixityCommand extends ContainerAwareCommand
                 }
             }
 
-            // @todo: Execute plugins that react to a fixity validation event (email admin, etc.).
+            // @todo: Execute plugins that react to a fixity validation event (email admin, migrate legacy data, etc.).
         }
     }
 
