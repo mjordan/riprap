@@ -120,6 +120,37 @@ curl -v -X PATCH http://localhost:8000/api/resource/iamupdated
 
 Using Symfony's firewall to provide IP-based access to the API should provide sufficient security.
 
+# Sample Fedora API Specification endpoint
+
+To assist in development and testing, Riprap includes an enpoint that simulates the behaviour described in section [7.2](https://fcrepo.github.io/fcrepo-specification/#persistence-fixity) of the spec. If you start Symfony's test server as described above, this endpoint is available via `GET` or `HEAD` requests at `http://localhost:8000/examplerepository/rest/{id}`, where `{id}` is a number from 1-5. Calls to it should include a `Want-Digest` header with the value `SHA-1`, e.g.:
+
+`curl -v -X HEAD -H 'Want-Digest: SHA-1' http://localhost:8000/examplerepository/rest/2`
+
+If the `{id}` is valid, the response will contain the `Digest` header containing the specified SHA-1 hash:
+
+```
+*   Trying 127.0.0.1...
+* TCP_NODELAY set
+* Connected to localhost (127.0.0.1) port 8000 (#0)
+> HEAD /examplerepository/rest/2 HTTP/1.1
+> Host: localhost:8000
+> User-Agent: curl/7.58.0
+> Accept: */*
+> Want-Digest: SHA-1
+> 
+< HTTP/1.1 200 OK
+< Host: localhost:8000
+< Date: Thu, 20 Sep 2018 05:28:57 -0700
+< Connection: close
+< X-Powered-By: PHP/7.2.7-0ubuntu0.18.04.2
+< Cache-Control: no-cache, private
+< Date: Thu, 20 Sep 2018 12:28:57 GMT
+< Digest: b1d5781111d84f7b3fe45a0852e59758cd7a87e5
+< Content-Type: text/html; charset=UTF-8
+< 
+* Closing connection 0
+```
+
 # Message queue listener
 
 Riprap will also be able to listen to an ActiveMQ queue and generate corresponding fixity events for newly added or updated resources. Not implemented yet.
