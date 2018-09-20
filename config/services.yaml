@@ -3,10 +3,10 @@
 
 # Riprap-specific parameters start here.
 parameters:
-    app.fixity.host: 'https://example.com/fcrepo'    
+    app.fixity.host: 'https://localhost:8000/examplerepository/rest/'    
     app.fixity.method: 'HEAD'
 
-    app.plugins: ['app:riprap:plugin_foo']
+    app.plugins.persist: ['app:riprap:plugin:persist:to:database']
 
 services:
     # default configuration for services in *this* file

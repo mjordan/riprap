@@ -2,10 +2,11 @@
 // src/Command/CheckFixity.php
 namespace App\Command;
 
-use Symfony\Component\Console\Command\Command;
+// use Symfony\Component\Console\Command\Command;
+use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Input\InputOption;
+// use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Console\Input\ArrayInput;
 
@@ -13,7 +14,9 @@ use Psr\Log\LoggerInterface;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\Exception\UnsatisfiedDependencyException;
 
-class CheckFixityCommand extends Command
+use App\Entity\Event;
+
+class CheckFixityCommand extends ContainerAwareCommand
 {
     private $params;
 
@@ -23,7 +26,7 @@ class CheckFixityCommand extends Command
 
         // Set in the parameters section of config/services.yaml.
         $this->fixityHost = $this->params->get('app.fixity.host');
-        $this->plugins = $this->params->get('app.plugins');
+        $this->persistPlugins = $this->params->get('app.plugins.persist');
 
         // Set log output path in config/packages/{environment}/monolog.yaml
         $this->logger = $logger;
@@ -36,35 +39,56 @@ class CheckFixityCommand extends Command
         $this
             ->setName('app:riprap:check_fixity')
             ->setDescription('Says Hello world.');
-
-        // $this
-            // ->addOption('fixity_host', 'f', InputOption::VALUE_REQUIRED, 'Fully qualifid URL of the repository host', false);
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $uuid4 = Uuid::uuid4();
-        $uuid4_string = $uuid4->toString();
+        // @todo: Fire plugins that get a list of resource URIs to validate.
 
-        $now = date(DATE_RFC2822);
-        $output->writeln("Hi, it's $now, and your UUID is " . $uuid4_string . ".");
-        $output->writeln("Your fixity host is set to ". $this->fixityHost . ".");
+        // @todo: Loop through the list and validate them.
+        $resource_uris = array('http:foo.com');
+        foreach ($resource_uris as $resource_id) {
+            $uuid4 = Uuid::uuid4();
+            $event_uuid = $uuid4->toString();
 
-        // if ($input->getOption('fixity_host')) {
-            // $output->writeln("You indicated that your preferred host is " . $input->getOption('fixity_host'));
-        // }
+            $now_iso8601 = date('c');
 
-        $this->logger->info("check_fixity ran.", array('uuid' => $uuid4_string));
+            // Print output and log it.
+            $this->logger->info("check_fixity ran.", array('event_uuid' => $event_uuid));
+            // test data
+            $result = 'success';
+            $output->writeln("Event $event_uuid validated fixity of $resource_id (result: $result).");
 
-        // Execute plugins. @todo: Figure out how to provide configuration parameters for plugins, e.g., in services.yaml.
-        if (count($this->plugins) > 0) {
-            foreach ($this->plugins as $plugin_name) {
-                $plugin_command = $this->getApplication()->find($plugin_name);
-                $plugin_input = new ArrayInput(array());
-                $returnCode = $plugin_command->run($plugin_input, $output);
-                $this->logger->info("Plugin ran.", array('plugin_name' => $plugin_name, 'return_code' => $returnCode));
+            // @todo: Execute plugins that react to a fixity validation event (email admin, etc.).
+
+            // @todo: Execute plugins that persist event data.
+            if (count($this->persistPlugins) > 0) {
+                foreach ($this->persistPlugins as $plugin_name) {
+                    $plugin_command = $this->getApplication()->find($plugin_name);
+                    $plugin_input = new ArrayInput(array(
+                        '--resource_id' => $resource_id,
+                        '--timestamp' => $now_iso8601,
+                        '--event_uuid' => $event_uuid,
+                        '--digest_value' => 'somehashvaluefromCheckFixityCommand',
+                        '--outcome' => 'success',
+
+                    ));
+                    $returnCode = $plugin_command->run($plugin_input, $output);
+                    $this->logger->info("Persist plugin ran.", array('plugin_name' => $plugin_name, 'return_code' => $returnCode));
+                }
             }
+
+            /*
+            // Execute plugins. @todo: Figure out how to provide configuration parameters for plugins, e.g., in services.yaml.
+            if (count($this->plugins) > 0) {
+                foreach ($this->plugins as $plugin_name) {
+                    $plugin_command = $this->getApplication()->find($plugin_name);
+                    $plugin_input = new ArrayInput(array());
+                    $returnCode = $plugin_command->run($plugin_input, $output);
+                    $this->logger->info("Plugin ran.", array('plugin_name' => $plugin_name, 'return_code' => $returnCode));
+                }
+            }
+            */
         }
     }
-
 }

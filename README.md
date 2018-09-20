@@ -52,7 +52,7 @@ Riprap has a very basic plugin architecture. Some potential uses:
 
 * Provide plugins to assist in migrating fixity data from legacy sources (e.g., Fedora 3.x repositories)
 * Provide plugins that fetch a set of Fedora resource URLs to fixity check (e.g., from the Fedora repository's triplestore, from Drupal, from a CSV file).
-* Provide plugins that persist data (e.g., to a RDBMS, to the Fedora repository, etc.)
+* Provide plugins that persist data (e.g., to a RDBMS, to the Fedora repository, etc.). A plugin to persist fixity events to a relational database, `app:riprap:plugin:persist:to:database`, already exists and is configured in `config/services.yaml`.
 * Provide plugins that react to a fixity check failure (e.g., email an administrator)
 
 ## REST API
@@ -122,7 +122,7 @@ Using Symfony's firewall to provide IP-based access to the API should provide su
 
 # Sample Fedora API Specification endpoint
 
-To assist in development and testing, Riprap includes an enpoint that simulates the behaviour described in section [7.2](https://fcrepo.github.io/fcrepo-specification/#persistence-fixity) of the spec. If you start Symfony's test server as described above, this endpoint is available via `GET` or `HEAD` requests at `http://localhost:8000/examplerepository/rest/{id}`, where `{id}` is a number from 1-5. Calls to it should include a `Want-Digest` header with the value `SHA-1`, e.g.:
+To assist in development and testing, Riprap includes an enpoint that simulates the behaviour described in section [7.2](https://fcrepo.github.io/fcrepo-specification/#persistence-fixity) of the spec. If you start Symfony's test server as described above, this endpoint is available via `GET` or `HEAD` requests at `http://localhost:8000/examplerepository/rest/{id}`, where `{id}` is a number from 1-20. Calls to it should include a `Want-Digest` header with the value `SHA-1`, e.g.:
 
 `curl -v -X HEAD -H 'Want-Digest: SHA-1' http://localhost:8000/examplerepository/rest/2`
 
@@ -163,6 +163,7 @@ If you would like to generate some sample events, follow these instructions from
 
 In `.env`, open an editor and add the following line in the `doctrine-bundle` section: `DATABASE_URL=sqlite:///%kernel.project_dir%/var/data.db`. Then run the following commands:
 
+1. `rm var/data.db`
 1. `rm src/Migrations/*`
 1. `php bin/console -n make:migration`
 1. `php bin/console -n doctrine:migrations:migrate`
@@ -183,6 +184,7 @@ id|event_uuid|event_type|resource_id|datestamp|hash_algorithm|hash_value|event_o
 3|b64d7dac-db2d-4984-b72e-46f6f33d1d0a|verification|http://localhost:8000/examplerepository/rest/3|2018-09-19 05:23:20|sha1|310b86e0b62b828562fc91c7be5380a992b2786a|success
 4|f1ff2644-6f6d-4765-84ee-ae2e6ea85b1b|verification|http://localhost:8000/examplerepository/rest/4|2018-09-19 05:23:20|sha1|08a35293e09f508494096c1c1b3819edb9df50db|success
 5|59d47475-3c47-412e-a94a-dc5356e9ec14|verification|http://localhost:8000/examplerepository/rest/5|2018-09-19 05:23:20|sha1|450ddec8dd206c2e2ab1aeeaa90e85e51753b8b7|success
+[.. 20 rows total..]
 sqlite> 
 ```
 
