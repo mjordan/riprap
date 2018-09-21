@@ -119,7 +119,7 @@ curl -v -X PATCH http://localhost:8000/api/resource/iamupdated
 
 Using Symfony's firewall to provide IP-based access to the API should provide sufficient security.
 
-# Mock Fedora API Specification endpoint
+# Mock Fedora repository endpoint
 
 To assist in development and testing, Riprap includes an endpoint that simulates the behaviour described in section [7.2](https://fcrepo.github.io/fcrepo-specification/#persistence-fixity) of the spec. If you start Symfony's test server as described above, this endpoint is available via `GET` or `HEAD` requests at `http://localhost:8000/examplerepository/rest/{id}`, where `{id}` is a number from 1-20 (these are mock "resource IDs" included in the sample data). Calls to it should include a `Want-Digest` header with the value `SHA-1`, e.g.:
 

@@ -12,6 +12,8 @@ use Symfony\Component\Console\Output\BufferedOutput;
 use Psr\Log\LoggerInterface;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\Exception\UnsatisfiedDependencyException;
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\RequestException;
 
 use App\Entity\Event;
 
@@ -22,6 +24,8 @@ class CheckFixityCommand extends ContainerAwareCommand
     public function __construct(ParameterBagInterface $params = null, LoggerInterface $logger = null)
     {
         $this->params = $params;
+        $this->http_method = $this->params->get('app.fixity.method');
+        $this->fixity_algorithm = $this->params->get('app.fixity.algorithm');
 
         // Set in the parameters section of config/services.yaml.
         $this->fixityHost = $this->params->get('app.fixity.host'); // Do we need this if we are providing full resource URLs?
@@ -73,12 +77,6 @@ class CheckFixityCommand extends ContainerAwareCommand
             $event_uuid = $uuid4->toString();
             $now_iso8601 = date('c');
 
-            // @todo: Query the Fedora repository and get a resource's digest.
-            // if (!$digest_value = $this->get_resource_digest($resource_id)) {
-                // @todo: Log failure?
-                // continue;
-            // }
-
             // $this->compare_digests($resource_id, 'lkjlkdf');
             // if (compare_digests($digest_value)) {
                 $outcome = 'success'; // test data
@@ -91,22 +89,58 @@ class CheckFixityCommand extends ContainerAwareCommand
             $this->logger->info("check_fixity ran.", array('event_uuid' => $event_uuid));
             // $output->writeln("Event $event_uuid validated fixity of $resource_id (result: $outcome).");
 
-            // Execute plugins that persist event data.
+            // Execute plugins that persist event data. We execute them twice and pass in an 'operation' option,
+            // once to get the last digest for the resource and again to persist the event resulting from comparing
+            // that digest with a new one.
             if (count($this->persistPlugins) > 0) {
                 foreach ($this->persistPlugins as $persist_plugin_name) {
-                    $persist_plugin_command = $this->getApplication()->find($persist_plugin_name);
-                    $persist_plugin_input = new ArrayInput(array(
+                    // 'get_last_digest' operation.
+                    $get_last_digest_plugin_command = $this->getApplication()->find($persist_plugin_name);
+                    // Even though some of these options aren't used in the 'get_last_digest'
+                    // query, we need to pass them into the plugin.
+                    $get_last_digest_plugin_input = new ArrayInput(array(
                         '--resource_id' => $resource_id,
                         '--timestamp' => $now_iso8601,
+                        '--digest_algorithm' => $this->fixity_algorithm,
+                        '--event_uuid' => '',
+                        '--digest_value' => '',
+                        '--outcome' => '',
+                        '--operation' => 'get_last_digest',
+                    ));
+                    $get_last_digest_plugin_output = new BufferedOutput();
+                    $get_last_digest_plugin_return_code = $get_last_digest_plugin_command->run($get_last_digest_plugin_input, $get_last_digest_plugin_output);
+                    // Contains the last recorded digest for this resource. We compare this value with
+                    // the digest retrieved during the current fixity validation event.
+                    $last_digest_for_resource = $get_last_digest_plugin_output->fetch();
+                    $this->logger->info("Persist plugin ran.", array('plugin_name' => $persist_plugin_name, 'return_code' => $get_last_digest_plugin_return_code));
+
+                    // Query the Fedora repository to get a resource's digest.
+                    if ($current_digest_value = $this->get_resource_digest($resource_id)) {
+                        if ($last_digest_for_resource == $current_digest_value) {
+                             $outcome = 'success';
+                        } else {
+                            $outcome = 'failure';
+                        }   
+                    } else {
+                         // @todo: Log that we couldn't get the current digest from fedora, and continue?
+                    }
+
+                    // 'persist_new_event' operation.
+                    $persist_new_event_plugin_command = $this->getApplication()->find($persist_plugin_name);
+                    $persist_new_event_plugin_input = new ArrayInput(array(
+                        '--resource_id' => $resource_id,
+                        '--timestamp' => $now_iso8601,
+                        '--digest_algorithm' => $this->fixity_algorithm,
                         '--event_uuid' => $event_uuid,
                         '--digest_value' => 'somehashvaluefromCheckFixityCommand', // test data
                         '--outcome' => $outcome,
+                        '--operation' => 'persist_new_event',
                     ));
-                    $persist_plugin_output = new BufferedOutput();
-                    $persist_plugin_return_code = $persist_plugin_command->run($persist_plugin_input, $persist_plugin_output);
+                    $persist_new_event_plugin_output = new BufferedOutput();
+                    $persist_new_event_plugin_return_code = $persist_new_event_plugin_command->run($persist_new_event_plugin_input, $persist_new_event_plugin_output);
                     // Currently not used.
-                    $persist_plugin_output_string = $persist_plugin_output->fetch();
-                    $this->logger->info("Persist plugin ran.", array('plugin_name' => $persist_plugin_name, 'return_code' => $persist_plugin_return_code));
+                    $persist_new_event_plugin_output_string = $persist_new_event_plugin_output->fetch();
+                    $this->logger->info("Persist plugin ran.", array('plugin_name' => $persist_plugin_name, 'return_code' => $persist_new_event_plugin_return_code));
                 }
             }
 
@@ -117,6 +151,7 @@ class CheckFixityCommand extends ContainerAwareCommand
                     $postvalidate_plugin_input = new ArrayInput(array(
                         '--resource_id' => $resource_id,
                         '--timestamp' => $now_iso8601,
+                        '--digest_algorithm' => $this->fixity_algorithm,
                         '--event_uuid' => $event_uuid,
                         '--digest_value' => 'somehashvaluefromCheckFixityCommand', // test data
                         '--outcome' => $outcome,
@@ -143,28 +178,24 @@ class CheckFixityCommand extends ContainerAwareCommand
     */
     protected function get_resource_digest($url)
     {
-
-
-    }
-
-    /**
-     * Compares the newly retrieved digest with the last recorded digest value.
-     *
-     * @question: should this be part of the persist plugin, since the data we
-     * are using to compare the current fixity check to comes from where ever
-     * the previous data is persisted. Too bad we can't get if from $persist_plugin_output,
-     * since the persist plugin runs after we do the validation.
-     *
-     * @param sgring $url
-     *   The resource's URL.
-     * @param string $digest
-     *   The digest value.
-     *
-     * @return bool
-     *   True if the digests match, false if they do not.
-     */
-    protected function compare_digests($url, $digest)
-    {
-        return true; //test data
+        $client_defaults['http_errors'] = false;
+        // @todo: Wrap in try/catch.
+        $res = $client->request($this->http_method, $url, [
+            'http_errors' => false,
+            'headers' => ['Want-Digest' => $this->fixity_algorithm],
+        ]);
+        $status_code = $res->getStatusCode();
+        $allowed_codes = array(200);
+        if (in_array($status_code, $allowed_codes)) {
+            $digest_value = $res->getHeader('digest');
+            return $digest_value;
+        } else {
+            // If the HTTP status code is not 200, log it.
+            $this->logger->warning("Cannot retrieve digest.", array(
+                'plugin_name' => $persist_plugin_name,
+                'status_code' => $status_code,
+                'resource_id => $url'
+            ));
+        }
     }
 }

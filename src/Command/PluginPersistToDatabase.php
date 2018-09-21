@@ -36,29 +36,37 @@ class PluginPersistToDatabase extends ContainerAwareCommand
             ->addOption('timestamp', null, InputOption::VALUE_REQUIRED, 'ISO 8601 date when the fixity validation event occured.')
             ->addOption('resource_id', null, InputOption::VALUE_REQUIRED, 'Fully qualifid URL of the resource to validate.')
             ->addOption('event_uuid', null, InputOption::VALUE_REQUIRED, 'UUID of the fixity validation event.')
+            ->addOption('digest_algorithm', null, InputOption::VALUE_REQUIRED, 'Algorithm used to generate the digest.')
             ->addOption('digest_value', null, InputOption::VALUE_REQUIRED, 'Value of the digest retrieved from the Fedora repository.')
-            ->addOption('outcome', null, InputOption::VALUE_REQUIRED, 'Outcome of the event.');
+            ->addOption('outcome', null, InputOption::VALUE_REQUIRED, 'Outcome of the event.')
+            // Persist plugins are special in that they are executed twice, once to get the last digest for the resource
+            // and again to persist the event resulting from comparing that digest with a new one.
+            ->addOption('operation', null, InputOption::VALUE_REQUIRED, 'Either "get_last_digest" or "persist_new_event".');            
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-
-        $entityManager = $this->getContainer()->get('doctrine')->getEntityManager();
-        $event = new Event();
-        $event->setEventUuid($input->getOption('event_uuid'));
-        $event->setEventType('verification');
-        $event->setResourceId($input->getOption('resource_id'));
-        // @todo: Apparently PHP's DateTime class can't do valid ISO8601. The values end up
-        // like 2018-09-20 08:44:29, without the ISO8601-specific formatting, even if the date
-        // string value is valid 8601 (e.g. produced by date('c'). If we want ISO8601
-        // dates for our fixity validation events, we'll need a workaround.
-        $event->setDatestamp(\DateTime::createFromFormat(\DateTime::ISO8601, $input->getOption('timestamp')));
-        $event->setHashAlgorithm('SHA-1');
-        $event->setHashValue($input->getOption('digest_value'));
-        $event->setEventOutcome($input->getOption('outcome'));
-        $entityManager->persist($event);
-        $entityManager->flush();
-
-        $this->logger->info("PluginPersistToDatabase executed");
+        if ($input->getOption('operation') == 'get_last_digest') {
+            $repository = $this->getContainer()->get('doctrine')->getRepository(Event::class);
+            $event = $repository->findLastEvent($input->getOption('resource_id'), $input->getOption('digest_algorithm'));
+            $output->write($event->getHashValue());
+        }        
+        if ($input->getOption('operation') == 'persist_new_event') {
+            $entityManager = $this->getContainer()->get('doctrine')->getEntityManager();
+            $event = new Event();
+            $event->setEventUuid($input->getOption('event_uuid'));
+            $event->setEventType('verification');
+            $event->setResourceId($input->getOption('resource_id'));
+            // @todo: Apparently PHP's DateTime class can't do valid ISO8601. The values end up
+            // like 2018-09-20 08:44:29, without the ISO8601-specific formatting, even if the date
+            // string value is valid 8601 (e.g. produced by date('c'). If we want ISO8601
+            // dates for our fixity validation events, we'll need a workaround.
+            $event->setDatestamp(\DateTime::createFromFormat(\DateTime::ISO8601, $input->getOption('timestamp')));
+            $event->setHashAlgorithm($input->getOption('digest_algorithm'));
+            $event->setHashValue($input->getOption('digest_value'));
+            $event->setEventOutcome($input->getOption('outcome'));
+            $entityManager->persist($event);
+            $entityManager->flush();
+        }
     }
 }

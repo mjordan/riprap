@@ -22,6 +22,37 @@ class EventRepository extends ServiceEntityRepository
 //    /**
 //     * @return Event[] Returns an array of Event objects
 //     */
+
+    /**
+     * Finds the most recent entry in the 'event' table for the current resource.
+     *
+     * @todo: Is this query sufficient? Do we care if the last event had an outcome
+     * of 'failure'? We probably should specify a digest algorithm as well.
+     *
+     * @param string $resource_id
+     *   The URL of the resource.
+     * @param string $hash_algorithm
+     *   The hash algorithm (e.g, SHA-1).
+     *
+     * @return object
+     *   A single Event object, or null.
+     */
+    public function findLastEvent($resource_id, $hash_algorithm)
+    {
+        $qb = $this->createQueryBuilder('event')
+            ->andWhere('event.resource_id = :resource_id')
+            ->andWhere('event.hash_algorithm = :hash_algorithm')
+            ->setParameter('resource_id', $resource_id)
+            ->setParameter('hash_algorithm', $hash_algorithm)
+            ->orderBy('event.datestamp', 'DESC')
+            ->getQuery();
+
+            $qb->execute();
+
+            $event = $qb->setMaxResults(1)->getOneOrNullResult();
+            return $event;
+        ;
+    }
     /*
     public function findByExampleField($value)
     {
