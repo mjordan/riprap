@@ -47,15 +47,15 @@ class CheckFixityCommand extends ContainerAwareCommand
         // Fire plugins that get a list of resource URLs to validate.
         $resource_ids = array();
         if (count($this->fetchPlugins) > 0) {
-            foreach ($this->fetchPlugins as $plugin_name) {
-                $plugin_command = $this->getApplication()->find($plugin_name);
+            foreach ($this->fetchPlugins as $fetch_plugin_name) {
+                $fetch_plugin_command = $this->getApplication()->find($fetch_plugin_name);
                 // This class of plugin doesn't take any command-line options.
-                $plugin_input = new ArrayInput(array());
-                $plugin_output = new BufferedOutput();
+                $fetch_plugin_input = new ArrayInput(array());
+                $fetch_plugin_output = new BufferedOutput();
                 // @todo: Check $returnCode and log+continue if non-0.
-                $returnCode = $plugin_command->run($plugin_input, $plugin_output);
-                $ids_from_plugin = $plugin_output->fetch();
-                $this->logger->info("Fetch plugin ran.", array('plugin_name' => $plugin_name, 'return_code' => $returnCode));
+                $fetch_plugin_return_code = $fetch_plugin_command->run($fetch_plugin_input, $fetch_plugin_output);
+                $ids_from_plugin = $fetch_plugin_output->fetch();
+                $this->logger->info("Fetch plugin ran.", array('plugin_name' => $fetch_plugin_name, 'return_code' => $fetch_plugin_return_code));
             }
 
             // Split $ids_from_plugin on newline to get an array of URLs. Assumes that all
@@ -79,7 +79,7 @@ class CheckFixityCommand extends ContainerAwareCommand
                 // continue;
             // }
 
-            $this->compare_digests($resource_id, 'lkjlkdf');
+            // $this->compare_digests($resource_id, 'lkjlkdf');
             // if (compare_digests($digest_value)) {
                 $outcome = 'success'; // test data
             // } else {
@@ -93,33 +93,39 @@ class CheckFixityCommand extends ContainerAwareCommand
 
             // Execute plugins that persist event data.
             if (count($this->persistPlugins) > 0) {
-                foreach ($this->persistPlugins as $plugin_name) {
-                    $plugin_command = $this->getApplication()->find($plugin_name);
-                    $plugin_input = new ArrayInput(array(
+                foreach ($this->persistPlugins as $persist_plugin_name) {
+                    $persist_plugin_command = $this->getApplication()->find($persist_plugin_name);
+                    $persist_plugin_input = new ArrayInput(array(
                         '--resource_id' => $resource_id,
                         '--timestamp' => $now_iso8601,
                         '--event_uuid' => $event_uuid,
                         '--digest_value' => 'somehashvaluefromCheckFixityCommand', // test data
                         '--outcome' => $outcome,
                     ));
-                    $returnCode = $plugin_command->run($plugin_input, $output);
-                    $this->logger->info("Persist plugin ran.", array('plugin_name' => $plugin_name, 'return_code' => $returnCode));
+                    $persist_plugin_output = new BufferedOutput();
+                    $persist_plugin_return_code = $persist_plugin_command->run($persist_plugin_input, $persist_plugin_output);
+                    // Currently not used.
+                    $persist_plugin_output_string = $persist_plugin_output->fetch();
+                    $this->logger->info("Persist plugin ran.", array('plugin_name' => $persist_plugin_name, 'return_code' => $persist_plugin_return_code));
                 }
             }
 
             // Execute post-validate plugins that react to a fixity validation event (email admin, migrate legacy data, etc.).
             if (count($this->postValidatePlugins) > 0) {
-                foreach ($this->postValidatePlugins as $plugin_name) {
-                    $plugin_command = $this->getApplication()->find($plugin_name);
-                    $plugin_input = new ArrayInput(array(
+                foreach ($this->postValidatePlugins as $postvalidate_plugin_name) {
+                    $postvalidate_plugin_command = $this->getApplication()->find($postvalidate_plugin_name);
+                    $postvalidate_plugin_input = new ArrayInput(array(
                         '--resource_id' => $resource_id,
                         '--timestamp' => $now_iso8601,
                         '--event_uuid' => $event_uuid,
                         '--digest_value' => 'somehashvaluefromCheckFixityCommand', // test data
                         '--outcome' => $outcome,
                     ));
-                    $returnCode = $plugin_command->run($plugin_input, $output);
-                    $this->logger->info("Post validate plugin ran.", array('plugin_name' => $plugin_name, 'return_code' => $returnCode));
+                    $postvalidate_plugin_output = new BufferedOutput();
+                    $postvalidate_plugin_return_code = $postvalidate_plugin_command->run($postvalidate_plugin_input, $postvalidate_plugin_output);
+                    // Currently not used.
+                    $postvalidate_plugin_output_string = $postvalidate_plugin_output->fetch();                    
+                    $this->logger->info("Post validate plugin ran.", array('plugin_name' => $postvalidate_plugin_name, 'return_code' => $postvalidate_plugin_return_code));
                 }
             }
         }
@@ -143,6 +149,11 @@ class CheckFixityCommand extends ContainerAwareCommand
 
     /**
      * Compares the newly retrieved digest with the last recorded digest value.
+     *
+     * @question: should this be part of the persist plugin, since the data we
+     * are using to compare the current fixity check to comes from where ever
+     * the previous data is persisted. Too bad we can't get if from $persist_plugin_output,
+     * since the persist plugin runs after we do the validation.
      *
      * @param sgring $url
      *   The resource's URL.

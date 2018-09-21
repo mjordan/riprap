@@ -48,10 +48,10 @@ The location of Riprap's general log is conigurable in `config/packages/{environ
 
 ## Plugins
 
-Riprap relies on plugins to do most of its input and output. It supports plugins that:
+Riprap uses plugins to process most of its input and output. It supports plugins that:
 
 * Fetch a set of Fedora resource URLs to fixity check (e.g., from the Fedora repository's triplestore, from Drupal, from a CSV file). A plugin to read resource URLs from a text file, `app:riprap:plugin:fetch:from:file`, already exists and is configured in `config/services.yaml`.
-* Persist data (e.g., to a RDBMS, to the Fedora repository, etc.). A plugin to persist fixity events to a relational database, `app:riprap:plugin:persist:to:database`, already exists and is configured in `config/services.yaml`.
+* Persist data (e.g., to a RDBMS, to the Fedora repository, etc.) after performing a fixity check on each Fedora resource. A plugin to persist fixity events to a relational database, `app:riprap:plugin:persist:to:database`, already exists and is configured in `config/services.yaml`.
 * Execute after performing a fixity check on each Fedora resource (e.g., email an administrator on failure, migrate fixity data from legacy sources such as Fedora 3.x repositories, etc.). A plugin that sends an email on failure, `app:riprap:plugin:postvalidate:mailfailures` already exists and is confiured in `config/services.yaml`.
 
 ## REST API
@@ -119,7 +119,7 @@ curl -v -X PATCH http://localhost:8000/api/resource/iamupdated
 
 Using Symfony's firewall to provide IP-based access to the API should provide sufficient security.
 
-# Sample Fedora API Specification endpoint
+# Mock Fedora API Specification endpoint
 
 To assist in development and testing, Riprap includes an endpoint that simulates the behaviour described in section [7.2](https://fcrepo.github.io/fcrepo-specification/#persistence-fixity) of the spec. If you start Symfony's test server as described above, this endpoint is available via `GET` or `HEAD` requests at `http://localhost:8000/examplerepository/rest/{id}`, where `{id}` is a number from 1-20 (these are mock "resource IDs" included in the sample data). Calls to it should include a `Want-Digest` header with the value `SHA-1`, e.g.:
 
