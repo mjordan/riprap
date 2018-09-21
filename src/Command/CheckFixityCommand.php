@@ -51,10 +51,10 @@ class CheckFixityCommand extends ContainerAwareCommand
                 $plugin_command = $this->getApplication()->find($plugin_name);
                 // This class of plugin doesn't take any command-line options.
                 $plugin_input = new ArrayInput(array());
-                $output = new BufferedOutput();
+                $plugin_output = new BufferedOutput();
                 // @todo: Check $returnCode and log+continue if non-0.
-                $returnCode = $plugin_command->run($plugin_input, $output);
-                $ids_from_plugin = $output->fetch();
+                $returnCode = $plugin_command->run($plugin_input, $plugin_output);
+                $ids_from_plugin = $plugin_output->fetch();
                 $this->logger->info("Fetch plugin ran.", array('plugin_name' => $plugin_name, 'return_code' => $returnCode));
             }
 
@@ -67,6 +67,7 @@ class CheckFixityCommand extends ContainerAwareCommand
         }
 
         // Loop through the list of resource URLs and perform a fixity validation event on them.
+        $resource_id_counter = 0;
         foreach ($resource_ids as $resource_id) {
             $uuid4 = Uuid::uuid4();
             $event_uuid = $uuid4->toString();
@@ -78,6 +79,7 @@ class CheckFixityCommand extends ContainerAwareCommand
                 // continue;
             // }
 
+            $this->compare_digests($resource_id, 'lkjlkdf');
             // if (compare_digests($digest_value)) {
                 $outcome = 'success'; // test data
             // } else {
@@ -85,8 +87,9 @@ class CheckFixityCommand extends ContainerAwareCommand
             // }
 
             // Print output and log it.
+            $resource_id_counter++;
             $this->logger->info("check_fixity ran.", array('event_uuid' => $event_uuid));
-            $output->writeln("Event $event_uuid validated fixity of $resource_id (result: $outcome).");
+            // $output->writeln("Event $event_uuid validated fixity of $resource_id (result: $outcome).");
 
             // Execute plugins that persist event data.
             if (count($this->persistPlugins) > 0) {
@@ -119,9 +122,8 @@ class CheckFixityCommand extends ContainerAwareCommand
                     $this->logger->info("Post validate plugin ran.", array('plugin_name' => $plugin_name, 'return_code' => $returnCode));
                 }
             }
-
-
         }
+        $output->writeln("Riprap validated $resource_id_counter resources.");
     }
 
     /**
@@ -142,14 +144,16 @@ class CheckFixityCommand extends ContainerAwareCommand
     /**
      * Compares the newly retrieved digest with the last recorded digest value.
      *
-    * @param string $digest
-    *   The digest value.
-    *
-    * @return bool
-    *   True if the digests match, false if they do not.
-    */
-    protected function compare_digests($url)
+     * @param sgring $url
+     *   The resource's URL.
+     * @param string $digest
+     *   The digest value.
+     *
+     * @return bool
+     *   True if the digests match, false if they do not.
+     */
+    protected function compare_digests($url, $digest)
     {
-         return true; //test data
+        return true; //test data
     }
 }

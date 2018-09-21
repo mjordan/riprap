@@ -59,8 +59,6 @@ class PluginPersistToDatabase extends ContainerAwareCommand
         $entityManager->persist($event);
         $entityManager->flush();
 
-        $output->writeln("PluginPersistToDatabase executed");
-
         $this->logger->info("PluginPersistToDatabase executed");
     }
 }
