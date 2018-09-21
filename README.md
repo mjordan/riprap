@@ -6,6 +6,14 @@ A fixity-auditing microservice for [Fedora](https://fedora.info/spec/)-based rep
 
 Addresses https://github.com/Islandora-CLAW/CLAW/issues/847.
 
+### Events
+
+Riprap records fixity events of the following types, all from from the Library of Congress' "[Event Type Collection](http://id.loc.gov/vocabulary/preservation/eventType/collection_PREMIS)" vocabulary:
+
+* [ingestion](http://id.loc.gov/vocabulary/preservation/eventType/ing); digest value (using a specific digest algorithm) of a resource at the time of its ingestion into the repository
+* [fixity check](http://id.loc.gov/vocabulary/preservation/eventType/fix): periodic events comparing the last recorded digest value of a specific algorithm
+* [deletion](http://id.loc.gov/vocabulary/preservation/eventType/del): digest value (using a specific digest algorithm) of a resource at the time of its deletion from the repository`
+
 ![Overview](docs/images/overview.png)
 
 ## Requirements
@@ -32,7 +40,6 @@ Since this is a Symfony application, you need to configure some things:
 * In `config/packages/security.yaml`, configure access to the REST API (see below).
 
 ## Usage
-
 
 `php [path to riprap]/bin/console app:riprap:check_fixity`
 

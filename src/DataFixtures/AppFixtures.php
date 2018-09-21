@@ -36,10 +36,10 @@ class AppFixtures extends Fixture
         for ($i = 1; $i <= 20; $i++) {
             $event = new Event();
             $event->setEventUuid($data[$i]['uuid']);
-            $event->setEventType('verification');
+            $event->setEventType('ing');
             $event->setResourceId('http://localhost:8000/examplerepository/rest/' . $i);
             $event->setDatestamp(\DateTime::createFromFormat("Y-m-d H:i:s", '2018-09-19 05:23:20'));
-            $event->setHashAlgorithm('sha1');
+            $event->setHashAlgorithm('SHA-1');
             $event->setHashValue($data[$i]['SHA-1']);
             $event->setEventOutcome('success');
 

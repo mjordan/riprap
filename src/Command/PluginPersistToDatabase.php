@@ -49,13 +49,15 @@ class PluginPersistToDatabase extends ContainerAwareCommand
         if ($input->getOption('operation') == 'get_last_digest') {
             $repository = $this->getContainer()->get('doctrine')->getRepository(Event::class);
             $event = $repository->findLastEvent($input->getOption('resource_id'), $input->getOption('digest_algorithm'));
-            $output->write($event->getHashValue());
+            if (!is_null($event)) {
+                $output->write($event->getHashValue());
+            }
         }        
-        if ($input->getOption('operation') == 'persist_new_event') {
+        if ($input->getOption('operation') == 'persist_fix_event') {
             $entityManager = $this->getContainer()->get('doctrine')->getEntityManager();
             $event = new Event();
             $event->setEventUuid($input->getOption('event_uuid'));
-            $event->setEventType('verification');
+            $event->setEventType('fix');
             $event->setResourceId($input->getOption('resource_id'));
             // @todo: Apparently PHP's DateTime class can't do valid ISO8601. The values end up
             // like 2018-09-20 08:44:29, without the ISO8601-specific formatting, even if the date

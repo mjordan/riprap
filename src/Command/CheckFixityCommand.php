@@ -114,6 +114,7 @@ class CheckFixityCommand extends ContainerAwareCommand
                     $last_digest_for_resource = $get_last_digest_plugin_output->fetch();
                     $this->logger->info("Persist plugin ran.", array('plugin_name' => $persist_plugin_name, 'return_code' => $get_last_digest_plugin_return_code));
 
+/*
                     // Query the Fedora repository to get a resource's digest.
                     if ($current_digest_value = $this->get_resource_digest($resource_id)) {
                         if ($last_digest_for_resource == $current_digest_value) {
@@ -124,23 +125,24 @@ class CheckFixityCommand extends ContainerAwareCommand
                     } else {
                          // @todo: Log that we couldn't get the current digest from fedora, and continue?
                     }
+*/
 
-                    // 'persist_new_event' operation.
-                    $persist_new_event_plugin_command = $this->getApplication()->find($persist_plugin_name);
-                    $persist_new_event_plugin_input = new ArrayInput(array(
+                    // 'persist_fix_event' operation.
+                    $persist_fix_event_plugin_command = $this->getApplication()->find($persist_plugin_name);
+                    $persist_fix_event_plugin_input = new ArrayInput(array(
                         '--resource_id' => $resource_id,
                         '--timestamp' => $now_iso8601,
                         '--digest_algorithm' => $this->fixity_algorithm,
                         '--event_uuid' => $event_uuid,
                         '--digest_value' => 'somehashvaluefromCheckFixityCommand', // test data
                         '--outcome' => $outcome,
-                        '--operation' => 'persist_new_event',
+                        '--operation' => 'persist_fix_event',
                     ));
-                    $persist_new_event_plugin_output = new BufferedOutput();
-                    $persist_new_event_plugin_return_code = $persist_new_event_plugin_command->run($persist_new_event_plugin_input, $persist_new_event_plugin_output);
+                    $persist_fix_event_plugin_output = new BufferedOutput();
+                    $persist_fix_event_plugin_return_code = $persist_fix_event_plugin_command->run($persist_fix_event_plugin_input, $persist_fix_event_plugin_output);
                     // Currently not used.
-                    $persist_new_event_plugin_output_string = $persist_new_event_plugin_output->fetch();
-                    $this->logger->info("Persist plugin ran.", array('plugin_name' => $persist_plugin_name, 'return_code' => $persist_new_event_plugin_return_code));
+                    $persist_fix_event_plugin_output_string = $persist_fix_event_plugin_output->fetch();
+                    $this->logger->info("Persist plugin ran.", array('plugin_name' => $persist_plugin_name, 'return_code' => $persist_fix_event_plugin_return_code));
                 }
             }
 
