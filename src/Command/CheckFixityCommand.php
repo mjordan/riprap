@@ -27,6 +27,7 @@ class CheckFixityCommand extends ContainerAwareCommand
         $this->fixityHost = $this->params->get('app.fixity.host'); // Do we need this if we are providing full resource URLs?
         $this->fetchPlugins = $this->params->get('app.plugins.fetch');
         $this->persistPlugins = $this->params->get('app.plugins.persist');
+        $this->postValidatePlugins = $this->params->get('app.plugins.postvalidate');
 
         // Set log output path in config/packages/{environment}/monolog.yaml
         $this->logger = $logger;
@@ -103,7 +104,23 @@ class CheckFixityCommand extends ContainerAwareCommand
                 }
             }
 
-            // @todo: Execute plugins that react to a fixity validation event (email admin, migrate legacy data, etc.).
+            // Execute post-validate plugins that react to a fixity validation event (email admin, migrate legacy data, etc.).
+            if (count($this->postValidatePlugins) > 0) {
+                foreach ($this->postValidatePlugins as $plugin_name) {
+                    $plugin_command = $this->getApplication()->find($plugin_name);
+                    $plugin_input = new ArrayInput(array(
+                        '--resource_id' => $resource_id,
+                        '--timestamp' => $now_iso8601,
+                        '--event_uuid' => $event_uuid,
+                        '--digest_value' => 'somehashvaluefromCheckFixityCommand', // test data
+                        '--outcome' => $outcome,
+                    ));
+                    $returnCode = $plugin_command->run($plugin_input, $output);
+                    $this->logger->info("Post validate plugin ran.", array('plugin_name' => $plugin_name, 'return_code' => $returnCode));
+                }
+            }
+
+
         }
     }
 

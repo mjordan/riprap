@@ -10,6 +10,10 @@ parameters:
     app.plugins.fetch.from.file.paths: ['Resources/riprap_resource_ids.txt']
 
     app.plugins.persist: ['app:riprap:plugin:persist:to:database']
+ 
+    app.plugins.postvalidate: ['app:riprap:plugin:postvalidate:mailfailures']
+    app.plugins.postvalidate.mailfailures.from: 'from@example.com'
+    app.plugins.postvalidate.mailfailures.to: 'to@example.com'
 
 services:
     # default configuration for services in *this* file

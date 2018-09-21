@@ -48,11 +48,11 @@ The location of Riprap's general log is conigurable in `config/packages/{environ
 
 ## Plugins
 
-Riprap relies on plugins to do most of its input and output. It will:
+Riprap relies on plugins to do most of its input and output. It supports plugins that:
 
-* Provide plugins that fetch a set of Fedora resource URLs to fixity check (e.g., from the Fedora repository's triplestore, from Drupal, from a CSV file). A plugin to read resource URLs from a text file, `app:riprap:plugin:fetch:from:file`, already exists and is configured in `config/services.yaml`.
-* Provide plugins that persist data (e.g., to a RDBMS, to the Fedora repository, etc.). A plugin to persist fixity events to a relational database, `app:riprap:plugin:persist:to:database`, already exists and is configured in `config/services.yaml`.
-* Provide plugins that react to a fixity check failure (e.g., email an administrator, migrate fixity data from legacy sources such as Fedora 3.x repositories, etc.)
+* Fetch a set of Fedora resource URLs to fixity check (e.g., from the Fedora repository's triplestore, from Drupal, from a CSV file). A plugin to read resource URLs from a text file, `app:riprap:plugin:fetch:from:file`, already exists and is configured in `config/services.yaml`.
+* Persist data (e.g., to a RDBMS, to the Fedora repository, etc.). A plugin to persist fixity events to a relational database, `app:riprap:plugin:persist:to:database`, already exists and is configured in `config/services.yaml`.
+* Execute after performing a fixity check on each Fedora resource (e.g., email an administrator on failure, migrate fixity data from legacy sources such as Fedora 3.x repositories, etc.). A plugin that sends an email on failure, `app:riprap:plugin:postvalidate:mailfailures` already exists and is confiured in `config/services.yaml`.
 
 ## REST API
 

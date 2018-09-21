@@ -23,6 +23,7 @@
         "symfony/monolog-bundle": "*",
         "symfony/orm-pack": "*",
         "symfony/security-bundle": "*",
+        "symfony/swiftmailer-bundle": "*",
         "symfony/messenger": "*"
     },
     "require-dev": {
