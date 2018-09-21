@@ -4,17 +4,17 @@ A fixity-auditing microservice for [Fedora](https://fedora.info/spec/)-based rep
 
 ## Overview
 
-Addresses https://github.com/Islandora-CLAW/CLAW/issues/847.
+Addresses https://github.com/Islandora-CLAW/CLAW/issues/847. Developed as a successfor to Islandora 7.x's [Checksum Checker](https://github.com/Islandora/islandora_checksum_checker) module, it can be used to provide fixity validation for any repository compliant with the Fedora API Specification.
+
+![Overview](docs/images/overview.png)
 
 ### Events
 
 Riprap records fixity events of the following types, all from from the Library of Congress' "[Event Type Collection](http://id.loc.gov/vocabulary/preservation/eventType/collection_PREMIS)" vocabulary:
 
-* [ingestion](http://id.loc.gov/vocabulary/preservation/eventType/ing); digest value (using a specific digest algorithm) of a resource at the time of its ingestion into the repository
+* [ingestion](http://id.loc.gov/vocabulary/preservation/eventType/ing): digest value (using a specific digest algorithm) of a resource at the time of its ingestion into the repository
 * [fixity check](http://id.loc.gov/vocabulary/preservation/eventType/fix): periodic events comparing the last recorded digest value of a specific algorithm
 * [deletion](http://id.loc.gov/vocabulary/preservation/eventType/del): digest value (using a specific digest algorithm) of a resource at the time of its deletion from the repository`
-
-![Overview](docs/images/overview.png)
 
 ## Requirements
 
