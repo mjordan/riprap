@@ -76,13 +76,6 @@ class CheckFixityCommand extends ContainerAwareCommand
             $event_uuid = $uuid4->toString();
             $now_iso8601 = date('c');
 
-            // $this->compare_digests($resource_id, 'lkjlkdf');
-            // if (compare_digests($digest_value)) {
-                $outcome = 'success'; // test data
-            // } else {
-                // $outcome = 'failure';
-            // }
-
             // Print output and log it.
             $resource_id_counter++;
             $this->logger->info("check_fixity ran.", array('event_uuid' => $event_uuid));
@@ -111,9 +104,13 @@ class CheckFixityCommand extends ContainerAwareCommand
                     // Contains the last recorded digest for this resource. We compare this value with
                     // the digest retrieved during the current fixity validation event.
                     $last_digest_for_resource = $get_last_digest_plugin_output->fetch();
-                    $this->logger->info("Persist plugin ran.", array('plugin_name' => $persist_plugin_name, 'return_code' => $get_last_digest_plugin_return_code));
+                    $this->logger->info("Persist plugin ran.", array(
+                        'plugin_name' => $persist_plugin_name,
+                        'return_code' => $get_last_digest_plugin_return_code
+                    ));
 
-                    // Query the Fedora repository to get a resource's digest.
+                    // Query the Fedora repository to get a resource's digest and compare it
+                    // to the last known value.
                     if ($current_digest_value = $this->get_resource_digest($resource_id)) {
                         if ($last_digest_for_resource == $current_digest_value) {
                              $outcome = 'success';
@@ -180,19 +177,19 @@ class CheckFixityCommand extends ContainerAwareCommand
     {
         $client = new \GuzzleHttp\Client();
         // @todo: Wrap in try/catch.
-        $res = $client->request($this->http_method, $url, [
+        $response = $client->request($this->http_method, $url, [
             'http_errors' => false,
             'headers' => ['Want-Digest' => $this->fixity_algorithm],
         ]);
-        $status_code = $res->getStatusCode();
+        $status_code = $response->getStatusCode();
         $allowed_codes = array(200);
         if (in_array($status_code, $allowed_codes)) {
-            $digest_header_values = $res->getHeader('digest');
+            $digest_header_values = $response->getHeader('digest');
             // Assumes there is only one 'digiest' header - is this always the case?
             return $digest_header_values[0];
         } else {
             // If the HTTP status code is not in the allowed list, log it.
-            $this->logger->warning("check_fixity cannot retrieve digest.", array(
+            $this->logger->warning("check_fixity cannot retrieve digest from repository.", array(
                 'resource_id => $url',
                 'status_code' => $status_code,
             ));
