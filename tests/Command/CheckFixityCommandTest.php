@@ -16,7 +16,7 @@ class CheckFixityCommandTest extends KernelTestCase
 
         $application->add(new CheckFixityCommand());
 
-        // We need to access configuration parameters, e.g. app.fixity.host.
+        // We need to access configuration parameters, e.g. app.fixity.algorithm.
         // How? config/services_test.yaml and config/packages/test/services.yaml
         // don't seem to be providing parameters, since in both cases, $this->params
         // in the CheckFixity object is null.
@@ -30,7 +30,7 @@ class CheckFixityCommandTest extends KernelTestCase
 
         // The output of the command in the console.
         $output = $commandTester->getDisplay();
-        $this->assertContains('Your fixity host is set to', $output);
+        $this->assertContains('Your fixity algorithm is set to', $output);
 
     }
 }

@@ -1,7 +1,7 @@
 # Riprap-specific parameters for test environment start here.
 parameters:
-    app.fixity.host: 'https://example.com/fcrepo'    
     app.fixity.method: 'HEAD'
+    app.fixity.algorithm: 'SHA-1'
 
     app.plugins: ['app:riprap:plugin_foo']
 

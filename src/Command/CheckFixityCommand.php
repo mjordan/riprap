@@ -28,7 +28,6 @@ class CheckFixityCommand extends ContainerAwareCommand
         $this->fixity_algorithm = $this->params->get('app.fixity.algorithm');
 
         // Set in the parameters section of config/services.yaml.
-        $this->fixityHost = $this->params->get('app.fixity.host'); // Do we need this if we are providing full resource URLs?
         $this->fetchPlugins = $this->params->get('app.plugins.fetch');
         $this->persistPlugins = $this->params->get('app.plugins.persist');
         $this->postValidatePlugins = $this->params->get('app.plugins.postvalidate');
@@ -114,7 +113,6 @@ class CheckFixityCommand extends ContainerAwareCommand
                     $last_digest_for_resource = $get_last_digest_plugin_output->fetch();
                     $this->logger->info("Persist plugin ran.", array('plugin_name' => $persist_plugin_name, 'return_code' => $get_last_digest_plugin_return_code));
 
-/*
                     // Query the Fedora repository to get a resource's digest.
                     if ($current_digest_value = $this->get_resource_digest($resource_id)) {
                         if ($last_digest_for_resource == $current_digest_value) {
@@ -123,9 +121,9 @@ class CheckFixityCommand extends ContainerAwareCommand
                             $outcome = 'failure';
                         }   
                     } else {
-                         // @todo: Log that we couldn't get the current digest from fedora, and continue?
+                        // Resource ID and HTTP status code are logged in $this->get_resource_digest().
+                        continue;
                     }
-*/
 
                     // 'persist_fix_event' operation.
                     $persist_fix_event_plugin_command = $this->getApplication()->find($persist_plugin_name);
@@ -134,7 +132,7 @@ class CheckFixityCommand extends ContainerAwareCommand
                         '--timestamp' => $now_iso8601,
                         '--digest_algorithm' => $this->fixity_algorithm,
                         '--event_uuid' => $event_uuid,
-                        '--digest_value' => 'somehashvaluefromCheckFixityCommand', // test data
+                        '--digest_value' => $current_digest_value,
                         '--outcome' => $outcome,
                         '--operation' => 'persist_fix_event',
                     ));
@@ -155,7 +153,7 @@ class CheckFixityCommand extends ContainerAwareCommand
                         '--timestamp' => $now_iso8601,
                         '--digest_algorithm' => $this->fixity_algorithm,
                         '--event_uuid' => $event_uuid,
-                        '--digest_value' => 'somehashvaluefromCheckFixityCommand', // test data
+                        '--digest_value' => $current_digest_value,
                         '--outcome' => $outcome,
                     ));
                     $postvalidate_plugin_output = new BufferedOutput();
@@ -180,7 +178,7 @@ class CheckFixityCommand extends ContainerAwareCommand
     */
     protected function get_resource_digest($url)
     {
-        $client_defaults['http_errors'] = false;
+        $client = new \GuzzleHttp\Client();
         // @todo: Wrap in try/catch.
         $res = $client->request($this->http_method, $url, [
             'http_errors' => false,
@@ -189,15 +187,16 @@ class CheckFixityCommand extends ContainerAwareCommand
         $status_code = $res->getStatusCode();
         $allowed_codes = array(200);
         if (in_array($status_code, $allowed_codes)) {
-            $digest_value = $res->getHeader('digest');
-            return $digest_value;
+            $digest_header_values = $res->getHeader('digest');
+            // Assumes there is only one 'digiest' header - is this always the case?
+            return $digest_header_values[0];
         } else {
-            // If the HTTP status code is not 200, log it.
-            $this->logger->warning("Cannot retrieve digest.", array(
-                'plugin_name' => $persist_plugin_name,
+            // If the HTTP status code is not in the allowed list, log it.
+            $this->logger->warning("check_fixity cannot retrieve digest.", array(
+                'resource_id => $url',
                 'status_code' => $status_code,
-                'resource_id => $url'
             ));
+            return false;
         }
     }
 }

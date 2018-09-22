@@ -1,20 +1,23 @@
-# This file is the entry point to configure your own services.
-# Files in the packages/ subdirectory configure your dependencies.
+# Symfony 4 services.yaml file for Riprap.
 
 # Riprap-specific parameters start here.
 parameters:
-    app.fixity.host: 'https://localhost:8000/examplerepository/rest/'    
     app.fixity.method: 'HEAD'
     app.fixity.algorithm: 'SHA-1'
 
+    # To not register any fetch plugins, use app.plugins.fetch []
     app.plugins.fetch: ['app:riprap:plugin:fetch:from:file']
     app.plugins.fetch.from.file.paths: ['Resources/riprap_resource_ids.txt']
 
+    # To not register any persist plugins, use app.plugins.persist []
     app.plugins.persist: ['app:riprap:plugin:persist:to:database']
- 
+  
+    # To not register any postvalidation plugins, use app.plugins.postvalidatea []
     app.plugins.postvalidate: ['app:riprap:plugin:postvalidate:mailfailures']
     app.plugins.postvalidate.mailfailures.from: 'from@example.com'
     app.plugins.postvalidate.mailfailures.to: 'to@example.com'
+
+# Do not modify any of the values below this line.
 
 services:
     # default configuration for services in *this* file

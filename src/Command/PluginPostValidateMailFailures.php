@@ -7,6 +7,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\Console\Input\ArrayInput;
 
 use Psr\Log\LoggerInterface;
 
@@ -46,23 +47,25 @@ class PluginPostValidateMailFailures extends ContainerAwareCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         if ($input->getOption('outcome') == 'failure') {
+            $resource_id = $input->getOption('resource_id');
+            $timestamp = $input->getOption('timestamp');
             $mail_command = $this->getApplication()->find('swiftmailer:email:send');
             $input = new ArrayInput(array(
                 '--from' => $this->email_from,
                 '--to' => $this->email_to,
-                '--subject' => "Fixity validation failure on " . $input->getOption('resource_id'),
+                '--subject' => "Fixity validation failure on " . $resource_id,
                 '--body' => "Riprap has detected a fixity validation failure on " . 
-                    $input->getOption('resource_id') .
+                    $resource_id .
                     " (event UUID " .
                     $input->getOption('event_uuid') .
                     "), which occured at " . 
-                    $input->getOption('timestamp'),
+                    $timestamp,
             ));
-            $returnCode = $plugin_command->run($input, $output);
+            $returnCode = $mail_command->run($input, $output);
             $this->logger->info("Mail Failure plugin generated a message", array(
                 'recipient' => $this->email_to,
-                'resource ID' => $input->getOption('resource_id'),
-                'timestamp' => $input->getOption('timestamp')
+                'resource ID' => $resource_id,
+                'timestamp' => $timestamp,
             ));
         }
     }
