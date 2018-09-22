@@ -52,9 +52,7 @@ For ongoing fixity checking, riprap should be run from a cronjob.
 
 # Generating sample events
 
-As stated above, for now we use SQLite as our database. You do not need to create or populate the database; it is just a placeholder for now until we integrate it into our tests.
-
-If you would like to generate some sample events, follow these instructions from within the `riprap` directory:
+As stated above, for now we use SQLite as our database. If you would like to generate some sample events, follow these instructions from within the `riprap` directory:
 
 In `.env`, open an editor and add the following line in the `doctrine-bundle` section: `DATABASE_URL=sqlite:///%kernel.project_dir%/var/data.db`. Then run the following commands:
 
@@ -74,26 +72,26 @@ Enter ".help" for usage hints.
 sqlite> .headers on
 sqlite> select * from event;
 id|event_uuid|event_type|resource_id|datestamp|hash_algorithm|hash_value|event_outcome
-1|2a40d01e-d0fc-49c0-8755-990c90e21f13|verification|http://localhost:8000/examplerepository/rest/1|2018-09-19 05:23:20|sha1|5a5b0f9b7d3f8fc84c3cef8fd8efaaa6c70d75ab|success
-2|27099e67-e355-4308-b618-e880900ee16a|verification|http://localhost:8000/examplerepository/rest/2|2018-09-19 05:23:20|sha1|b1d5781111d84f7b3fe45a0852e59758cd7a87e5|success
-3|b64d7dac-db2d-4984-b72e-46f6f33d1d0a|verification|http://localhost:8000/examplerepository/rest/3|2018-09-19 05:23:20|sha1|310b86e0b62b828562fc91c7be5380a992b2786a|success
-4|f1ff2644-6f6d-4765-84ee-ae2e6ea85b1b|verification|http://localhost:8000/examplerepository/rest/4|2018-09-19 05:23:20|sha1|08a35293e09f508494096c1c1b3819edb9df50db|success
-5|59d47475-3c47-412e-a94a-dc5356e9ec14|verification|http://localhost:8000/examplerepository/rest/5|2018-09-19 05:23:20|sha1|450ddec8dd206c2e2ab1aeeaa90e85e51753b8b7|success
+1|2a40d01e-d0fc-49c0-8755-990c90e21f13|ing|http://localhost:8000/examplerepository/rest/1|2018-09-19 05:23:20|SHA-1|5a5b0f9b7d3f8fc84c3cef8fd8efaaa6c70d75ab|success
+2|27099e67-e355-4308-b618-e880900ee16a|ing|http://localhost:8000/examplerepository/rest/2|2018-09-19 05:23:20|SHA-1|b1d5781111d84f7b3fe45a0852e59758cd7a87e5|success
+3|b64d7dac-db2d-4984-b72e-46f6f33d1d0a|ing|http://localhost:8000/examplerepository/rest/3|2018-09-19 05:23:20|SHA-1|310b86e0b62b828562fc91c7be5380a992b2786a|success
+4|f1ff2644-6f6d-4765-84ee-ae2e6ea85b1b|ing|http://localhost:8000/examplerepository/rest/4|2018-09-19 05:23:20|SHA-1|08a35293e09f508494096c1c1b3819edb9df50db|success
+5|59d47475-3c47-412e-a94a-dc5356e9ec14|ing|http://localhost:8000/examplerepository/rest/5|2018-09-19 05:23:20|SHA-1|450ddec8dd206c2e2ab1aeeaa90e85e51753b8b7|success
 [.. 20 rows total..]
 sqlite> 
 ```
 
 ## Logging
 
-The location of Riprap's general log is conigurable in `config/packages/{environment}/monolog.yaml`. Riprap will provide a variety of ways to log activity, e.g., email someone if a fixity mismatch is detected.
+The location of Riprap's general log is conigurable in `config/packages/{environment}/monolog.yaml`.
 
 ## Plugins
 
 Riprap uses plugins to process most of its input and output. It supports plugins that:
 
-* Fetch a set of Fedora resource URLs to fixity check (e.g., from the Fedora repository's triplestore, from Drupal, from a CSV file). A plugin to read resource URLs from a text file, `app:riprap:plugin:fetch:from:file`, already exists and is configured in `config/services.yaml`.
+* Fetch a set of Fedora resource URLs to fixity check (e.g., from the Fedora repository's triplestore, from Drupal, from a CSV file). A sample plugin that reads resource URLs from a text file, `app:riprap:plugin:fetch:from:file`, already exists and is configured in `config/services.yaml`.
 * Persist data (e.g., to a RDBMS, to the Fedora repository, etc.) after performing a fixity check on each Fedora resource. A plugin to persist fixity events to a relational database, `app:riprap:plugin:persist:to:database`, already exists and is configured in `config/services.yaml`.
-* Execute after performing a fixity check on each Fedora resource (e.g., email an administrator on failure, migrate fixity data from legacy sources such as Fedora 3.x repositories, etc.). A plugin that sends an email on failure, `app:riprap:plugin:postvalidate:mailfailures` already exists and is confiured in `config/services.yaml`.
+* Execute after performing a fixity check on each Fedora resource. Two plugins of this type are available: a plugin that sends an email on failure, `app:riprap:plugin:postvalidate:mailfailures`, and a (not yet complete) plugin that will be able to migrate fixity events from a legacy system (in this case, Fedora 3.x AUDIT data). Both plugins are confiured in `config/services.yaml`.
 
 ## REST API
 

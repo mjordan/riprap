@@ -13,7 +13,7 @@ parameters:
     app.plugins.persist: ['app:riprap:plugin:persist:to:database']
   
     # To not register any postvalidation plugins, use app.plugins.postvalidatea []
-    app.plugins.postvalidate: ['app:riprap:plugin:postvalidate:mailfailures']
+    app.plugins.postvalidate: ['app:riprap:plugin:postvalidate:mailfailures', 'app:riprap:plugin:postvalidate:migratefedora3auditlog']
     app.plugins.postvalidate.mailfailures.from: 'from@example.com'
     app.plugins.postvalidate.mailfailures.to: 'to@example.com'
 
