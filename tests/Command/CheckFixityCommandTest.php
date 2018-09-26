@@ -7,19 +7,29 @@ use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Console\Tester\CommandTester;
 
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
+
 class CheckFixityCommandTest extends KernelTestCase
 {
     public function testExecute()
     {
+        // I expected parameters defined in config/services_test.yaml and
+        // config/packages/test/services.yaml to be available in Command tests,
+        // but they are not (in both cases, $this->params in the CheckFixity
+        // object is null). To work around this, we need to define configuration
+        // parameters locally within the test.
+        $params = new ParameterBag(array(
+            'app.fixity.method' => 'HEAD',
+            'app.fixity.algorithm' => 'SHA-1',
+            'app.plugins.fetch' => array(),
+            'app.plugins.persist' => array(),
+            'app.plugins.postvalidate' => array())
+        );
+
         $kernel = self::bootKernel();
         $application = new Application($kernel);
 
-        $application->add(new CheckFixityCommand());
-
-        // We need to access configuration parameters, e.g. app.fixity.algorithm.
-        // How? config/services_test.yaml and config/packages/test/services.yaml
-        // don't seem to be providing parameters, since in both cases, $this->params
-        // in the CheckFixity object is null.
+        $application->add(new CheckFixityCommand($params));
 
         $command = $application->find('app:riprap:check_fixity');
 
@@ -30,7 +40,7 @@ class CheckFixityCommandTest extends KernelTestCase
 
         // The output of the command in the console.
         $output = $commandTester->getDisplay();
-        $this->assertContains('Your fixity algorithm is set to', $output);
+        $this->assertContains('Riprap validated', $output);
 
     }
 }
