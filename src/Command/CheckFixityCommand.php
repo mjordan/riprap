@@ -64,7 +64,7 @@ class CheckFixityCommand extends ContainerAwareCommand
             // Split $ids_from_plugin on newline to get an array of URLs. Assumes that all
             // fetchPlugins will return a string, which is probably the case since Symfony
             // console commands output strings, not arrays.
-            $ids_from_plugin = $array = preg_split("/\r\n|\n|\r/", trim($ids_from_plugin));
+            $ids_from_plugin = preg_split("/\r\n|\n|\r/", trim($ids_from_plugin));
             // Combine the output of all fetchPlugins.
             $resource_ids = array_merge($resource_ids, $ids_from_plugin);
         }

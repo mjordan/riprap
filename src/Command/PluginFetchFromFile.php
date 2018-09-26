@@ -16,7 +16,7 @@ class PluginFetchFromFile extends ContainerAwareCommand
 {
     private $params;
 
-    public function __construct(ParameterBagInterface $params, LoggerInterface $logger)
+    public function __construct(ParameterBagInterface $params = null, LoggerInterface $logger = null)
     {
         $this->params = $params;
         $this->input_files = $this->params->get('app.plugins.fetch.from.file.paths');
@@ -43,6 +43,9 @@ class PluginFetchFromFile extends ContainerAwareCommand
           }
         }
 
-        $this->logger->info("PluginPersistToDatabase executed");
+        // $this->logger is null while testing.
+        if ($this->logger) {
+            $this->logger->info("PluginPersistToDatabase executed");
+        }
     }
 }
