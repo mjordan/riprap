@@ -2,28 +2,28 @@
 
 namespace App\Tests\Command;
 
-use App\Command\PluginFetchFromFile;
+use App\Command\PluginFetchResourceListFromFile;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Console\Tester\CommandTester;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 
-class PluginFetchFromFileTest extends KernelTestCase
+class PluginFetchResourceListFromFileTest extends KernelTestCase
 {
     public $params;
 
     public function testExecute()
     {
         $params = new ParameterBag(array(
-            'app.plugins.fetch.from.file.paths' => array('resources/riprap_resource_ids.txt')
+            'app.plugins.fetchresourcelist.from.file.paths' => array('resources/riprap_resource_ids.txt')
         ));
         $this->params = $params;
 
         $kernel = self::bootKernel();
         $application = new Application($kernel);
 
-        $application->add(new PluginFetchFromFile($params));
+        $application->add(new PluginFetchResourceListFromFile($params));
 
         $command = $application->find('app:riprap:plugin:fetch:from:file');
 

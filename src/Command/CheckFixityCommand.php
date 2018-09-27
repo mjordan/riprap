@@ -28,7 +28,7 @@ class CheckFixityCommand extends ContainerAwareCommand
         $this->fixity_algorithm = $this->params->get('app.fixity.algorithm');
 
         // Set in the parameters section of config/services.yaml.
-        $this->fetchPlugins = $this->params->get('app.plugins.fetch');
+        $this->fetchResourceListPlugins = $this->params->get('app.plugins.fetchresourcelist');
         $this->persistPlugins = $this->params->get('app.plugins.persist');
         $this->postValidatePlugins = $this->params->get('app.plugins.postvalidate');
 
@@ -49,20 +49,20 @@ class CheckFixityCommand extends ContainerAwareCommand
     {
         // Fire plugins that get a list of resource URLs to validate.
         $resource_ids = array();
-        if (count($this->fetchPlugins) > 0) {
-            foreach ($this->fetchPlugins as $fetch_plugin_name) {
-                $fetch_plugin_command = $this->getApplication()->find($fetch_plugin_name);
+        if (count($this->fetchResourceListPlugins) > 0) {
+            foreach ($this->fetchResourceListPlugins as $fetchresourcelist_plugin_name) {
+                $fetchresourcelist_plugin_command = $this->getApplication()->find($fetchresourcelist_plugin_name);
                 // This class of plugin doesn't take any command-line options.
-                $fetch_plugin_input = new ArrayInput(array());
-                $fetch_plugin_output = new BufferedOutput();
+                $fetchresourcelist_plugin_input = new ArrayInput(array());
+                $fetchresourcelist_plugin_output = new BufferedOutput();
                 // @todo: Check $returnCode and log+continue if non-0.
-                $fetch_plugin_return_code = $fetch_plugin_command->run($fetch_plugin_input, $fetch_plugin_output);
-                $ids_from_plugin = $fetch_plugin_output->fetch();
-                $this->logger->info("Fetch plugin ran.", array('plugin_name' => $fetch_plugin_name, 'return_code' => $fetch_plugin_return_code));
+                $fetchresourcelist_plugin_return_code = $fetchresourcelist_plugin_command->run($fetchresourcelist_plugin_input, $fetchresourcelist_plugin_output);
+                $ids_from_plugin = $fetchresourcelist_plugin_output->fetch();
+                $this->logger->info("Fetchresourcelist plugin ran.", array('plugin_name' => $fetchresourcelist_plugin_name, 'return_code' => $fetchresourcelist_plugin_return_code));
             }
 
             // Split $ids_from_plugin on newline to get an array of URLs. Assumes that all
-            // fetchPlugins will return a string, which is probably the case since Symfony
+            // fetchresourcelistPlugins will return a string, which is probably the case since Symfony
             // console commands output strings, not arrays.
             $ids_from_plugin = preg_split("/\r\n|\n|\r/", trim($ids_from_plugin));
             // Combine the output of all fetchPlugins.

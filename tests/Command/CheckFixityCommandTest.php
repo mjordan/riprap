@@ -21,7 +21,7 @@ class CheckFixityCommandTest extends KernelTestCase
         $params = new ParameterBag(array(
             'app.fixity.method' => 'HEAD',
             'app.fixity.algorithm' => 'SHA-1',
-            'app.plugins.fetch' => array(),
+            'app.plugins.fetchresourcelist' => array(),
             'app.plugins.persist' => array(),
             'app.plugins.postvalidate' => array())
         );

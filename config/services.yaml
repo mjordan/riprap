@@ -5,9 +5,9 @@ parameters:
     app.fixity.method: 'HEAD'
     app.fixity.algorithm: 'SHA-1'
 
-    # To not register any fetch plugins, use app.plugins.fetch []
-    app.plugins.fetch: ['app:riprap:plugin:fetch:from:file']
-    app.plugins.fetch.from.file.paths: ['resources/riprap_resource_ids.txt']
+    # To not register any fetchresourcelist plugins, use app.plugins.fetch []
+    app.plugins.fetchresourcelist: ['app:riprap:plugin:fetchresourcelist:from:file']
+    app.plugins.fetchresourcelist.from.file.paths: ['resources/riprap_resource_ids.txt']
 
     # To not register any persist plugins, use app.plugins.persist []
     app.plugins.persist: ['app:riprap:plugin:persist:to:database']
