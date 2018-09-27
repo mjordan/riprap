@@ -22,6 +22,7 @@ class CheckFixityCommandTest extends KernelTestCase
             'app.fixity.method' => 'HEAD',
             'app.fixity.algorithm' => 'SHA-1',
             'app.plugins.fetchresourcelist' => array(),
+            'app.plugins.fetchdigest' => array(),
             'app.plugins.persist' => array(),
             'app.plugins.postvalidate' => array())
         );
