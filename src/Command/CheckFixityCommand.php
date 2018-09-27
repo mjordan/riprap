@@ -29,6 +29,7 @@ class CheckFixityCommand extends ContainerAwareCommand
 
         // Set in the parameters section of config/services.yaml.
         $this->fetchResourceListPlugins = $this->params->get('app.plugins.fetchresourcelist');
+        $this->fetchDigestPlugin = $this->params->get('app.plugins.fetchdigest');
         $this->persistPlugins = $this->params->get('app.plugins.persist');
         $this->postValidatePlugins = $this->params->get('app.plugins.postvalidate');
 
@@ -109,16 +110,38 @@ class CheckFixityCommand extends ContainerAwareCommand
                         'return_code' => $get_last_digest_plugin_return_code
                     ));
 
-                    // Query the Fedora repository to get a resource's digest and compare it
-                    // to the last known value.
-                    if ($current_digest_value = $this->get_resource_digest($resource_id)) {
-                        if ($last_digest_for_resource == $current_digest_value) {
+                    // Get the resource's digest and compare it to the last known value. Currently we
+                    // only allow one fetchdigest plugin pre resource_id.
+                    $get_current_digest_plugin_command = $this->getApplication()->find($this->fetchDigestPlugin);
+                    $get_current_digest_plugin_input = new ArrayInput(array(
+                        '--resource_id' => $resource_id
+                    ));
+                    $get_current_digest_plugin_output = new BufferedOutput();
+                    $get_current_digest_plugin_return_code = $get_current_digest_plugin_command->run($get_current_digest_plugin_input, $get_current_digest_plugin_output);
+                    $current_digest_plugin_return_value = trim($get_current_digest_plugin_output->fetch());
+                    $this->logger->info("Fetchdigest plugin ran.", array(
+                        'plugin_name' => $this->fetchDigestPlugin,
+                        'return_code' => $get_current_digest_plugin_return_code,
+                        'http_response_code' => $current_digest_plugin_return_value,
+                    ));
+
+                    // If there was a problem, the fetchdigest plugin will return an HTTP response code,
+                    // so we check the lenght of the plugin's output to determine success or failure.
+                    if (strlen($current_digest_plugin_return_value) > 3) {
+                        if ($last_digest_for_resource == $current_digest_plugin_return_value) {
                              $outcome = 'suc';
+                             $current_digest_value = $current_digest_plugin_return_value;
+                             var_dump($current_digest_value);   
                         } else {
                             $outcome = 'fail';
+                            $current_digest_value = $current_digest_plugin_return_value;
                         }   
                     } else {
-                        // Resource ID and HTTP status code are logged in $this->get_resource_digest().
+                        $this->logger->error("Fetchdigest plugin ran.", array(
+                            'plugin_name' => $fetchdigest_plugin_name,
+                            'return_code' => $get_current_digest_plugin_return_code,
+                            'http_response_code' => $current_digest_plugin_return_value,
+                        ));
                         continue;
                     }
 
@@ -150,7 +173,7 @@ class CheckFixityCommand extends ContainerAwareCommand
                         '--timestamp' => $now_iso8601,
                         '--digest_algorithm' => $this->fixity_algorithm,
                         '--event_uuid' => $event_uuid,
-                        '--digest_value' => $current_digest_value,
+                        '--digest_value' => $current_digest_plugin_return_value,
                         '--outcome' => $outcome,
                     ));
                     $postvalidate_plugin_output = new BufferedOutput();

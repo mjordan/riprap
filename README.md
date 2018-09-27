@@ -1,10 +1,10 @@
 # Riprap
 
-A fixity-auditing microservice for Fedora-based repositories.
+A fixity-auditing microservice.
 
 ## Overview
 
-Addresses https://github.com/Islandora-CLAW/CLAW/issues/847. Developed as a successfor to Islandora 7.x's [Checksum Checker](https://github.com/Islandora/islandora_checksum_checker) module, it can be used to provide fixity validation for any repository compliant with the [Fedora API Specification](https://fedora.info/spec/).
+Addresses https://github.com/Islandora-CLAW/CLAW/issues/847. Developed as a successfor to Islandora 7.x's [Checksum Checker](https://github.com/Islandora/islandora_checksum_checker) module, it is intended primarily to be used with repositories compliant with the [Fedora API Specification](https://fedora.info/spec/), but can be used to provide fixity validation for other repositories as well (e.g., a OCFL repository).
 
 ![Overview](docs/images/overview.png)
 
@@ -74,11 +74,11 @@ Enter ".help" for usage hints.
 sqlite> .headers on
 sqlite> select * from event;
 id|event_uuid|event_type|resource_id|datestamp|hash_algorithm|hash_value|event_outcome
-1|2a40d01e-d0fc-49c0-8755-990c90e21f13|ing|http://localhost:8000/examplerepository/rest/1|2018-09-19 05:23:20|SHA-1|5a5b0f9b7d3f8fc84c3cef8fd8efaaa6c70d75ab|success
-2|27099e67-e355-4308-b618-e880900ee16a|ing|http://localhost:8000/examplerepository/rest/2|2018-09-19 05:23:20|SHA-1|b1d5781111d84f7b3fe45a0852e59758cd7a87e5|success
-3|b64d7dac-db2d-4984-b72e-46f6f33d1d0a|ing|http://localhost:8000/examplerepository/rest/3|2018-09-19 05:23:20|SHA-1|310b86e0b62b828562fc91c7be5380a992b2786a|success
-4|f1ff2644-6f6d-4765-84ee-ae2e6ea85b1b|ing|http://localhost:8000/examplerepository/rest/4|2018-09-19 05:23:20|SHA-1|08a35293e09f508494096c1c1b3819edb9df50db|success
-5|59d47475-3c47-412e-a94a-dc5356e9ec14|ing|http://localhost:8000/examplerepository/rest/5|2018-09-19 05:23:20|SHA-1|450ddec8dd206c2e2ab1aeeaa90e85e51753b8b7|success
+1|2a40d01e-d0fc-49c0-8755-990c90e21f13|ing|http://localhost:8000/examplerepository/rest/1|2018-09-19 05:23:20|SHA-1|5a5b0f9b7d3f8fc84c3cef8fd8efaaa6c70d75ab|suc
+2|27099e67-e355-4308-b618-e880900ee16a|ing|http://localhost:8000/examplerepository/rest/2|2018-09-19 05:23:20|SHA-1|b1d5781111d84f7b3fe45a0852e59758cd7a87e5|suc
+3|b64d7dac-db2d-4984-b72e-46f6f33d1d0a|ing|http://localhost:8000/examplerepository/rest/3|2018-09-19 05:23:20|SHA-1|310b86e0b62b828562fc91c7be5380a992b2786a|suc
+4|f1ff2644-6f6d-4765-84ee-ae2e6ea85b1b|ing|http://localhost:8000/examplerepository/rest/4|2018-09-19 05:23:20|SHA-1|08a35293e09f508494096c1c1b3819edb9df50db|suc
+5|59d47475-3c47-412e-a94a-dc5356e9ec14|ing|http://localhost:8000/examplerepository/rest/5|2018-09-19 05:23:20|SHA-1|450ddec8dd206c2e2ab1aeeaa90e85e51753b8b7|suc
 [.. 20 rows total..]
 sqlite> 
 ```
@@ -92,6 +92,7 @@ The location of Riprap's general log is conigurable in `config/packages/{environ
 Riprap uses plugins to process most of its input and output. It supports plugins that:
 
 * Fetch a set of Fedora resource URLs to fixity check (e.g., from the Fedora repository's triplestore, from Drupal, from a CSV file). A sample plugin that reads resource URLs from a text file, `app:riprap:plugin:fetch:from:file`, already exists and is configured in `config/services.yaml`.
+* Query an external utility or service to get the digest of the current resource. A plugin that queries a Fedora API Specification-compliant repository, `app:riprap:plugin:fetchdigest:from:fedoraapi`, and is configured in `config/services.yaml`.
 * Persist data (e.g., to a RDBMS, to the Fedora repository, etc.) after performing a fixity check on each Fedora resource. A plugin to persist fixity events to a relational database, `app:riprap:plugin:persist:to:database`, already exists and is configured in `config/services.yaml`.
 * Execute after performing a fixity check on each Fedora resource. Two plugins of this type are available: a plugin that sends an email on failure, `app:riprap:plugin:postvalidate:mailfailures`, and a (not yet complete) plugin that will be able to migrate fixity events from a legacy system (in this case, Fedora 3.x AUDIT data). Both plugins are confiured in `config/services.yaml`.
 
