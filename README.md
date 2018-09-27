@@ -2,7 +2,7 @@
 
 ## Overview
 
-A fixity-auditing microservice that addresses https://github.com/Islandora-CLAW/CLAW/issues/847. Developed as a successfor to Islandora 7.x's [Checksum Checker](https://github.com/Islandora/islandora_checksum_checker) module, it is intended primarily to be used with repositories compliant with the [Fedora API Specification](https://fedora.info/spec/), but can be used to provide fixity validation for other repositories as well (e.g., an [OCFL](https://ocfl.io/) repository).
+A fixity-auditing microservice that addresses https://github.com/Islandora-CLAW/CLAW/issues/847. Developed as a successfor to Islandora 7.x's [Checksum Checker](https://github.com/Islandora/islandora_checksum_checker) module, it is intended primarily to be used with repositories compliant with the [Fedora API Specification](https://fedora.info/spec/), but can be used to provide fixity validation for other repositories as well (e.g., an [OCFL](https://ocfl.io/) repository). It periodcally requests fixity digests for resources from a repository and compares the digest with a previously request digest. It then persists the outocome of that comparison so the process can be repeated again. Riprap also provides a REST interface so that external applications (in Islandora's case, Drupal) can retrieve fixity checking event data for use in reports, etc.
 
 ![Overview](docs/images/overview.png)
 
@@ -24,7 +24,7 @@ Riprap is still in early development, but all the major functional components ar
 
 * PHP 7.1.3 or higher
 * [composer](https://getcomposer.org/)
-* Optionally, SQLite if you want to generate sample fixity event data.
+* SQLite (other RDBMSs will be supported soon).
 
 ## Installation
 
