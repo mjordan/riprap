@@ -131,7 +131,6 @@ class CheckFixityCommand extends ContainerAwareCommand
                         if ($last_digest_for_resource == $current_digest_plugin_return_value) {
                              $outcome = 'suc';
                              $current_digest_value = $current_digest_plugin_return_value;
-                             var_dump($current_digest_value);   
                         } else {
                             $outcome = 'fail';
                             $current_digest_value = $current_digest_plugin_return_value;
