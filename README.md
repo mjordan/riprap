@@ -18,7 +18,7 @@ All events must have a value of `suc` or `fail` (using values from the PREMIS Ev
 
 ## Current status
 
-Riprap is still in early development, but all the major functional components are working using test/sampl data. Riprap is not yet ready for production but will be by December 2018.
+Riprap is still in early development, but all the major functional components are working using test/sample data. Riprap is not yet ready for production but will be by December 2018.
 
 ## Requirements
 
@@ -64,22 +64,27 @@ Enter ".help" for usage hints.
 sqlite> .headers on
 sqlite> select * from event;
 id|event_uuid|event_type|resource_id|datestamp|hash_algorithm|hash_value|event_outcome
-1|2a40d01e-d0fc-49c0-8755-990c90e21f13|ing|http://localhost:8000/examplerepository/rest/1|2018-09-19 05:23:20|SHA-1|5a5b0f9b7d3f8fc84c3cef8fd8efaaa6c70d75ab|suc
-2|27099e67-e355-4308-b618-e880900ee16a|ing|http://localhost:8000/examplerepository/rest/2|2018-09-19 05:23:20|SHA-1|b1d5781111d84f7b3fe45a0852e59758cd7a87e5|suc
-3|b64d7dac-db2d-4984-b72e-46f6f33d1d0a|ing|http://localhost:8000/examplerepository/rest/3|2018-09-19 05:23:20|SHA-1|310b86e0b62b828562fc91c7be5380a992b2786a|suc
-4|f1ff2644-6f6d-4765-84ee-ae2e6ea85b1b|ing|http://localhost:8000/examplerepository/rest/4|2018-09-19 05:23:20|SHA-1|08a35293e09f508494096c1c1b3819edb9df50db|suc
-5|59d47475-3c47-412e-a94a-dc5356e9ec14|ing|http://localhost:8000/examplerepository/rest/5|2018-09-19 05:23:20|SHA-1|450ddec8dd206c2e2ab1aeeaa90e85e51753b8b7|suc
+1|2a40d01e-d0fc-49c0-8755-990c90e21f13|ing|http://example.com/examplerepository/rest/1|2018-09-19 05:23:20|SHA-1|5a5b0f9b7d3f8fc84c3cef8fd8efaaa6c70d75ab|suc
+2|27099e67-e355-4308-b618-e880900ee16a|ing|http://example.com/examplerepository/rest/2|2018-09-19 05:23:20|SHA-1|b1d5781111d84f7b3fe45a0852e59758cd7a87e5|suc
+3|b64d7dac-db2d-4984-b72e-46f6f33d1d0a|ing|http://example.com/examplerepository/rest/3|2018-09-19 05:23:20|SHA-1|310b86e0b62b828562fc91c7be5380a992b2786a|suc
+4|f1ff2644-6f6d-4765-84ee-ae2e6ea85b1b|ing|http://example.com/examplerepository/rest/4|2018-09-19 05:23:20|SHA-1|08a35293e09f508494096c1c1b3819edb9df50db|suc
+5|59d47475-3c47-412e-a94a-dc5356e9ec14|ing|http://example.com/examplerepository/rest/5|2018-09-19 05:23:20|SHA-1|450ddec8dd206c2e2ab1aeeaa90e85e51753b8b7|suc
 [.. 20 rows total..]
 sqlite> 
 ```
 
 ## Usage
 
-First, start the web server by running `php bin/console server:start`. Then, run the `app:riprap:check_fixity` command, e.g., `php [path to riprap]/bin/console app:riprap:check_fixity`. If you repeat the SQL query above, you will see five more events in your database.
+From within the `riprap` directory, start the web server by running the `server:start` command. Then, run the `app:riprap:check_fixity` command, e.g.:
+
+* `php bin/console server:start`
+* `php bin/console app:riprap:check_fixity`.
+
+If you repeat the SQL query above, you will see five more events in your database.
 
 ### REST API
 
-Preliminary scaffolding is in place for a simple HTTP REST API, which will allow external applications like Drupal to retrieve fixity validation data on particular Fedora resources and to add new and updated fixity validation data. For example, a `GET` request to:
+Preliminary scaffolding is in place for a simple HTTP REST API, which will allow external applications like Drupal to retrieve fixity validation data on specific Fedora resources and to add new and updated fixity validation data. For example, a `GET` request to:
 
 `curl -v -H "Resource:http://example.com/examplerepository/rest/17" http://localhost:8000/api/resource`
 
