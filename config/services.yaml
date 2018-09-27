@@ -7,7 +7,7 @@ parameters:
 
     # To not register any fetch plugins, use app.plugins.fetch []
     app.plugins.fetch: ['app:riprap:plugin:fetch:from:file']
-    app.plugins.fetch.from.file.paths: ['Resources/riprap_resource_ids.txt']
+    app.plugins.fetch.from.file.paths: ['resources/riprap_resource_ids.txt']
 
     # To not register any persist plugins, use app.plugins.persist []
     app.plugins.persist: ['app:riprap:plugin:persist:to:database']

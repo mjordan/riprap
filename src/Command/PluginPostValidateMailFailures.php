@@ -17,7 +17,7 @@ class PluginPostValidateMailFailures extends ContainerAwareCommand
 {
     private $params;
 
-    public function __construct(ParameterBagInterface $params, LoggerInterface $logger)
+    public function __construct(ParameterBagInterface $params = null, LoggerInterface $logger = null)
     {
         $this->params = $params;
         $this->email_from = $this->params->get('app.plugins.postvalidate.mailfailures.from');

@@ -27,7 +27,7 @@ class PluginPostValidateMigrateFedora3AuditLog extends ContainerAwareCommand
 {
     private $params;
 
-    public function __construct(ParameterBagInterface $params, LoggerInterface $logger)
+    public function __construct(ParameterBagInterface $params = null, LoggerInterface $logger = null)
     {
         $this->params = $params;
 
@@ -55,11 +55,12 @@ class PluginPostValidateMigrateFedora3AuditLog extends ContainerAwareCommand
     {
         # Note: If this plugin is enabled in services.yaml, it executes but has no effect.
 
-        # Workflow:
+        # See PluginPostValidateMigrateFedora3AuditLogTest.php for code that implements the following logic.
+
         # For the current resource, retrieve the binary resource containing its Fedora 3.x AUDIT datastream.
         # Parse out the audit records (XPath $audit_xml->xpath('//audit:record').
         # For each record
-            # Get its datastamp (XPath $record->xpath('./audit:date')[0]).
+            # Get its timestamp (XPath $record->xpath('./audit:date')[0]).
             # Get its justtfication (XPath $record->xpath('./audit:justification')[0]).
             # If the record's justification is 'PREMIS:eventType=fixity check', get the digest algorithm and event outcome from the justification.
             # Persist the record to Riprap's database.

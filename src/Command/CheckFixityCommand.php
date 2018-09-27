@@ -113,9 +113,9 @@ class CheckFixityCommand extends ContainerAwareCommand
                     // to the last known value.
                     if ($current_digest_value = $this->get_resource_digest($resource_id)) {
                         if ($last_digest_for_resource == $current_digest_value) {
-                             $outcome = 'success';
+                             $outcome = 'suc';
                         } else {
-                            $outcome = 'failure';
+                            $outcome = 'fail';
                         }   
                     } else {
                         // Resource ID and HTTP status code are logged in $this->get_resource_digest().

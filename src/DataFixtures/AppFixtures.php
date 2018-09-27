@@ -41,7 +41,7 @@ class AppFixtures extends Fixture
             $event->setDatestamp(\DateTime::createFromFormat("Y-m-d H:i:s", '2018-09-19 05:23:20'));
             $event->setHashAlgorithm('SHA-1');
             $event->setHashValue($data[$i]['SHA-1']);
-            $event->setEventOutcome('success');
+            $event->setEventOutcome('suc');
 
             $manager->persist($event);
         }

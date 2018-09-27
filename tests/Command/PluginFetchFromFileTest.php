@@ -16,7 +16,7 @@ class PluginFetchFromFileTest extends KernelTestCase
     public function testExecute()
     {
         $params = new ParameterBag(array(
-            'app.plugins.fetch.from.file.paths' => array('Resources/riprap_resource_ids.txt')
+            'app.plugins.fetch.from.file.paths' => array('resources/riprap_resource_ids.txt')
         ));
         $this->params = $params;
 

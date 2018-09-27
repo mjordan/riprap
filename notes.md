@@ -10,8 +10,8 @@ To create a fixity auditing service for fcrepo-spec compliant repositories that 
 * resource_id uri
 * datestamp  - should be timezoned
 * hash_algorithm
-* hash_value
-* event_outcome (success, failure, indeterminate)
+* hash_value - we should allow null here because legacy events may not provdide a hash.
+* event_outcome (success, failure, indeterminate) - there is (apprently) a PREMIS vocabulary for this, as mentioned during the PREMIS Implementers Fair at iPres 2018.
 
 # Misc. Notes
 
