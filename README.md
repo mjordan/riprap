@@ -6,7 +6,7 @@ A fixity-auditing microservice that addresses https://github.com/Islandora-CLAW/
 
 ![Overview](docs/images/overview.png)
 
-Riprap generates and records fixity check events as described in the "Fixity, integrity, authenticity" section of the [PREMIS Data Dictionary for Preservation Metadata, Version 3.0](https://www.loc.gov/standards/premis/v3/premis-3-0-final.pdf). It can also record fixity information available during "ingestion" events and at the time of "deletion" events. The three typs of events are members of the Library of Congress' "[Event Type Collection](http://id.loc.gov/vocabulary/preservation/eventType/collection_PREMIS)" vocabulary:
+Riprap generates and records fixity check events as described in the "Fixity, integrity, authenticity" section of the [PREMIS Data Dictionary for Preservation Metadata, Version 3.0](https://www.loc.gov/standards/premis/v3/premis-3-0-final.pdf). It can also record fixity information available during "ingestion" events and available at the time of "deletion" events. The three typs of events are members of the Library of Congress' "[Event Type Collection](http://id.loc.gov/vocabulary/preservation/eventType/collection_PREMIS)" vocabulary:
 
 * [ingestion](http://id.loc.gov/vocabulary/preservation/eventType/ing)
 * [fixity check](http://id.loc.gov/vocabulary/preservation/eventType/fix)
@@ -64,7 +64,7 @@ Enter ".help" for usage hints.
 sqlite> .headers on
 sqlite> select * from event;
 id|event_uuid|event_type|resource_id|datestamp|hash_algorithm|hash_value|event_outcome
-1|2a40d01e-d0fc-49c0-8755-990c90e21f13|ing|http://example.com/examplerepository/rest/1|2018-09-19 05:23:20|SHA-1|5a5b0f9b7d3f8fc84c3cef8fd8efaaa6c70d75ab|suc
+1|2a40d01e-d0fc-49c0-8755-990c90e21f13|ing|http:///examplerepository/rest/1|2018-09-19 05:23:20|SHA-1|5a5b0f9b7d3f8fc84c3cef8fd8efaaa6c70d75ab|suc
 2|27099e67-e355-4308-b618-e880900ee16a|ing|http://example.com/examplerepository/rest/2|2018-09-19 05:23:20|SHA-1|b1d5781111d84f7b3fe45a0852e59758cd7a87e5|suc
 3|b64d7dac-db2d-4984-b72e-46f6f33d1d0a|ing|http://example.com/examplerepository/rest/3|2018-09-19 05:23:20|SHA-1|310b86e0b62b828562fc91c7be5380a992b2786a|suc
 4|f1ff2644-6f6d-4765-84ee-ae2e6ea85b1b|ing|http://example.com/examplerepository/rest/4|2018-09-19 05:23:20|SHA-1|08a35293e09f508494096c1c1b3819edb9df50db|suc
@@ -148,9 +148,9 @@ curl -v -X POST -H "Resource:http://example.com/examplerepository/rest/17" http:
 
 ### Mock Fedora repository endpoint
 
-To assist in development and testing, Riprap includes an endpoint that simulates the behaviour described in section [7.2](https://fcrepo.github.io/fcrepo-specification/#persistence-fixity) of the spec. If you start Symfony's test server as described above, this endpoint is available via `GET` or `HEAD` requests at `http://localhost:8000/examplerepository/rest/{id}`, where `{id}` is a number from 1-20 (these are mock "resource IDs" included in the sample data). Calls to it should include a `Want-Digest` header with the value `SHA-1`, e.g.:
+To assist in development and testing, Riprap includes an endpoint that simulates the behaviour described in section [7.2](https://fcrepo.github.io/fcrepo-specification/#persistence-fixity) of the spec. If you start Symfony's test server as described above, this endpoint is available via `GET` or `HEAD` requests at `http://localhost:8000/mockrepository/rest/{id}`, where `{id}` is a number from 1-20 (these are mock "resource IDs" included in the sample data). Calls to it should include a `Want-Digest` header with the value `SHA-1`, e.g.:
 
-`curl -v -X HEAD -H 'Want-Digest: SHA-1' http://localhost:8000/examplerepository/rest/2`
+`curl -v -X HEAD -H 'Want-Digest: SHA-1' http://localhost:8000/mockrepository/rest/2`
 
 If the `{id}` is valid, the response will contain the `Digest` header containing the specified SHA-1 hash:
 
@@ -158,7 +158,7 @@ If the `{id}` is valid, the response will contain the `Digest` header containing
 *   Trying 127.0.0.1...
 * TCP_NODELAY set
 * Connected to localhost (127.0.0.1) port 8000 (#0)
-> HEAD /examplerepository/rest/2 HTTP/1.1
+> HEAD /mockrepository/rest/2 HTTP/1.1
 > Host: localhost:8000
 > User-Agent: curl/7.58.0
 > Accept: */*
@@ -196,8 +196,8 @@ Riprap will also be able to listen to an ActiveMQ queue and generate correspondi
 
 ### Security
 
-* Riprap requests fixity digests from other applications via HTTP or some other mechanism. For example, if Riprap is used with a Fedora-based repository, it needs access to the repository's REST interface in order to request resources' digests.
-* Riprap also provides a REST interface so other applications can query it. Using Symfony's firewall to provide IP-based access to the API should provide sufficient security.
+* Riprap retrieves fixity digests from other applications via HTTP or some other mechanism. If Riprap is used with a Fedora-based repository, it needs access to the repository's REST interface in order to request resources' digests.
+* Riprap also provides a REST interface so other applications can retrieve fixity check event data from it and add/modify fixity check event data. Using Symfony's firewall to provide IP-based access to the API should provide sufficient security.
 
 ## Miscellaneous
 

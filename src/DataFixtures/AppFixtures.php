@@ -37,7 +37,7 @@ class AppFixtures extends Fixture
             $event = new Event();
             $event->setEventUuid($data[$i]['uuid']);
             $event->setEventType('ing');
-            $event->setResourceId('http://example.com/examplerepository/rest/' . $i);
+            $event->setResourceId('http://localhost:8000/mockrepository/' . $i);
             $event->setDatestamp(\DateTime::createFromFormat("Y-m-d H:i:s", '2018-09-19 05:23:20'));
             $event->setHashAlgorithm('SHA-1');
             $event->setHashValue($data[$i]['SHA-1']);
