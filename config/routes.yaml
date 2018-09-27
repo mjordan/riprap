@@ -1,21 +1,21 @@
 app_riprap_resource_fixity_events_read:
-    path: /api/resource/{id}
+    path: /api/resource
     controller: App\Controller\FixityController::read
     methods:    [GET, HEAD]
 
 app_riprap_resource_fixity_events_add:
-    path: /api/resource/{id}
+    path: /api/resource
     controller: App\Controller\FixityController::add
     methods:    [POST]
 
 app_riprap_resource_fixity_events_update:
-    path: /api/resource/{id}
+    path: /api/resource
     controller: App\Controller\FixityController::update
     methods:    [PATCH]
 
 # Route used in development and testing that returns the response
 # described in the Fedora API Specification secion 7.2.
 app_riprap_resource_fixity_example_repository_read:
-    path: /examplerepository/rest/{id}
+    path: /examplerepository/rest
     controller: App\Controller\ExampleRepositoryEndpoint::read
     methods:    [GET, HEAD]

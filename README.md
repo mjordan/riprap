@@ -73,18 +73,22 @@ id|event_uuid|event_type|resource_id|datestamp|hash_algorithm|hash_value|event_o
 sqlite> 
 ```
 
+## Usage
+
+First, start the web server by running `php bin/console server:start`. Then, run the `app:riprap:check_fixity` command, e.g., `php [path to riprap]/bin/console app:riprap:check_fixity`. If you repeat the SQL query above, you will see five more events in your database.
+
 ### REST API
 
 Preliminary scaffolding is in place for a simple HTTP REST API, which will allow external applications like Drupal to retrieve fixity validation data on particular Fedora resources and to add new and updated fixity validation data. For example, a `GET` request to:
 
-`http://riprap.example.com/api/resource/96ea3c35-d08e-4812-8c9e-cd0d6d1bd839`
+`curl -v -H "Resource:http://example.com/examplerepository/rest/17" http://localhost:8000/api/resource`
 
-would return a list of all fixity events for the Fedora resource `http://fedorarepo.example.net:8080/fcrepo/rest/96/ea/3c/35/96ea3c35-d08e-4812-8c9e-cd0d6d1bd839`.
+would return a list of all fixity events for the Fedora resource `http://example.com/examplerepository/rest/17`.
 
 To see the API in action,
 
 1. run `php bin/console server:start`
-1. run `curl -v "http://localhost:8000/api/resource/123456"`
+1. run `curl -v -H "Resource:http://example.com/examplerepository/rest/17" http://localhost:8000/api/resource`
 
 You should get a response like this:
 
@@ -108,32 +112,33 @@ You should get a response like this:
 < Content-Type: application/json
 < 
 * Closing connection 0
-["fixity event 1 for resource 123456","fixity event 2 for resource 123456","fixity event 3 for resource 123456"]
+["fixity event 1 for resource http:\/\/example.com\/examplerepository\/rest\/17","fixity event 2 for resource http:\/\/example.com\/examplerepository\/rest\/17","fixity event 3 for resource http:\/\/example.com\/examplerepository\/rest\/17"]
 ```
 
-HTTP `POST` and `PUT` are also supported, e.g.:
+HTTP `POST` and `PATCH` are also supported, e.g.:
 
 ```
-curl -v -X PATCH http://localhost:8000/api/resource/iamupdated
+curl -v -X POST -H "Resource:http://example.com/examplerepository/rest/17" http://localhost:8000/api/resource
 *   Trying 127.0.0.1...
 * TCP_NODELAY set
 * Connected to localhost (127.0.0.1) port 8000 (#0)
-> PATCH /api/resource/iamupdated HTTP/1.1
+> POST /api/resource HTTP/1.1
 > Host: localhost:8000
 > User-Agent: curl/7.58.0
 > Accept: */*
+> Resource:http://example.com/examplerepository/rest/17
 > 
 < HTTP/1.1 200 OK
 < Host: localhost:8000
-< Date: Tue, 18 Sep 2018 04:42:38 -0700
+< Date: Thu, 27 Sep 2018 11:56:02 -0700
 < Connection: close
-< X-Powered-By: PHP/7.2.7-0ubuntu0.18.04.2
+< X-Powered-By: PHP/7.2.10-0ubuntu0.18.04.1
 < Cache-Control: no-cache, private
-< Date: Tue, 18 Sep 2018 11:42:38 GMT
+< Date: Thu, 27 Sep 2018 18:56:02 GMT
 < Content-Type: application/json
 < 
 * Closing connection 0
-["updated fixity event for resource iamupdated"]
+["new fixity event for resource http:\/\/example.com\/examplerepository\/rest\/17"]
 ```
 
 ### Mock Fedora repository endpoint
@@ -179,6 +184,10 @@ One of Riprap's principle design requirements is flexibility. To meet this goal,
 * Query an external utility or service to get the digest of the current resource. A plugin that queries a Fedora API Specification-compliant repository, `app:riprap:plugin:fetchdigest:from:fedoraapi`, and is configured in `config/services.yaml`.
 * Persist data (e.g., to a RDBMS, to the Fedora repository, etc.) after performing a fixity check on each Fedora resource. A plugin to persist fixity events to a relational database, `app:riprap:plugin:persist:to:database`, already exists and is configured in `config/services.yaml`.
 * Execute after performing a fixity check on each Fedora resource. Two plugins of this type are available: a plugin that sends an email on failure, `app:riprap:plugin:postvalidate:mailfailures`, and a (not yet complete) plugin that will be able to migrate fixity events from a legacy system (in this case, Fedora 3.x AUDIT data). Both plugins are confiured in `config/services.yaml`.
+
+### Message queue listener
+
+Riprap will also be able to listen to an ActiveMQ queue and generate corresponding fixity events for newly added or updated resources. Not implemented yet.
 
 ### Security
 
