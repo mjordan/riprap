@@ -12,8 +12,6 @@ use Symfony\Component\Console\Output\BufferedOutput;
 use Psr\Log\LoggerInterface;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\Exception\UnsatisfiedDependencyException;
-use GuzzleHttp\Client;
-use GuzzleHttp\Exception\RequestException;
 
 use App\Entity\Event;
 
@@ -105,6 +103,7 @@ class CheckFixityCommand extends ContainerAwareCommand
                     // Contains the last recorded digest for this resource. We compare this value with
                     // the digest retrieved during the current fixity validation event.
                     $last_digest_for_resource = $get_last_digest_plugin_output->fetch();
+                    var_dump($last_digest_for_resource);
                     $this->logger->info("Persist plugin ran.", array(
                         'plugin_name' => $persist_plugin_name,
                         'return_code' => $get_last_digest_plugin_return_code
@@ -127,17 +126,17 @@ class CheckFixityCommand extends ContainerAwareCommand
 
                     // If there was a problem, the fetchdigest plugin will return an HTTP response code,
                     // so we check the lenght of the plugin's output to determine success or failure.
+                    $outcome = 'fail';
                     if (strlen($current_digest_plugin_return_value) > 3) {
                         if ($last_digest_for_resource == $current_digest_plugin_return_value) {
                              $outcome = 'suc';
                              $current_digest_value = $current_digest_plugin_return_value;
                         } else {
-                            $outcome = 'fail';
                             $current_digest_value = $current_digest_plugin_return_value;
                         }   
                     } else {
                         $this->logger->error("Fetchdigest plugin ran.", array(
-                            'plugin_name' => $fetchdigest_plugin_name,
+                            'plugin_name' => $this->fetchDigestPlugin,
                             'return_code' => $get_current_digest_plugin_return_code,
                             'http_response_code' => $current_digest_plugin_return_value,
                         ));
@@ -186,36 +185,4 @@ class CheckFixityCommand extends ContainerAwareCommand
         $output->writeln("Riprap validated $resource_id_counter resources.");
     }
 
-    /**
-     * Queries a Fedora repository to get the digest of the resource.
-     *
-    * @param string $url
-    *   The resource's URL.
-    *
-    * @return string
-    *   The digest retrieved from the repository or false on failure.
-    */
-    protected function get_resource_digest($url)
-    {
-        $client = new \GuzzleHttp\Client();
-        // @todo: Wrap in try/catch.
-        $response = $client->request($this->http_method, $url, [
-            'http_errors' => false,
-            'headers' => ['Want-Digest' => $this->fixity_algorithm],
-        ]);
-        $status_code = $response->getStatusCode();
-        $allowed_codes = array(200);
-        if (in_array($status_code, $allowed_codes)) {
-            $digest_header_values = $response->getHeader('digest');
-            // Assumes there is only one 'digiest' header - is this always the case?
-            return $digest_header_values[0];
-        } else {
-            // If the HTTP status code is not in the allowed list, log it.
-            $this->logger->warning("check_fixity cannot retrieve digest from repository.", array(
-                'resource_id => $url',
-                'status_code' => $status_code,
-            ));
-            return false;
-        }
-    }
 }

@@ -1,5 +1,5 @@
-http://localhost:8000/examplerepository/rest/10
-http://localhost:8000/examplerepository/rest/11
-http://localhost:8000/examplerepository/rest/12
-http://localhost:8000/examplerepository/rest/13
-http://localhost:8000/examplerepository/rest/14
+http://localhost:8000/mockrepository/rest/10
+http://localhost:8000/mockrepository/rest/11
+http://localhost:8000/mockrepository/rest/12
+http://localhost:8000/mockrepository/rest/13
+http://localhost:8000/mockrepository/rest/14

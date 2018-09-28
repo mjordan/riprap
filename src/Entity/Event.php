@@ -51,6 +51,11 @@ class Event
      */
     private $event_outcome;
 
+    /**
+     * @ORM\Column(type="text")
+     */
+    private $event_outcome_detail_note;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -136,6 +141,18 @@ class Event
     public function setEventOutcome(string $event_outcome): self
     {
         $this->event_outcome = $event_outcome;
+
+        return $this;
+    }
+
+    public function getEventOutcomeDetailNote(): ?string
+    {
+        return $this->event_outcome_detail_note;
+    }
+
+    public function setEventOutcomeDetailNote(string $event_outcome_detail_note): self
+    {
+        $this->event_outcome_detail_note = $event_outcome_detail_note;
 
         return $this;
     }

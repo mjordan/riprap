@@ -64,11 +64,11 @@ Enter ".help" for usage hints.
 sqlite> .headers on
 sqlite> select * from event;
 id|event_uuid|event_type|resource_id|datestamp|hash_algorithm|hash_value|event_outcome
-1|2a40d01e-d0fc-49c0-8755-990c90e21f13|ing|http:///examplerepository/rest/1|2018-09-19 05:23:20|SHA-1|5a5b0f9b7d3f8fc84c3cef8fd8efaaa6c70d75ab|suc
-2|27099e67-e355-4308-b618-e880900ee16a|ing|http://example.com/examplerepository/rest/2|2018-09-19 05:23:20|SHA-1|b1d5781111d84f7b3fe45a0852e59758cd7a87e5|suc
-3|b64d7dac-db2d-4984-b72e-46f6f33d1d0a|ing|http://example.com/examplerepository/rest/3|2018-09-19 05:23:20|SHA-1|310b86e0b62b828562fc91c7be5380a992b2786a|suc
-4|f1ff2644-6f6d-4765-84ee-ae2e6ea85b1b|ing|http://example.com/examplerepository/rest/4|2018-09-19 05:23:20|SHA-1|08a35293e09f508494096c1c1b3819edb9df50db|suc
-5|59d47475-3c47-412e-a94a-dc5356e9ec14|ing|http://example.com/examplerepository/rest/5|2018-09-19 05:23:20|SHA-1|450ddec8dd206c2e2ab1aeeaa90e85e51753b8b7|suc
+1|2a40d01e-d0fc-49c0-8755-990c90e21f13|ing|http://localhost:8000/mockrepository/1|2018-09-19 05:23:20|SHA-1|5a5b0f9b7d3f8fc84c3cef8fd8efaaa6c70d75ab|suc
+2|27099e67-e355-4308-b618-e880900ee16a|ing|http://localhost:8000/mockrepository/2|2018-09-19 05:23:20|SHA-1|b1d5781111d84f7b3fe45a0852e59758cd7a87e5|suc
+3|b64d7dac-db2d-4984-b72e-46f6f33d1d0a|ing|http://localhost:8000/mockrepository/3|2018-09-19 05:23:20|SHA-1|310b86e0b62b828562fc91c7be5380a992b2786a|suc
+4|f1ff2644-6f6d-4765-84ee-ae2e6ea85b1b|ing|http://localhost:8000/mockrepository/4|2018-09-19 05:23:20|SHA-1|08a35293e09f508494096c1c1b3819edb9df50db|suc
+5|59d47475-3c47-412e-a94a-dc5356e9ec14|ing|http://localhost:8000/mockrepository/5|2018-09-19 05:23:20|SHA-1|450ddec8dd206c2e2ab1aeeaa90e85e51753b8b7|suc
 [.. 20 rows total..]
 sqlite> 
 ```
