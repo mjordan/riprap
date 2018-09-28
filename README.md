@@ -80,6 +80,10 @@ From within the `riprap` directory, start the web server by running the `server:
 * `php bin/console server:start`
 * `php bin/console app:riprap:check_fixity`.
 
+You should see output similar to:
+
+`Riprap validated 5 resources (5 successful events, 0 failed events).`
+
 If you repeat the SQL query above, you will see five more events in your database.
 
 ### REST API
@@ -200,6 +204,10 @@ Riprap will also be able to listen to an ActiveMQ queue and generate correspondi
 * Riprap also provides a REST interface so other applications can retrieve fixity check event data from it and add/modify fixity check event data. Using Symfony's firewall to provide IP-based access to the API should provide sufficient security.
 
 ## Miscellaneous
+
+### Contributing
+
+See [docs/CONTRIBUTING.md](CONTRIBUTING.md).
 
 ### Running tests
 

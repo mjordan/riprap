@@ -21,11 +21,10 @@ class CheckFixityCommand extends ContainerAwareCommand
 
     public function __construct(ParameterBagInterface $params = null, LoggerInterface $logger = null)
     {
+        // Set in the parameters section of config/services.yaml.
         $this->params = $params;
         $this->http_method = $this->params->get('app.fixity.method');
         $this->fixity_algorithm = $this->params->get('app.fixity.algorithm');
-
-        // Set in the parameters section of config/services.yaml.
         $this->fetchResourceListPlugins = $this->params->get('app.plugins.fetchresourcelist');
         $this->fetchDigestPlugin = $this->params->get('app.plugins.fetchdigest');
         $this->persistPlugins = $this->params->get('app.plugins.persist');
@@ -46,7 +45,7 @@ class CheckFixityCommand extends ContainerAwareCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        // Fire plugins that get a list of resource URLs to validate.
+        // Execute plugins that get a list of resource IDs to validate.
         $resource_ids = array();
         if (count($this->fetchResourceListPlugins) > 0) {
             foreach ($this->fetchResourceListPlugins as $fetchresourcelist_plugin_name) {
@@ -61,24 +60,29 @@ class CheckFixityCommand extends ContainerAwareCommand
             }
 
             // Split $ids_from_plugin on newline to get an array of URLs. Assumes that all
-            // fetchresourcelistPlugins will return a string, which is probably the case since Symfony
-            // console commands output strings, not arrays.
+            // fetchresourcelistPlugins will return a string, which is probably the case
+            // since Symfony console commands output strings, not arrays.
             $ids_from_plugin = preg_split("/\r\n|\n|\r/", trim($ids_from_plugin));
             // Combine the output of all fetchPlugins.
             $resource_ids = array_merge($resource_ids, $ids_from_plugin);
+            $num_resource_ids = count($resource_ids);
         }
 
-        // Loop through the list of resource URLs and perform a fixity validation event on them.
-        $resource_id_counter = 0;
+        if ($num_resource_ids == 0) {
+            $this->logger->info("There are no resources to validate. Exiting.");
+            exit;
+        }
+
+        // Loop through the list of resource IDs and perform a fixity validation event on each of them.
+        $num_successful_events = 0;
+        $num_failed_events = 0;
         foreach ($resource_ids as $resource_id) {
             $uuid4 = Uuid::uuid4();
             $event_uuid = $uuid4->toString();
             $now_iso8601 = date('c');
 
-            // Print output and log it.
-            $resource_id_counter++;
+            // Print output and log it.   
             $this->logger->info("check_fixity ran.", array('event_uuid' => $event_uuid));
-            // $output->writeln("Event $event_uuid validated fixity of $resource_id (result: $outcome).");
 
             // Execute plugins that persist event data. We execute them twice and pass in an 'operation' option,
             // once to get the last digest for the resource and again to persist the event resulting from comparing
@@ -123,14 +127,16 @@ class CheckFixityCommand extends ContainerAwareCommand
                         'http_response_code' => $current_digest_plugin_return_value,
                     ));
 
-                    // If there was a problem, the fetchdigest plugin will return an HTTP response code,
-                    // so we check the lenght of the plugin's output to determine success or failure.
+                    // If there was a problem, the fetchdigest plugin will return an HTTP response code, so
+                    // we check the length of the plugin's output to see if its's longer than 3 charaters.
                     $outcome = 'fail';
                     if (strlen($current_digest_plugin_return_value) > 3) {
                         if ($last_digest_for_resource == $current_digest_plugin_return_value) {
-                             $outcome = 'suc';
-                             $current_digest_value = $current_digest_plugin_return_value;
+                            $outcome = 'suc';
+                            $num_successful_events++;
+                            $current_digest_value = $current_digest_plugin_return_value;
                         } else {
+                            $num_failed_events++;
                             $current_digest_value = $current_digest_plugin_return_value;
                         }   
                     } else {
@@ -139,6 +145,7 @@ class CheckFixityCommand extends ContainerAwareCommand
                             'return_code' => $get_current_digest_plugin_return_code,
                             'http_response_code' => $current_digest_plugin_return_value,
                         ));
+                        $num_failed_events++;
                         continue;
                     }
 
@@ -181,7 +188,7 @@ class CheckFixityCommand extends ContainerAwareCommand
                 }
             }
         }
-        $output->writeln("Riprap validated $resource_id_counter resources.");
+        $output->writeln("Riprap validated $num_resource_ids resources ($num_successful_events successful events, $num_failed_events failed events).");
     }
 
 }
