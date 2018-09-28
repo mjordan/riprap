@@ -2,7 +2,7 @@
 // src/DataFixtures/AppFixtures.php
 namespace App\DataFixtures;
 
-use App\Entity\Event;
+use App\Entity\FixityCheckEvent;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\Persistence\ObjectManager;
 
@@ -34,7 +34,7 @@ class AppFixtures extends Fixture
         );
 
         for ($i = 1; $i <= 20; $i++) {
-            $event = new Event();
+            $event = new FixityCheckEvent();
             $event->setEventUuid($data[$i]['uuid']);
             $event->setEventType('ing');
             $event->setResourceId('http://localhost:8000/mockrepository/rest/' . $i);

@@ -2,25 +2,25 @@
 
 namespace App\Repository;
 
-use App\Entity\Event;
+use App\Entity\FixityCheckEvent;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 
 /**
- * @method Event|null find($id, $lockMode = null, $lockVersion = null)
- * @method Event|null findOneBy(array $criteria, array $orderBy = null)
- * @method Event[]    findAll()
- * @method Event[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @method FixityCheckEvent|null find($id, $lockMode = null, $lockVersion = null)
+ * @method FixityCheckEvent|null findOneBy(array $criteria, array $orderBy = null)
+ * @method FixityCheckEvent[]    findAll()
+ * @method FixityCheckEvent[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class EventRepository extends ServiceEntityRepository
+class FixityCheckEventRepository extends ServiceEntityRepository
 {
     public function __construct(RegistryInterface $registry)
     {
-        parent::__construct($registry, Event::class);
+        parent::__construct($registry, FixityCheckEvent::class);
     }
 
 //    /**
-//     * @return Event[] Returns an array of Event objects
+//     * @return FixityCheckEvent[] Returns an array of FixityCheckEvent objects
 //     */
 
     /**
@@ -35,9 +35,9 @@ class EventRepository extends ServiceEntityRepository
      *   The hash algorithm (e.g, SHA-1).
      *
      * @return object
-     *   A single Event object, or null.
+     *   A single FixityCheckEvent object, or null.
      */
-    public function findLastEvent($resource_id, $hash_algorithm)
+    public function findLastFixityCheckEvent($resource_id, $hash_algorithm)
     {
         $qb = $this->createQueryBuilder('event')
             ->andWhere('event.resource_id = :resource_id')
@@ -68,7 +68,7 @@ class EventRepository extends ServiceEntityRepository
     */
 
     /*
-    public function findOneBySomeField($value): ?Event
+    public function findOneBySomeField($value): ?FixityCheckEvent
     {
         return $this->createQueryBuilder('e')
             ->andWhere('e.exampleField = :val')

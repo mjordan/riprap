@@ -5,9 +5,9 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Entity(repositoryClass="App\Repository\EventRepository")
+ * @ORM\Entity(repositoryClass="App\Repository\FixityCheckEventRepository")
  */
-class Event
+class FixityCheckEvent
 {
     /**
      * @ORM\Id()

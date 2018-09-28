@@ -103,7 +103,6 @@ class CheckFixityCommand extends ContainerAwareCommand
                     // Contains the last recorded digest for this resource. We compare this value with
                     // the digest retrieved during the current fixity validation event.
                     $last_digest_for_resource = $get_last_digest_plugin_output->fetch();
-                    var_dump($last_digest_for_resource);
                     $this->logger->info("Persist plugin ran.", array(
                         'plugin_name' => $persist_plugin_name,
                         'return_code' => $get_last_digest_plugin_return_code

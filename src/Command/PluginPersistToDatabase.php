@@ -10,7 +10,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 use Psr\Log\LoggerInterface;
 
-use App\Entity\Event;
+use App\Entity\FixityCheckEvent;
 
 class PluginPersistToDatabase extends ContainerAwareCommand
 {
@@ -47,15 +47,15 @@ class PluginPersistToDatabase extends ContainerAwareCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         if ($input->getOption('operation') == 'get_last_digest') {
-            $repository = $this->getContainer()->get('doctrine')->getRepository(Event::class);
-            $event = $repository->findLastEvent($input->getOption('resource_id'), $input->getOption('digest_algorithm'));
+            $repository = $this->getContainer()->get('doctrine')->getRepository(FixityCheckEvent::class);
+            $event = $repository->findLastFixityCheckEvent($input->getOption('resource_id'), $input->getOption('digest_algorithm'));
             if (!is_null($event)) {
                 $output->write($event->getHashValue());
             }
         }        
         if ($input->getOption('operation') == 'persist_fix_event') {
             $entityManager = $this->getContainer()->get('doctrine')->getEntityManager();
-            $event = new Event();
+            $event = new FixityCheckEvent();
             $event->setEventUuid($input->getOption('event_uuid'));
             $event->setEventType('fix');
             $event->setResourceId($input->getOption('resource_id'));
@@ -67,6 +67,7 @@ class PluginPersistToDatabase extends ContainerAwareCommand
             $event->setHashAlgorithm($input->getOption('digest_algorithm'));
             $event->setHashValue($input->getOption('digest_value'));
             $event->setEventOutcome($input->getOption('outcome'));
+            $event->setEventOutcomeDetailNote('');
             $entityManager->persist($event);
             $entityManager->flush();
         }
