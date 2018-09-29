@@ -90,9 +90,9 @@ If you repeat the SQL query above, you will see five more events in your databas
 
 Preliminary scaffolding is in place for a simple HTTP REST API, which will allow external applications like Drupal to retrieve fixity validation data on specific Fedora resources and to add new and updated fixity validation data. For example, a `GET` request to:
 
-`curl -v -H "Resource-ID:http://example.com/mockrepository/rest/17" http://localhost:8000/api/fixity`
+`curl -v -H "Resource-ID:http://example.com/repository/resource/12345" http://localhost:8000/api/fixity`
 
-would return a list of all fixity events for the Fedora resource `http://example.com/mockrepository/rest/17`.
+would return a list of all fixity events for the Fedora resource `http://example.com/repository/resource/12345`.
 
 To see the API in action,
 
@@ -207,13 +207,13 @@ Riprap will also be able to listen to an ActiveMQ queue and generate correspondi
 
 ### Contributing
 
-See [docs/CONTRIBUTING.md](CONTRIBUTING.md).
+See [CONTRIBUTING.md](docs/CONTRIBUTING.md).
 
 ### Running tests
 
 From within the `riprap` directory, run:
 
-* `php bin/phpunit`
+`php bin/phpunit`
 
 ### Coding standards
 
