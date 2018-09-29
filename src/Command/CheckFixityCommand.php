@@ -40,7 +40,8 @@ class CheckFixityCommand extends ContainerAwareCommand
     {
         $this
             ->setName('app:riprap:check_fixity')
-            ->setDescription('Console tool for running batches of fixity validation events against a Fedora (or other) repository.');
+            ->setDescription('Console tool for running batches of fixity validation events against ' .
+                'a Fedora (or other) repository.');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -55,9 +56,18 @@ class CheckFixityCommand extends ContainerAwareCommand
                 $fetchresourcelist_plugin_input = new ArrayInput(array());
                 $fetchresourcelist_plugin_output = new BufferedOutput();
                 // @todo: Check $returnCode and log+continue if non-0.
-                $fetchresourcelist_plugin_return_code = $fetchresourcelist_plugin_command->run($fetchresourcelist_plugin_input, $fetchresourcelist_plugin_output);
+                $fetchresourcelist_plugin_return_code = $fetchresourcelist_plugin_command->run(
+                    $fetchresourcelist_plugin_input,
+                    $fetchresourcelist_plugin_output
+                );
                 $ids_from_plugin = $fetchresourcelist_plugin_output->fetch();
-                $this->logger->info("Fetchresourcelist plugin ran.", array('plugin_name' => $fetchresourcelist_plugin_name, 'return_code' => $fetchresourcelist_plugin_return_code));
+                $this->logger->info(
+                    "Fetchresourcelist plugin ran.",
+                    array(
+                        'plugin_name' => $fetchresourcelist_plugin_name,
+                        'return_code' => $fetchresourcelist_plugin_return_code
+                    )
+                );
             }
 
             // Split $ids_from_plugin on newline to get an array of URLs. Assumes that all
@@ -84,7 +94,7 @@ class CheckFixityCommand extends ContainerAwareCommand
             $event_uuid = $uuid4->toString();
             $now_iso8601 = date('c');
 
-            // Print output and log it.   
+            // Print output and log it.
             $this->logger->info("check_fixity ran.", array('event_uuid' => $event_uuid));
 
             // Execute plugins that persist event data. We execute them twice and pass in an 'operation' option,
@@ -106,7 +116,10 @@ class CheckFixityCommand extends ContainerAwareCommand
                         '--operation' => 'get_last_digest',
                     ));
                     $get_last_digest_plugin_output = new BufferedOutput();
-                    $get_last_digest_plugin_return_code = $get_last_digest_plugin_command->run($get_last_digest_plugin_input, $get_last_digest_plugin_output);
+                    $get_last_digest_plugin_return_code = $get_last_digest_plugin_command->run(
+                        $get_last_digest_plugin_input,
+                        $get_last_digest_plugin_output
+                    );
                     // Contains the last recorded digest for this resource. We compare this value with
                     // the digest retrieved during the current fixity validation event.
                     $last_digest_for_resource = $get_last_digest_plugin_output->fetch();
@@ -122,7 +135,10 @@ class CheckFixityCommand extends ContainerAwareCommand
                         '--resource_id' => $resource_id
                     ));
                     $get_current_digest_plugin_output = new BufferedOutput();
-                    $get_current_digest_plugin_return_code = $get_current_digest_plugin_command->run($get_current_digest_plugin_input, $get_current_digest_plugin_output);
+                    $get_current_digest_plugin_return_code = $get_current_digest_plugin_command->run(
+                        $get_current_digest_plugin_input,
+                        $get_current_digest_plugin_output
+                    );
                     $current_digest_plugin_return_value = trim($get_current_digest_plugin_output->fetch());
                     $this->logger->info("Fetchdigest plugin ran.", array(
                         'plugin_name' => $this->fetchDigestPlugin,
@@ -141,7 +157,7 @@ class CheckFixityCommand extends ContainerAwareCommand
                         } else {
                             $num_failed_events++;
                             $current_digest_value = $current_digest_plugin_return_value;
-                        }   
+                        }
                     } else {
                         $this->logger->error("Fetchdigest plugin ran.", array(
                             'plugin_name' => $this->fetchDigestPlugin,
@@ -164,14 +180,24 @@ class CheckFixityCommand extends ContainerAwareCommand
                         '--operation' => 'persist_fix_event',
                     ));
                     $persist_fix_event_plugin_output = new BufferedOutput();
-                    $persist_fix_event_plugin_return_code = $persist_fix_event_plugin_command->run($persist_fix_event_plugin_input, $persist_fix_event_plugin_output);
+                    $persist_fix_event_plugin_return_code = $persist_fix_event_plugin_command->run(
+                        $persist_fix_event_plugin_input,
+                        $persist_fix_event_plugin_output
+                    );
                     // Currently not used.
                     $persist_fix_event_plugin_output_string = $persist_fix_event_plugin_output->fetch();
-                    $this->logger->info("Persist plugin ran.", array('plugin_name' => $persist_plugin_name, 'return_code' => $persist_fix_event_plugin_return_code));
+                    $this->logger->info(
+                        "Persist plugin ran.",
+                        array(
+                            'plugin_name' => $persist_plugin_name,
+                            'return_code' => $persist_fix_event_plugin_return_code
+                        )
+                    );
                 }
             }
 
-            // Execute post-validate plugins that react to a fixity validation event (email admin, migrate legacy data, etc.).
+            // Execute post-validate plugins that react to a fixity validation event
+            // (email admin, migrate legacy data, etc.).
             if (count($this->postValidatePlugins) > 0) {
                 foreach ($this->postValidatePlugins as $postvalidate_plugin_name) {
                     $postvalidate_plugin_command = $this->getApplication()->find($postvalidate_plugin_name);
@@ -184,14 +210,23 @@ class CheckFixityCommand extends ContainerAwareCommand
                         '--outcome' => $outcome,
                     ));
                     $postvalidate_plugin_output = new BufferedOutput();
-                    $postvalidate_plugin_return_code = $postvalidate_plugin_command->run($postvalidate_plugin_input, $postvalidate_plugin_output);
+                    $postvalidate_plugin_return_code = $postvalidate_plugin_command->run(
+                        $postvalidate_plugin_input,
+                        $postvalidate_plugin_output
+                    );
                     // Currently not used.
-                    $postvalidate_plugin_output_string = $postvalidate_plugin_output->fetch();                    
-                    $this->logger->info("Post validate plugin ran.", array('plugin_name' => $postvalidate_plugin_name, 'return_code' => $postvalidate_plugin_return_code));
+                    $postvalidate_plugin_output_string = $postvalidate_plugin_output->fetch();
+                    $this->logger->info(
+                        "Post validate plugin ran.",
+                        array(
+                            'plugin_name' => $postvalidate_plugin_name,
+                            'return_code' => $postvalidate_plugin_return_code
+                        )
+                    );
                 }
             }
         }
-        $output->writeln("Riprap validated $num_resource_ids resources ($num_successful_events successful events, $num_failed_events failed events).");
+        $output->writeln("Riprap validated $num_resource_ids resources ($num_successful_events successful events, " .
+            "$num_failed_events failed events).");
     }
-
 }

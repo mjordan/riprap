@@ -35,6 +35,7 @@ class PluginPostValidateMailFailures extends ContainerAwareCommand
             ->setName('app:riprap:plugin:postvalidate:mailfailures')
             ->setDescription('A Riprap plugin that emails notifications of fixity validation failures.');
 
+        // phpcs:disable
         $this
             ->addOption('timestamp', null, InputOption::VALUE_REQUIRED, 'ISO 8601 date when the fixity validation event occured.')
             ->addOption('resource_id', null, InputOption::VALUE_REQUIRED, 'Fully qualifid URL of the resource to validate.')
@@ -42,6 +43,7 @@ class PluginPostValidateMailFailures extends ContainerAwareCommand
             ->addOption('digest_algorithm', null, InputOption::VALUE_REQUIRED, 'Algorithm used to generate the digest.')
             ->addOption('digest_value', null, InputOption::VALUE_REQUIRED, 'Value of the digest retrieved from the Fedora repository.')
             ->addOption('outcome', null, InputOption::VALUE_REQUIRED, 'Outcome of the event.');
+        // phpcs:enable
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -54,11 +56,11 @@ class PluginPostValidateMailFailures extends ContainerAwareCommand
                 '--from' => $this->email_from,
                 '--to' => $this->email_to,
                 '--subject' => "Fixity validation failure on " . $resource_id,
-                '--body' => "Riprap has detected a fixity validation failure on " . 
+                '--body' => "Riprap has detected a fixity validation failure on " .
                     $resource_id .
                     " (event UUID " .
                     $input->getOption('event_uuid') .
-                    "), which occured at " . 
+                    "), which occured at " .
                     $timestamp,
             ));
             $returnCode = $mail_command->run($input, $output);

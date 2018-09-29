@@ -33,10 +33,16 @@ class PluginFetchDigestFromFedoraAPI extends ContainerAwareCommand
     {
         $this
             ->setName('app:riprap:plugin:fetchdigest:from:fedoraapi')
-            ->setDescription('A Riprap plugin for querying a Fedora API Specification compliant repository for a resource\'s digest.');
+            ->setDescription('A Riprap plugin for querying a Fedora API Specification compliant ' .
+                'repository for a resource\'s digest.');
 
         $this
-            ->addOption('resource_id', null, InputOption::VALUE_REQUIRED, 'Fully qualifid URL of the resource to validate.');
+            ->addOption(
+                'resource_id',
+                null,
+                InputOption::VALUE_REQUIRED,
+                'Fully qualifid URL of the resource to validate.'
+            );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)

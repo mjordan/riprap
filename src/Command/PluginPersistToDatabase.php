@@ -32,6 +32,7 @@ class PluginPersistToDatabase extends ContainerAwareCommand
             ->setName('app:riprap:plugin:persist:to:database')
             ->setDescription('A Riprap plugin for persisting fixity events to a relational database.');
 
+        // phpcs:disable
         $this
             ->addOption('timestamp', null, InputOption::VALUE_REQUIRED, 'ISO 8601 date when the fixity validation event occured.')
             ->addOption('resource_id', null, InputOption::VALUE_REQUIRED, 'Fully qualifid URL of the resource to validate.')
@@ -41,18 +42,22 @@ class PluginPersistToDatabase extends ContainerAwareCommand
             ->addOption('outcome', null, InputOption::VALUE_REQUIRED, 'Outcome of the event.')
             // Persist plugins are special in that they are executed twice, once to get the last digest for the resource
             // and again to persist the event resulting from comparing that digest with a new one.
-            ->addOption('operation', null, InputOption::VALUE_REQUIRED, 'Either "get_last_digest" or "persist_new_event".');            
+            ->addOption('operation', null, InputOption::VALUE_REQUIRED, 'Either "get_last_digest" or "persist_new_event".');
+            // phpcs:enable           
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         if ($input->getOption('operation') == 'get_last_digest') {
             $repository = $this->getContainer()->get('doctrine')->getRepository(FixityCheckEvent::class);
-            $event = $repository->findLastFixityCheckEvent($input->getOption('resource_id'), $input->getOption('digest_algorithm'));
+            $event = $repository->findLastFixityCheckEvent(
+                $input->getOption('resource_id'),
+                $input->getOption('digest_algorithm')
+            );
             if (!is_null($event)) {
                 $output->write($event->getHashValue());
             }
-        }        
+        }
         if ($input->getOption('operation') == 'persist_fix_event') {
             $entityManager = $this->getContainer()->get('doctrine')->getEntityManager();
             $event = new FixityCheckEvent();

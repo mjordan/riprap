@@ -10,6 +10,7 @@ class AppFixtures extends Fixture
 {
     public function load(ObjectManager $manager)
     {
+        // // phpcs:disable
         $data = array(
             '1' => array('uuid' => '2a40d01e-d0fc-49c0-8755-990c90e21f13', 'SHA-1' => '5a5b0f9b7d3f8fc84c3cef8fd8efaaa6c70d75ab'),
             '2' => array('uuid' => '27099e67-e355-4308-b618-e880900ee16a', 'SHA-1' => 'b1d5781111d84f7b3fe45a0852e59758cd7a87e5'),
@@ -32,6 +33,7 @@ class AppFixtures extends Fixture
             '19' => array('uuid' => 'e47dd696-f60d-40c8-8544-07843af86688', 'SHA-1' => '6216f8a75fd5bb3d5f22b6f9958cdede3fc086c2'),
             '20' => array('uuid' => '39fef3f0-9ac7-4c2a-9aa8-44aeb1175d51', 'SHA-1' => '9e6a55b6b4563e652a23be9d623ca5055c356940'),
         );
+        // phpcs:enable
 
         for ($i = 1; $i <= 20; $i++) {
             $event = new FixityCheckEvent();

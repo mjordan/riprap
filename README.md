@@ -215,6 +215,12 @@ From within the `riprap` directory, run:
 
 * `php bin/phpunit`
 
+### Coding standards
+
+Riprap follows the [PSR2](https://www.php-fig.org/psr/psr-2/) coding standard. To check you code, from within the `riprap` directory, run:
+
+` ./vendor/bin/phpcs`
+
 ### Maintainer
 
 Mark Jordan (https://github.com/mjordan)

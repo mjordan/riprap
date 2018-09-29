@@ -34,6 +34,6 @@ class PluginFetchResourceListFromFileTest extends KernelTestCase
 
         $output = $commandTester->getDisplay();
         $output_array = preg_split("/\r\n|\n|\r/", trim($output));
-        $this->assertCount(5, $output_array); 
+        $this->assertCount(5, $output_array);
     }
 }

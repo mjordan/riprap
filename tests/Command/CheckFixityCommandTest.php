@@ -18,7 +18,8 @@ class CheckFixityCommandTest extends KernelTestCase
         // but they are not (in both cases, $this->params in the CheckFixity
         // object is null). To work around this, we need to define configuration
         // parameters locally within the test.
-        $params = new ParameterBag(array(
+        $params = new ParameterBag(
+            array(
             'app.fixity.method' => 'HEAD',
             'app.fixity.algorithm' => 'SHA-1',
             'app.plugins.fetchresourcelist' => array(),
@@ -42,6 +43,5 @@ class CheckFixityCommandTest extends KernelTestCase
         // The output of the command in the console.
         $output = $commandTester->getDisplay();
         $this->assertContains('Riprap validated', $output);
-
     }
 }

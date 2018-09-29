@@ -36,11 +36,11 @@ class PluginFetchResourceListFromFile extends ContainerAwareCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         foreach ($this->input_files as $input_file) {
-          $resource_ids = file($input_file, FILE_IGNORE_NEW_LINES);
-          foreach ($resource_ids as $resource_id) {
-              // This is a string containing one resource ID (URL) per line;
-              $output->writeln($resource_id);
-          }
+            $resource_ids = file($input_file, FILE_IGNORE_NEW_LINES);
+            foreach ($resource_ids as $resource_id) {
+                // This is a string containing one resource ID (URL) per line;
+                $output->writeln($resource_id);
+            }
         }
 
         // $this->logger is null while testing.

@@ -31,7 +31,8 @@
         "symfony/web-server-bundle": "*",
         "symfony/phpunit-bridge": "*",
         "symfony/browser-kit": "*",
-        "doctrine/doctrine-fixtures-bundle": "*"
+        "doctrine/doctrine-fixtures-bundle": "*",
+        "squizlabs/php_codesniffer":"*"
     },
     "config": {
         "preferred-install": {
