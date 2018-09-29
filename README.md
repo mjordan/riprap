@@ -78,7 +78,7 @@ sqlite>
 From within the `riprap` directory, start the web server by running the `server:start` command. Then, run the `app:riprap:check_fixity` command, e.g.:
 
 * `php bin/console server:start`
-* `php bin/console app:riprap:check_fixity`.
+* `php bin/console app:riprap:check_fixity`
 
 You should see output similar to:
 
@@ -127,7 +127,7 @@ You should get a response like this:
 HTTP `POST` and `PATCH` are also supported, e.g.:
 
 ```
-curl -v -X POST -H "Resource:http://localhost:8080/mockrepository/rest/17" http://localhost:8000/api/fixity
+curl -v -X POST -H "Resource-ID:http://localhost:8080/mockrepository/rest/17" http://localhost:8000/api/fixity
 *   Trying 127.0.0.1...
 * TCP_NODELAY set
 * Connected to localhost (127.0.0.1) port 8000 (#0)

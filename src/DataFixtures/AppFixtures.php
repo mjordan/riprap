@@ -44,6 +44,7 @@ class AppFixtures extends Fixture
             $event->setHashAlgorithm('SHA-1');
             $event->setHashValue($data[$i]['SHA-1']);
             $event->setEventOutcome('suc');
+            $event->setEventDetail('');
             $event->setEventOutcomeDetailNote('');
 
             $manager->persist($event);

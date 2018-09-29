@@ -71,6 +71,7 @@ class PluginPersistToDatabase extends ContainerAwareCommand
             $event->setDatestamp(\DateTime::createFromFormat(\DateTime::ISO8601, $input->getOption('timestamp')));
             $event->setHashAlgorithm($input->getOption('digest_algorithm'));
             $event->setHashValue($input->getOption('digest_value'));
+            $event->setEventDetail('');
             $event->setEventOutcome($input->getOption('outcome'));
             $event->setEventOutcomeDetailNote('');
             $entityManager->persist($event);

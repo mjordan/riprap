@@ -47,6 +47,11 @@ class FixityCheckEvent
     private $hash_value;
 
     /**
+     * @ORM\Column(type="text")
+     */
+    private $event_detail;
+
+    /**
      * @ORM\Column(type="string", length=255)
      */
     private $event_outcome;
@@ -129,6 +134,18 @@ class FixityCheckEvent
     public function setHashValue(string $hash_value): self
     {
         $this->hash_value = $hash_value;
+
+        return $this;
+    }
+
+    public function getEventDetail(): ?string
+    {
+        return $this->event_detail;
+    }
+
+    public function setEventDetail(string $event_detail): self
+    {
+        $this->event_detail = $event_detail;
 
         return $this;
     }
