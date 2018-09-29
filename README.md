@@ -90,14 +90,14 @@ If you repeat the SQL query above, you will see five more events in your databas
 
 Preliminary scaffolding is in place for a simple HTTP REST API, which will allow external applications like Drupal to retrieve fixity validation data on specific Fedora resources and to add new and updated fixity validation data. For example, a `GET` request to:
 
-`curl -v -H "Resource:http://example.com/examplerepository/rest/17" http://localhost:8000/api/resource`
+`curl -v -H "Resource-ID:http://example.com/mockrepository/rest/17" http://localhost:8000/api/fixity`
 
-would return a list of all fixity events for the Fedora resource `http://example.com/examplerepository/rest/17`.
+would return a list of all fixity events for the Fedora resource `http://example.com/mockrepository/rest/17`.
 
 To see the API in action,
 
 1. run `php bin/console server:start`
-1. run `curl -v -H "Resource:http://example.com/examplerepository/rest/17" http://localhost:8000/api/resource`
+1. run `curl -v -H "Resource-ID:http://localhost:8080/mockrepository/rest/17" http://localhost:8000/api/fixity`
 
 You should get a response like this:
 
@@ -121,21 +121,21 @@ You should get a response like this:
 < Content-Type: application/json
 < 
 * Closing connection 0
-["fixity event 1 for resource http:\/\/example.com\/examplerepository\/rest\/17","fixity event 2 for resource http:\/\/example.com\/examplerepository\/rest\/17","fixity event 3 for resource http:\/\/example.com\/examplerepository\/rest\/17"]
+["fixity event 1 for resource http:\/\/localhost:8080\/mockrepository\/rest\/17","fixity event 2 for resource http:\/\/localhost:8080\/mockrepository\/rest\/17","fixity event 3 for resource http:\/\/localhost:8080\/mockrepository\/rest\/17"]
 ```
 
 HTTP `POST` and `PATCH` are also supported, e.g.:
 
 ```
-curl -v -X POST -H "Resource:http://example.com/examplerepository/rest/17" http://localhost:8000/api/resource
+curl -v -X POST -H "Resource:http://localhost:8080/mockrepository/rest/17" http://localhost:8000/api/fixity
 *   Trying 127.0.0.1...
 * TCP_NODELAY set
 * Connected to localhost (127.0.0.1) port 8000 (#0)
-> POST /api/resource HTTP/1.1
+> POST /api/fixity HTTP/1.1
 > Host: localhost:8000
 > User-Agent: curl/7.58.0
 > Accept: */*
-> Resource:http://example.com/examplerepository/rest/17
+> Resource-ID:http://localhost:8080/mockrepository/rest/17
 > 
 < HTTP/1.1 200 OK
 < Host: localhost:8000
@@ -147,7 +147,7 @@ curl -v -X POST -H "Resource:http://example.com/examplerepository/rest/17" http:
 < Content-Type: application/json
 < 
 * Closing connection 0
-["new fixity event for resource http:\/\/example.com\/examplerepository\/rest\/17"]
+["new fixity event for resource http:\/\/localhost:8080\/mockrepository\/rest\/17"]
 ```
 
 ### Mock Fedora repository endpoint

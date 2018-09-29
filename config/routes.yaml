@@ -1,15 +1,15 @@
-app_riprap_resource_fixity_events_read:
-    path: /api/resource
+app_riprap_fixity_events_read:
+    path: /api/fixity
     controller: App\Controller\FixityController::read
     methods:    [GET, HEAD]
 
-app_riprap_resource_fixity_events_add:
-    path: /api/resource
+app_riprap_fixity_events_add:
+    path: /api/fixity
     controller: App\Controller\FixityController::add
     methods:    [POST]
 
-app_riprap_resource_fixity_events_update:
-    path: /api/resource
+app_riprap_fixity_events_update:
+    path: /api/fixity
     controller: App\Controller\FixityController::update
     methods:    [PATCH]
 

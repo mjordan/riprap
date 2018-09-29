@@ -9,8 +9,7 @@ class FixityController
 {
     public function read(Request $request)
     {
-
-        $resource_id = $request->headers->get('Resource');
+        $resource_id = $request->headers->get('Resource-ID');
         // Dummy data.
         $data = array(
             'fixity event 1 for resource ' . $resource_id,
@@ -23,7 +22,7 @@ class FixityController
 
     public function add(Request $request)
     {
-        $resource_id = $request->headers->get('Resource');
+        $resource_id = $request->headers->get('Resource-ID');
         // Dummy data.
         $data = array(
             'new fixity event for resource ' . $resource_id,
@@ -34,7 +33,7 @@ class FixityController
 
     public function update(Request $request)
     {
-        $resource_id = $request->headers->get('Resource');
+        $resource_id = $request->headers->get('Resource-ID');
         // Dummy data.
         $data = array(
             'updated fixity event for resource ' . $resource_id,
