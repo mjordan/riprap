@@ -53,6 +53,27 @@ class FixityCheckEventRepository extends ServiceEntityRepository
             return $event;
         ;
     }
+
+    /**
+     * Finds all entries in the 'event' table for the current resource.
+     *
+     * @param string $resource_id
+     *   The URL of the resource.
+     *
+     * @return array
+     *   A list of FixityCheckEvent objects, or null.
+     */
+    public function findFixityCheckEvents($resource_id)
+    {
+        $qb = $this->createQueryBuilder('event')
+            ->andWhere('event.resource_id = :resource_id')
+            ->setParameter('resource_id', $resource_id)
+            ->orderBy('event.datestamp', 'ASC')
+            ->getQuery();
+
+            return $qb->execute();
+    }
+
     /*
     public function findByExampleField($value)
     {

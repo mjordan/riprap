@@ -10,11 +10,19 @@ namespace App\Controller;
 
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 class MockRepositoryEndpoint
 {
-    public function read(Request $request, $id)
+    public function read($id, Request $request, ParameterBagInterface $params)
     {
+        $this->enabled = $params->get('app.mockrepository');
+        if ($this->enabled != 'enabled') {
+            $response = new Response();
+            $response->setStatusCode(Response::HTTP_NOT_FOUND);
+            return $response;
+        }
+
         // Digests corresponding to the resource IDs in the 'fixity_check_event' table.
         $digests = array(
             '1' => '5a5b0f9b7d3f8fc84c3cef8fd8efaaa6c70d75ab',

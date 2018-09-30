@@ -42,8 +42,8 @@ class PluginPersistToDatabase extends ContainerAwareCommand
             ->addOption('outcome', null, InputOption::VALUE_REQUIRED, 'Outcome of the event.')
             // Persist plugins are special in that they are executed twice, once to get the last digest for the resource
             // and again to persist the event resulting from comparing that digest with a new one.
-            ->addOption('operation', null, InputOption::VALUE_REQUIRED, 'Either "get_last_digest" or "persist_new_event".');
-            // phpcs:enable           
+            ->addOption('operation', null, InputOption::VALUE_REQUIRED, 'One of "get_last_digest", "get_events", or "persist_new_event".');
+        // phpcs:enable           
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -57,6 +57,32 @@ class PluginPersistToDatabase extends ContainerAwareCommand
             if (!is_null($event)) {
                 $output->write($event->getHashValue());
             }
+        }
+        // Returns a serialized representation of all fixity check events.
+        // @todo: Add  offset and limit parameters.
+        if ($input->getOption('operation') == 'get_events') {
+            $repository = $this->getContainer()->get('doctrine')->getRepository(FixityCheckEvent::class);
+            $events = $repository->findFixityCheckEvents(
+                $input->getOption('resource_id')
+            );
+            if (count($events)) {
+                $event_entries = array();
+                foreach ($events as $event) {
+                    $event_array = array();
+                    $event_array['event_uuid'] = $event->getEventUuid();
+                    $event_array['resource_id'] = $event->getResourceId();
+                    $event_array['event_type'] = $event->getEventType();
+                    $event_array['datestamp'] = $event->getDatestamp();
+                    $event_array['hash_algorithm'] = $event->getHashAlgorithm();
+                    $event_array['hash_value'] = $event->getHashValue();
+                    $event_array['event_detail'] = $event->getEventDetail();
+                    $event_array['event_outcome'] = $event->getEventOutcome();
+                    $event_array['event_outcome_detail_note'] = $event->getEventOutcomeDetailNote();
+                    $event_entries[] = $event_array;
+                }
+            }
+            // $output requires a string.
+            $output->write(serialize($event_entries));
         }
         if ($input->getOption('operation') == 'persist_fix_event') {
             $entityManager = $this->getContainer()->get('doctrine')->getEntityManager();

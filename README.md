@@ -97,7 +97,7 @@ would return a list of all fixity events for the Fedora resource `http://example
 To see the API in action,
 
 1. run `php bin/console server:start`
-1. run `curl -v -H "Resource-ID:http://localhost:8080/mockrepository/rest/17" http://localhost:8000/api/fixity`
+1. run ``curl -v -H 'Resource-ID:http://localhost:8000/mockrepository/rest/10' http://localhost:8000/api/fixity``
 
 You should get a response like this:
 
@@ -105,26 +105,62 @@ You should get a response like this:
 *   Trying 127.0.0.1...
 * TCP_NODELAY set
 * Connected to localhost (127.0.0.1) port 8000 (#0)
-> GET /api/resource HTTP/1.1
+> GET /api/fixity HTTP/1.1
 > Host: localhost:8000
 > User-Agent: curl/7.58.0
 > Accept: */*
+> Resource-ID:http://localhost:8000/mockrepository/rest/10
 > 
-* HTTP 1.0, assume close after body
-< HTTP/1.0 200 OK
+< HTTP/1.1 200 OK
 < Host: localhost:8000
-< Date: Fri, 07 Sep 2018 07:01:01 -0700
+< Date: Sun, 30 Sep 2018 10:13:49 -0700
 < Connection: close
-< X-Powered-By: PHP/7.2.7-0ubuntu0.18.04.2
+< X-Powered-By: PHP/7.2.10-0ubuntu0.18.04.1
 < Cache-Control: no-cache, private
-< Date: Fri, 07 Sep 2018 14:01:01 GMT
+< Date: Sun, 30 Sep 2018 17:13:49 GMT
 < Content-Type: application/json
 < 
-* Closing connection 0
-["fixity event 1 for resource http:\/\/localhost:8080\/mockrepository\/rest\/17","fixity event 2 for resource http:\/\/localhost:8080\/mockrepository\/rest\/17","fixity event 3 for resource http:\/\/localhost:8080\/mockrepository\/rest\/17"]
 ```
 
-HTTP `POST` and `PATCH` are also supported, e.g.:
+The returned JSON looks like this:
+
+```javascript
+[
+  {
+    "event_uuid": "350c8922-27c8-4a31-ab53-2d1eb4eda76e",
+    "resource_id": "http://localhost:8000/mockrepository/rest/10",
+    "event_type": "ing",
+    "datestamp": {
+      "date": "2018-09-19 05:23:20.000000",
+      "timezone_type": 3,
+      "timezone": "America/Los_Angeles"
+    },
+    "hash_algorithm": "SHA-1",
+    "hash_value": "c28097ad29ab61bfec58d9b4de53bcdec687872e",
+    "event_detail": "",
+    "event_outcome": "suc",
+    "event_outcome_detail_note": ""
+  },
+  {
+    "event_uuid": "21ef3899-e431-4c1c-a4dc-a2d168a01f69",
+    "resource_id": "http://localhost:8000/mockrepository/rest/10",
+    "event_type": "fix",
+    "datestamp": {
+      "date": "2018-09-29 09:04:46.000000",
+      "timezone_type": 3,
+      "timezone": "America/Los_Angeles"
+    },
+    "hash_algorithm": "SHA-1",
+    "hash_value": "c28097ad29ab61bfec58d9b4de53bcdec687872e",
+    "event_detail": "",
+    "event_outcome": "suc",
+    "event_outcome_detail_note": ""
+  },
+  // [...]
+]
+```
+
+HTTP `POST` and `PATCH` will also be supported, e.g.:
 
 ```
 curl -v -X POST -H "Resource-ID:http://localhost:8080/mockrepository/rest/17" http://localhost:8000/api/fixity

@@ -15,50 +15,44 @@ class FixityController
     public function read(Request $request, ParameterBagInterface $params, KernelInterface $kernel)
     {
         $resource_id = $request->headers->get('Resource-ID');
-        // Dummy data.
-        $data = array(
-            'fixity event 1 for resource ' . $resource_id,
-            'fixity event 2 for resource ' . $resource_id,
-            'fixity event 3 for resource ' . $resource_id
-        );
 
-        // Testing calling plugin from controller. If you run 'curl -v http://localhost:8000/api/resource/10'
-        // your request will return the last entry in the database for resource 10. Some might argue that
-        // reusable code like the persit code should be a service, not a command, but using a command
-        // lets us enable plugins via congfiguration only. If we implemented plugins as services, we couldn't
-        // do that, since calling class would need to "use" the service. Is there a way around this? See
-        // https://symfony.com/doc/current/service_container/configurators.html.
+        // phpcs:disable
+        // Initial implementation of calling plugin from controller. If you run
+        // curl -v -H 'Resource-ID:http://localhost:8000/mockrepository/rest/10' http://localhost:8000/api/fixity
+        // your request will return the fixity event entries in the database for resource 10.
+        // phpcs:ensable
         $this->params = $params;
         $this->http_method = $this->params->get('app.fixity.method');
         $this->fixity_algorithm = $this->params->get('app.fixity.algorithm');
-
-        // Set in the parameters section of config/services.yaml.
-        $this->fetchPlugins = $this->params->get('app.plugins.fetch');
         $this->persistPlugins = $this->params->get('app.plugins.persist');
 
-        $get_last_digest_plugin_command = new Application($kernel);
-        $get_last_digest_plugin_command->setAutoExit(false);
+        // @todo: If we allow multiple persist plugins, the last one called determines
+        // the value of $last_digest_for_resource.
+        $this->persistPlugin = $this->persistPlugins[0];
 
-        $now_iso8601 = date('c');
-        $resource_id = 'http://localhost:8000/examplerepository/rest/' . $id;
+        $get_events_plugin_command = new Application($kernel);
+        $get_events_plugin_command->setAutoExit(false);
 
-        $get_last_digest_plugin_input = new ArrayInput(array(
-           'command' => 'app:riprap:plugin:persist:to:database',
+        $get_events_plugin_input = new ArrayInput(array(
+           'command' => $this->persistPlugin,
             '--resource_id' => $resource_id,
-            '--timestamp' => $now_iso8601,
-            '--digest_algorithm' => $this->fixity_algorithm,
+            '--timestamp' => '',
+            '--digest_algorithm' => '',
             '--event_uuid' => '',
             '--digest_value' => '',
             '--outcome' => '',
-            '--operation' => 'get_last_digest',
+            '--operation' => 'get_events',
         ));
-        $get_last_digest_plugin_output = new BufferedOutput();
-        $get_last_digest_plugin_return_code = $get_last_digest_plugin_command->run($get_last_digest_plugin_input, $get_last_digest_plugin_output);
-        $last_digest_for_resource = $get_last_digest_plugin_output->fetch();
+        $get_events_plugin_output = new BufferedOutput();
+        $get_events_plugin_return_code = $get_events_plugin_command->run($get_events_plugin_input, $get_events_plugin_output);
+        $events_for_resource = $get_events_plugin_output->fetch();
 
-        $data = array($last_digest_for_resource);
-
-        $response = new JsonResponse($data);
+        // $events_for_resource is a serialized PHP array.
+        if (getenv('APP_ENV') == 'test') {
+            $response = new JsonResponse(array());
+        } else {
+            $response = new JsonResponse(unserialize($events_for_resource));
+        }
         return $response;
     }
 

@@ -22,8 +22,10 @@ parameters:
     app.plugins.postvalidate.mailfailures.from: 'from@example.com'
     app.plugins.postvalidate.mailfailures.to: 'to@example.com'
 
-# Do not modify any of the values below this line.
+    # Set to 'disabled' in production.
+    app.mockrepository: 'enabled'
 
+# Do not modify any of the values below this line.
 services:
     # default configuration for services in *this* file
     _defaults:

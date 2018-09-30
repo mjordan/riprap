@@ -120,8 +120,14 @@ class CheckFixityCommand extends ContainerAwareCommand
                         $get_last_digest_plugin_input,
                         $get_last_digest_plugin_output
                     );
-                    // Contains the last recorded digest for this resource. We compare this value with
-                    // the digest retrieved during the current fixity validation event.
+                    // $last_digest_for_resource contains the last recorded digest for this resource.
+                    // We compare this value with the digest retrieved during the current fixity
+                    // validation event.
+
+                    // @todo: If we allow multiple persist plugins, the last one called determines
+                    // the value of $last_digest_for_resource. Is that OK? Is there a real use case
+                    // for persisting to multiple places? If so, can we persist to additional places
+                    // using a postvalidate plugin instead of multiple persist plugins?
                     $last_digest_for_resource = $get_last_digest_plugin_output->fetch();
                     $this->logger->info("Persist plugin ran.", array(
                         'plugin_name' => $persist_plugin_name,
