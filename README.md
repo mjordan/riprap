@@ -18,7 +18,7 @@ All events must have a value of `suc` or `fail` (using values from the PREMIS Ev
 
 ## Current status
 
-Riprap is still in early development, but all the major functional components are working using test/sample data. Riprap is not yet ready for production but will be by December 2018.
+Riprap is still in early development, but all the major functional components are working using test/sample data and the mock Fedora repository endpoint (see below). Riprap is not yet ready for production but will be by December 2018.
 
 ## Requirements
 
@@ -36,7 +36,7 @@ We will eventually support deployment via Ansible.
 
 ## Trying it out
 
-If you want to play with Riprap, and you're on a Linux or OSX machine, you should not need to configure anything. Assuming you have sqlite installed, you should be able to run the `check_fixity` command against the sample data and local web server, and perform basic API requests requests as documented below. A couple of things you will want to know:
+If you want to play with Riprap, and you're on a Linux or OSX machine, you should not need to configure anything. Assuming you have sqlite installed, you should be able to run the `check_fixity` command against the sample data and local web server, and perform basic API requests as documented below. A couple of things you will want to know:
 
 * the database created by Symfony will be in located at `[riprap directory]/var/data.db`
 * Riprap will write its log to `/tmp/riprap.log`
@@ -73,7 +73,7 @@ id|event_uuid|event_type|resource_id|datestamp|hash_algorithm|hash_value|event_d
 sqlite> 
 ```
 
-## Usage
+## Running the check_fixity command
 
 From within the `riprap` directory, start the web server by running the `server:start` command. Then, run the `app:riprap:check_fixity` command, e.g.:
 
@@ -84,7 +84,15 @@ You should see output similar to:
 
 `Riprap validated 5 resources (5 successful events, 0 failed events).`
 
-If you repeat the SQL query above, you will see five more events in your database.
+Here is what is going on when you run the `check_fixity` command:
+
+1. Riprap calls whatever `fetchresourcelist` plugins are enabled (there can be more than one), and from them gets a list of all resources to check. In the default sample configuration, this list of resources is a plain text file at `resources/iprap_resource_ids.txt`.
+1. For each of the resources identifed by the `fetchresourcelist` plugins, Riprap calls the `fetchdigest` plugin that is enabled, and gets the resource's digest value from the repository. In the default sample configuration, Riprap is calling its mock repository endpoint.
+1. Riprap then gets the digest value in the most recent fixity check event stored in its database (in the default sample configuration, this is fixity events stored in the SQLite database), and compares the newly retrieved digest value with the most recent one on record.
+1. Riprap then persists information about the fixity check event it just performed (in the default sample configuration, back into the SQLite database). If you repeat the SQL query above, you will see five more events in your database, one corresponding to each URL listed in `resources/iprap_resource_ids.txt`.
+1. Riprap then executes all `postvalidate` plugins that are enabled.
+1. After Riprap has checked all resources in the current list, it reports out how many resources it checked, including how many checks were successful and how many failed.
+
 
 ### REST API
 
@@ -249,7 +257,7 @@ See [CONTRIBUTING.md](docs/CONTRIBUTING.md).
 
 From within the `riprap` directory, run:
 
-`php bin/phpunit`
+`./bin/phpunit`
 
 ### Coding standards
 
