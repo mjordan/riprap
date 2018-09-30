@@ -28,7 +28,7 @@ class CheckFixityCommand extends ContainerAwareCommand
         $this->fetchResourceListPlugins = $this->params->get('app.plugins.fetchresourcelist');
         $this->fetchDigestPlugin = $this->params->get('app.plugins.fetchdigest');
         $this->persistPlugins = $this->params->get('app.plugins.persist');
-        $this->postValidatePlugins = $this->params->get('app.plugins.postvalidate');
+        $this->postCheckPlugins = $this->params->get('app.plugins.postcheck');
 
         // Set log output path in config/packages/{environment}/monolog.yaml
         $this->logger = $logger;
@@ -40,13 +40,13 @@ class CheckFixityCommand extends ContainerAwareCommand
     {
         $this
             ->setName('app:riprap:check_fixity')
-            ->setDescription('Console tool for running batches of fixity validation events against ' .
+            ->setDescription('Console tool for running batches of fixity check events against ' .
                 'a Fedora (or other) repository.');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        // Execute plugins that get a list of resource IDs to validate.
+        // Execute plugins that get a list of resource IDs to check.
         $resource_ids = array();
         $num_resource_ids = 0;
         if (count($this->fetchResourceListPlugins) > 0) {
@@ -82,11 +82,11 @@ class CheckFixityCommand extends ContainerAwareCommand
         // Workaround for making tests pass.
         $env = getenv('APP_ENV');
         if ($num_resource_ids == 0 && $env =! 'test') {
-            $this->logger->info("There are no resources to validate. Exiting.");
+            $this->logger->info("There are no resources to check. Exiting.");
             exit;
         }
 
-        // Loop through the list of resource IDs and perform a fixity validation event on each of them.
+        // Loop through the list of resource IDs and perform a fixity check event on each of them.
         $num_successful_events = 0;
         $num_failed_events = 0;
         foreach ($resource_ids as $resource_id) {
@@ -122,12 +122,12 @@ class CheckFixityCommand extends ContainerAwareCommand
                     );
                     // $last_digest_for_resource contains the last recorded digest for this resource.
                     // We compare this value with the digest retrieved during the current fixity
-                    // validation event.
+                    // check event.
 
                     // @todo: If we allow multiple persist plugins, the last one called determines
                     // the value of $last_digest_for_resource. Is that OK? Is there a real use case
                     // for persisting to multiple places? If so, can we persist to additional places
-                    // using a postvalidate plugin instead of multiple persist plugins?
+                    // using a postcheck plugin instead of multiple persist plugins?
                     $last_digest_for_resource = $get_last_digest_plugin_output->fetch();
                     $this->logger->info("Persist plugin ran.", array(
                         'plugin_name' => $persist_plugin_name,
@@ -202,12 +202,12 @@ class CheckFixityCommand extends ContainerAwareCommand
                 }
             }
 
-            // Execute post-validate plugins that react to a fixity validation event
+            // Execute post-check plugins that react to a fixity check event
             // (email admin, migrate legacy data, etc.).
-            if (count($this->postValidatePlugins) > 0) {
-                foreach ($this->postValidatePlugins as $postvalidate_plugin_name) {
-                    $postvalidate_plugin_command = $this->getApplication()->find($postvalidate_plugin_name);
-                    $postvalidate_plugin_input = new ArrayInput(array(
+            if (count($this->postCheckPlugins) > 0) {
+                foreach ($this->postCheckPlugins as $postcheck_plugin_name) {
+                    $postcheck_plugin_command = $this->getApplication()->find($postcheck_plugin_name);
+                    $postcheck_plugin_input = new ArrayInput(array(
                         '--resource_id' => $resource_id,
                         '--timestamp' => $now_iso8601,
                         '--digest_algorithm' => $this->fixity_algorithm,
@@ -215,24 +215,24 @@ class CheckFixityCommand extends ContainerAwareCommand
                         '--digest_value' => $current_digest_plugin_return_value,
                         '--outcome' => $outcome,
                     ));
-                    $postvalidate_plugin_output = new BufferedOutput();
-                    $postvalidate_plugin_return_code = $postvalidate_plugin_command->run(
-                        $postvalidate_plugin_input,
-                        $postvalidate_plugin_output
+                    $postcheck_plugin_output = new BufferedOutput();
+                    $postcheck_plugin_return_code = $postcheck_plugin_command->run(
+                        $postcheck_plugin_input,
+                        $postcheck_plugin_output
                     );
                     // Currently not used.
-                    $postvalidate_plugin_output_string = $postvalidate_plugin_output->fetch();
+                    $postcheck_plugin_output_string = $postcheck_plugin_output->fetch();
                     $this->logger->info(
-                        "Post validate plugin ran.",
+                        "Post check plugin ran.",
                         array(
-                            'plugin_name' => $postvalidate_plugin_name,
-                            'return_code' => $postvalidate_plugin_return_code
+                            'plugin_name' => $postcheck_plugin_name,
+                            'return_code' => $postcheck_plugin_return_code
                         )
                     );
                 }
             }
         }
-        $output->writeln("Riprap validated $num_resource_ids resources ($num_successful_events successful events, " .
+        $output->writeln("Riprap checked $num_resource_ids resources ($num_successful_events successful events, " .
             "$num_failed_events failed events).");
     }
 }

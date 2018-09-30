@@ -1,5 +1,5 @@
 <?php
-// src/Command/PluginPostValidateMailFailures.php
+// src/Command/PluginPostCheckMailFailures.php
 namespace App\Command;
 
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
@@ -13,15 +13,15 @@ use Psr\Log\LoggerInterface;
 
 use App\Entity\Event;
 
-class PluginPostValidateMailFailures extends ContainerAwareCommand
+class PluginPostCheckMailFailures extends ContainerAwareCommand
 {
     private $params;
 
     public function __construct(ParameterBagInterface $params = null, LoggerInterface $logger = null)
     {
         $this->params = $params;
-        $this->email_from = $this->params->get('app.plugins.postvalidate.mailfailures.from');
-        $this->email_to = $this->params->get('app.plugins.postvalidate.mailfailures.to');
+        $this->email_from = $this->params->get('app.plugins.postcheck.mailfailures.from');
+        $this->email_to = $this->params->get('app.plugins.postcheck.mailfailures.to');
 
         // Set log output path in config/packages/{environment}/monolog.yaml
         $this->logger = $logger;
@@ -32,13 +32,13 @@ class PluginPostValidateMailFailures extends ContainerAwareCommand
     protected function configure()
     {
         $this
-            ->setName('app:riprap:plugin:postvalidate:mailfailures')
-            ->setDescription('A Riprap plugin that emails notifications of fixity validation failures.');
+            ->setName('app:riprap:plugin:postcheck:mailfailures')
+            ->setDescription('A Riprap plugin that emails notifications of fixity check failures.');
 
         // phpcs:disable
         $this
             ->addOption('timestamp', null, InputOption::VALUE_REQUIRED, 'ISO 8601 date when the fixity validation event occured.')
-            ->addOption('resource_id', null, InputOption::VALUE_REQUIRED, 'Fully qualifid URL of the resource to validate.')
+            ->addOption('resource_id', null, InputOption::VALUE_REQUIRED, 'Fully qualifid URL of the resource to check.')
             ->addOption('event_uuid', null, InputOption::VALUE_REQUIRED, 'UUID of the fixity validation event.')
             ->addOption('digest_algorithm', null, InputOption::VALUE_REQUIRED, 'Algorithm used to generate the digest.')
             ->addOption('digest_value', null, InputOption::VALUE_REQUIRED, 'Value of the digest retrieved from the Fedora repository.')

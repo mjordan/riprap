@@ -73,7 +73,7 @@ id|event_uuid|event_type|resource_id|datestamp|hash_algorithm|hash_value|event_d
 sqlite> 
 ```
 
-## Running the check_fixity command
+### Running the check_fixity command
 
 From within the `riprap` directory, start the web server by running the `server:start` command. Then, run the `app:riprap:check_fixity` command, e.g.:
 
@@ -82,7 +82,7 @@ From within the `riprap` directory, start the web server by running the `server:
 
 You should see output similar to:
 
-`Riprap validated 5 resources (5 successful events, 0 failed events).`
+`Riprap checked 5 resources (5 successful events, 0 failed events).`
 
 Here is what is going on when you run the `check_fixity` command:
 
@@ -90,13 +90,13 @@ Here is what is going on when you run the `check_fixity` command:
 1. For each of the resources identifed by the `fetchresourcelist` plugins, Riprap calls the `fetchdigest` plugin that is enabled, and gets the resource's digest value from the repository. In the default sample configuration, Riprap is calling its mock repository endpoint.
 1. Riprap then gets the digest value in the most recent fixity check event stored in its database (in the default sample configuration, this is fixity events stored in the SQLite database), and compares the newly retrieved digest value with the most recent one on record.
 1. Riprap then persists information about the fixity check event it just performed (in the default sample configuration, back into the SQLite database). If you repeat the SQL query above, you will see five more events in your database, one corresponding to each URL listed in `resources/iprap_resource_ids.txt`.
-1. Riprap then executes all `postvalidate` plugins that are enabled.
+1. Riprap then executes all `postcheck` plugins that are enabled.
 1. After Riprap has checked all resources in the current list, it reports out how many resources it checked, including how many checks were successful and how many failed.
 
 
 ### REST API
 
-Preliminary scaffolding is in place for a simple HTTP REST API, which will allow external applications like Drupal to retrieve fixity validation data on specific Fedora resources and to add new and updated fixity validation data. For example, a `GET` request to:
+Preliminary scaffolding is in place for a simple HTTP REST API, which will allow external applications like Drupal to retrieve fixity check data on specific Fedora resources and to add new and updated fixity check data. For example, a `GET` request to:
 
 `curl -v -H "Resource-ID:http://example.com/repository/resource/12345" http://localhost:8000/api/fixity`
 
@@ -194,7 +194,7 @@ curl -v -X POST -H "Resource-ID:http://localhost:8080/mockrepository/rest/17" ht
 ["new fixity event for resource http:\/\/localhost:8080\/mockrepository\/rest\/17"]
 ```
 
-### Mock Fedora repository endpoint
+## Mock Fedora repository endpoint
 
 To assist in development and testing, Riprap includes an endpoint that simulates the behaviour described in section [7.2](https://fcrepo.github.io/fcrepo-specification/#persistence-fixity) of the spec. If you start Symfony's test server as described above, this endpoint is available via `GET` or `HEAD` requests at `http://localhost:8000/mockrepository/rest/{id}`, where `{id}` is a number from 1-20 (these are mock "resource IDs" included in the sample data). Calls to it should include a `Want-Digest` header with the value `SHA-1`, e.g.:
 
@@ -231,12 +231,12 @@ If the resource is not found, the response will be `404`. If the `{id}` is not v
 
 ### Plugins
 
-One of Riprap's principle design requirements is flexibility. To meet this goal, it uses plugins to process most of its input and output. It supports plugins that:
+One of Riprap's principle design requirements is flexibility. To meet this goal, it uses plugins to process most of its input and output. It supports four types of plugins:
 
-* Fetch a set of Fedora resource URLs to fixity check (e.g., from the Fedora repository's triplestore, from Drupal, from a CSV file). A sample plugin that reads resource URLs from a text file, `app:riprap:plugin:fetch:from:file`, already exists and is configured in `config/services.yaml`.
-* Query an external utility or service to get the digest of the current resource. A plugin that queries a Fedora API Specification-compliant repository, `app:riprap:plugin:fetchdigest:from:fedoraapi`, and is configured in `config/services.yaml`.
-* Persist data (e.g., to a RDBMS, to the Fedora repository, etc.) after performing a fixity check on each Fedora resource. A plugin to persist fixity events to a relational database, `app:riprap:plugin:persist:to:database`, already exists and is configured in `config/services.yaml`.
-* Execute after performing a fixity check on each Fedora resource. Two plugins of this type are available: a plugin that sends an email on failure, `app:riprap:plugin:postvalidate:mailfailures`, and a (not yet complete) plugin that will be able to migrate fixity events from a legacy system (in this case, Fedora 3.x AUDIT data). Both plugins are confiured in `config/services.yaml`.
+* "fetchresourcelist" plugins fetch a set of Fedora resource URLs to fixity check (e.g., from the Fedora repository's triplestore, from Drupal, from a CSV file). A sample plugin that reads resource URLs from a text file, `app:riprap:plugin:fetch:from:file`, already exists and is configured in `config/services.yaml`. Multiple fetchresourcelist plugins can be configured at once.
+* "fetchdigest" plugins query an external utility or service to get the digest of the current resource. A plugin that queries a Fedora API Specification-compliant repository, `app:riprap:plugin:fetchdigest:from:fedoraapi`, and is configured in `config/services.yaml`. Only one fetchdigest plugin can be configured.
+* "persist" plugins persist data after performing a fixity check on each Fedora resource (e.g. to a RDBMS, into the Fedora repository, etc.). A plugin to persist fixity events to a relational database, `app:riprap:plugin:persist:to:database`, already exists and is configured in `config/services.yaml`. Multiple persist plugins can be configured at once.
+* "postcheck" plugins execute after performing a fixity check on each Fedora resource. Two plugins of this type currently exist: a plugin that sends an email on failure, `app:riprap:plugin:postcheck:mailfailures`, and a (not yet complete) plugin that will be able to migrate fixity events from a legacy system (in this case, Fedora 3.x AUDIT data). Both plugins are confiured in `config/services.yaml`. Multiple postcheck plugins can be configured at once.
 
 ### Message queue listener
 

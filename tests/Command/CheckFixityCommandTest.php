@@ -25,7 +25,7 @@ class CheckFixityCommandTest extends KernelTestCase
             'app.plugins.fetchresourcelist' => array(),
             'app.plugins.fetchdigest' => array(),
             'app.plugins.persist' => array(),
-            'app.plugins.postvalidate' => array())
+            'app.plugins.postcheck' => array())
         );
 
         $kernel = self::bootKernel();
@@ -42,6 +42,6 @@ class CheckFixityCommandTest extends KernelTestCase
 
         // The output of the command in the console.
         $output = $commandTester->getDisplay();
-        $this->assertContains('Riprap validated', $output);
+        $this->assertContains('Riprap checked', $output);
     }
 }

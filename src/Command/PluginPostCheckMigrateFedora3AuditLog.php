@@ -1,5 +1,5 @@
 <?php
-// src/Command/PluginPostValidateMigrateFedora3AuditLog.php
+// src/Command/PluginPostCheckMigrateFedora3AuditLog.php
 
 /**
  * This Riprap plugin provides a strategy for migrating fixity events from a
@@ -23,7 +23,7 @@ use Psr\Log\LoggerInterface;
 
 use App\Entity\Event;
 
-class PluginPostValidateMigrateFedora3AuditLog extends ContainerAwareCommand
+class PluginPostCheckMigrateFedora3AuditLog extends ContainerAwareCommand
 {
     private $params;
 
@@ -39,14 +39,14 @@ class PluginPostValidateMigrateFedora3AuditLog extends ContainerAwareCommand
     protected function configure()
     {
         $this
-            ->setName('app:riprap:plugin:postvalidate:migratefedora3auditlog')
+            ->setName('app:riprap:plugin:postcheck:migratefedora3auditlog')
             ->setDescription('A Riprap plugin that persists fixity events from a resources\'s ' .
                 'Fedora 3.x AUDIT datastream to Riprap.');
 
         // phpcs:disable
         $this
             ->addOption('timestamp', null, InputOption::VALUE_REQUIRED, 'ISO 8601 date when the fixity validation event occured.')
-            ->addOption('resource_id', null, InputOption::VALUE_REQUIRED, 'Fully qualifid URL of the resource to validate.')
+            ->addOption('resource_id', null, InputOption::VALUE_REQUIRED, 'Fully qualifid URL of the resource to check.')
             ->addOption('event_uuid', null, InputOption::VALUE_REQUIRED, 'UUID of the fixity validation event.')
             ->addOption('digest_algorithm', null, InputOption::VALUE_REQUIRED, 'Algorithm used to generate the digest.')
             ->addOption('digest_value', null, InputOption::VALUE_REQUIRED, 'Value of the digest retrieved from the Fedora repository.')
@@ -59,7 +59,7 @@ class PluginPostValidateMigrateFedora3AuditLog extends ContainerAwareCommand
         // phpcs:disable
         # Note: If this plugin is enabled in services.yaml, it executes but has no effect.
 
-        # See PluginPostValidateMigrateFedora3AuditLogTest.php for code that implements the following logic.
+        # See PluginPostCheckMigrateFedora3AuditLogTest.php for code that implements the following logic.
 
         # For the current resource, retrieve the binary resource containing its Fedora 3.x AUDIT datastream.
         # Parse out the audit records (XPath $audit_xml->xpath('//audit:record').

@@ -17,10 +17,10 @@ parameters:
     # To not register any persist plugins, use app.plugins.persist []
     app.plugins.persist: ['app:riprap:plugin:persist:to:database']
   
-    # To not register any postvalidation plugins, use app.plugins.postvalidatea []
-    app.plugins.postvalidate: ['app:riprap:plugin:postvalidate:mailfailures', 'app:riprap:plugin:postvalidate:migratefedora3auditlog']
-    app.plugins.postvalidate.mailfailures.from: 'from@example.com'
-    app.plugins.postvalidate.mailfailures.to: 'to@example.com'
+    # To not register any postcheck plugins, use app.plugins.postcheck []
+    app.plugins.postcheck: ['app:riprap:plugin:postcheck:mailfailures', 'app:riprap:plugin:postcheck:migratefedora3auditlog']
+    app.plugins.postcheck.mailfailures.from: 'from@example.com'
+    app.plugins.postcheck.mailfailures.to: 'to@example.com'
 
     # Set to 'disabled' in production.
     app.mockrepository: 'enabled'

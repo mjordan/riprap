@@ -2,14 +2,14 @@
 
 namespace App\Tests\Command;
 
-use App\Command\PluginPostValidateMigrateFedora3AuditLog;
+use App\Command\PluginPostCheckMigrateFedora3AuditLog;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Console\Tester\CommandTester;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 
-class PluginPostValidateMigrateFedora3AuditLogTest extends KernelTestCase
+class PluginPostCheckMigrateFedora3AuditLogTest extends KernelTestCase
 {
     public $params;
 
@@ -21,9 +21,9 @@ class PluginPostValidateMigrateFedora3AuditLogTest extends KernelTestCase
         $kernel = self::bootKernel();
         $application = new Application($kernel);
 
-        $application->add(new PluginPostValidateMigrateFedora3AuditLog());
+        $application->add(new PluginPostCheckMigrateFedora3AuditLog());
 
-        $command = $application->find('app:riprap:plugin:postvalidate:migratefedora3auditlog');
+        $command = $application->find('app:riprap:plugin:postcheck:migratefedora3auditlog');
 
         $commandTester = new CommandTester($command);
         $commandTester->execute(array(
