@@ -1,0 +1,4 @@
+# Filename/SHA-1 digest pairs.
+file1.bin,85e9d4014da20770b685e9c980b4db64147f1f6c
+file2.bin,98b342eb17c1f547a723854a09e717634d8b9832
+file3.bin,7bb2e6023344e35e72150af91c8c1a8896f4af4d
