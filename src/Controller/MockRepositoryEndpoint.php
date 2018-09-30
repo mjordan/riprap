@@ -1,5 +1,5 @@
 <?php
-// src/Controller/mockrepositoryEndpoint.php
+// src/Controller/MockRepositoryEndpoint.php
 
 /**
  * Controller that simmulates persistence fixity responses by a
@@ -15,9 +15,8 @@ class MockRepositoryEndpoint
 {
     public function read(Request $request, $id)
     {
-        // Made up digests for made up resources.
+        // Digests corresponding to the resource IDs in the 'fixity_check_event' table.
         $digests = array(
-            // resource id = > SHA-1 values, matching the test data in the fixture data.
             '1' => '5a5b0f9b7d3f8fc84c3cef8fd8efaaa6c70d75ab',
             '2' => 'b1d5781111d84f7b3fe45a0852e59758cd7a87e5',
             '3' => '310b86e0b62b828562fc91c7be5380a992b2786a',
