@@ -64,7 +64,7 @@ class PluginFetchDigestFromFedoraAPI extends ContainerAwareCommand
         } else {
             // If the HTTP status code is not in the allowed list, log it.
             $this->logger->warning("check_fixity cannot retrieve digest from repository.", array(
-                'resource_id => $url',
+                'resource_id' => $url,
                 'status_code' => $status_code,
             ));
             $output->writeln($status_code);

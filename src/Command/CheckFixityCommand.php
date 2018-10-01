@@ -152,6 +152,7 @@ class CheckFixityCommand extends ContainerAwareCommand
                     $this->logger->info("Fetchdigest plugin ran.", array(
                         'plugin_name' => $this->fetchDigestPlugin,
                         'return_code' => $get_current_digest_plugin_return_code,
+                        // Assumes that the plugin use http... but our filesystemexmaple one doesn't.
                         'http_response_code' => $current_digest_plugin_return_value,
                     ));
 

@@ -229,6 +229,8 @@ One of Riprap's principle design requirements is flexibility. To meet this goal,
 * "persist" plugins persist data after performing a fixity check on each Fedora resource (e.g. to a RDBMS, into the Fedora repository, etc.). A plugin to persist fixity events to a relational database, `app:riprap:plugin:persist:to:database`, already exists and is configured in `config/services.yaml`. Multiple persist plugins can be configured at once.
 * "postcheck" plugins execute after performing a fixity check on each Fedora resource. Two plugins of this type currently exist: a plugin that sends an email on failure, `app:riprap:plugin:postcheck:mailfailures`, and a (not yet complete) plugin that will be able to migrate fixity events from a legacy system (in this case, Fedora 3.x AUDIT data). Both plugins are confiured in `config/services.yaml`. Multiple postcheck plugins can be configured at once.
 
+A second set of simple example plugins is included in the `resources/filesystemexample/src/Command` directory. See the their [README.md](resources/filesystemexample/README.md) file for more information.
+
 ### Message queue listener
 
 Riprap will also be able to listen to an ActiveMQ queue and generate corresponding fixity events for newly added or updated resources. Not implemented yet.

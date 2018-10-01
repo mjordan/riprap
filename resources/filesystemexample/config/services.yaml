@@ -8,19 +8,19 @@ parameters:
     app.fixity.eventtype.code: 'fix'
 
     # To not register any fetchresourcelist plugins, use app.plugins.fetchresourcelist []
-    app.plugins.fetchresourcelist: ['app:riprap:plugin:fetchresourcelist:from:file']
+    # app.plugins.fetchresourcelist: ['app:riprap:plugin:fetchresourcelist:from:file']
     app.plugins.fetchresourcelist.from.file.paths: ['resources/riprap_resource_ids.txt']
 
     # To not register any fetchdigest plugins, use app.plugins.fetchdigest [].
     # Currently we only allow one fetchdigest plugin per fixity event (i.e., this
     # value is not an array).
-    app.plugins.fetchdigest: 'app:riprap:plugin:fetchdigest:from:fedoraapi'
+    # app.plugins.fetchdigest: 'app:riprap:plugin:fetchdigest:from:fedoraapi'
 
     # To not register any persist plugins, use app.plugins.persist []
-    app.plugins.persist: ['app:riprap:plugin:persist:to:database']
+    # app.plugins.persist: ['app:riprap:plugin:persist:to:database']
   
     # To not register any postcheck plugins, use app.plugins.postcheck []
-    app.plugins.postcheck: ['app:riprap:plugin:postcheck:mailfailures', 'app:riprap:plugin:postcheck:migratefedora3auditlog']
+    # app.plugins.postcheck: ['app:riprap:plugin:postcheck:mailfailures', 'app:riprap:plugin:postcheck:migratefedora3auditlog']
     app.plugins.postcheck.mailfailures.from: 'from@example.com'
     app.plugins.postcheck.mailfailures.to: 'to@example.com'
 
@@ -28,12 +28,12 @@ parameters:
     app.mockrepository: 'enabled'
 
     ### Sample plugins
-    # app.plugins.fetchresourcelist: ['app:riprap:plugin:fetchresourcelist:from:glob']
-    # app.plugins.fetchresourcelist.from.glob.file_directory: 'resources/filesystemexample/resourcefiles'
-    # app.plugins.fetchdigest: 'app:riprap:plugin:fetchdigest:from:shell'
-    # app.plugins.fetchdigrest.from.shell.command: '/usr/bin/sha1sum'
-    # app.plugins.persist: ['app:riprap:plugin:persist:to:csv']
-    # app.plugins.postcheck: ['app:riprap:plugin:postcheck:sayhi']
+    app.plugins.fetchresourcelist: ['app:riprap:plugin:fetchresourcelist:from:glob']
+    app.plugins.fetchresourcelist.from.glob.file_directory: 'resources/filesystemexample/resourcefiles'
+    app.plugins.fetchdigest: 'app:riprap:plugin:fetchdigest:from:shell'
+    app.plugins.fetchdigrest.from.shell.command: '/usr/bin/sha1sum'
+    app.plugins.persist: ['app:riprap:plugin:persist:to:csv']
+    app.plugins.postcheck: ['app:riprap:plugin:postcheck:sayhi']
 
 
 ### Do not modify any of the values below this line.

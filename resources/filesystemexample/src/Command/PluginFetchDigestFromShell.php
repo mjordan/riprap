@@ -57,7 +57,7 @@ class PluginFetchDigestFromShell extends ContainerAwareCommand
                 'resource_id' => $file_path,
                 'status_code' => $return,
             ));
-            $output->writeln();
+            $output->writeln($return);
         }
     }
 }
