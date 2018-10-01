@@ -21,7 +21,7 @@ class PluginFetchDigestFromShell extends ContainerAwareCommand
     public function __construct(ParameterBagInterface $params = null, LoggerInterface $logger = null)
     {
         $this->params = $params;
-        $this->external_program = $this->params->get('app.plugins.fetchdigrest.from.shell.command'); // /usr/bin/sha1sum
+        $this->external_program = $this->params->get('app.plugins.fetchdigrest.from.shell.command');
 
         $this->logger = $logger;
 
@@ -45,28 +45,19 @@ class PluginFetchDigestFromShell extends ContainerAwareCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        /*
-        $client = new \GuzzleHttp\Client();
-        $url = $input->getOption('resource_id');
-
-        $response = $client->request($this->http_method, $url, [
-            'http_errors' => false,
-            'headers' => ['Want-Digest' => $this->fixity_algorithm],
-        ]);
-        $status_code = $response->getStatusCode();
-        $allowed_codes = array(200);
-        if (in_array($status_code, $allowed_codes)) {
-            $digest_header_values = $response->getHeader('digest');
-            // Assumes there is only one 'digiest' header - is this always the case?
-            $output->writeln($digest_header_values[0]);
+        $file_path = $input->getOption('resource_id');
+        $external_program_command = $this->external_program . ' ' . $file_path;
+        $external_program_command = escapeshellcmd($external_program_command);
+        $command_output = exec($external_program_command, $external_program_command_output, $return);
+        if ($return == 0) {
+            list($digest, $path) = preg_split('/\s/', $external_program_command_output[0]);
+            $output->writeln(trim($digest));
         } else {
-            // If the HTTP status code is not in the allowed list, log it.
             $this->logger->warning("check_fixity cannot retrieve digest from repository.", array(
-                'resource_id => $url',
-                'status_code' => $status_code,
+                'resource_id' => $file_path,
+                'status_code' => $return,
             ));
-            $output->writeln($status_code);
+            $output->writeln();
         }
-        */
     }
 }

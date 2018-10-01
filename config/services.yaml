@@ -27,7 +27,16 @@ parameters:
     # Set to 'disabled' in production.
     app.mockrepository: 'enabled'
 
-# Do not modify any of the values below this line.
+    ### Sample plugins
+    # app.plugins.fetchresourcelist: ['app:riprap:plugin:fetchresourcelist:from:glob']
+    # app.plugins.fetchresourcelist.from.glob.file_directory: 'resources/filesystemexample/resourcefiles'
+    # app.plugins.fetchdigest: 'app:riprap:plugin:fetchdigest:from:shell'
+    # app.plugins.fetchdigrest.from.shell.command: '/usr/bin/sha1sum'
+    # app.plugins.persist: ['app:riprap:plugin:persist:to:csv']
+    # app.plugins.postcheck: []
+
+
+### Do not modify any of the values below this line.
 services:
     # default configuration for services in *this* file
     _defaults:

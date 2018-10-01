@@ -19,6 +19,10 @@ class PluginPersistToCsv extends ContainerAwareCommand
     public function __construct(ParameterBagInterface $params = null, LoggerInterface $logger = null)
     {
         $this->params = $params;
+        $this->event_type = $this->params->get('app.fixity.eventtype.code');
+
+        // This path should be configured in services.yaml but we hard code it here as an example.
+        $this->fixity_peristence_csv = '/tmp/riprap_sample_persist_plugin.csv';
 
         // Set log output path in config/packages/{environment}/monolog.yaml
         $this->logger = $logger;
@@ -29,7 +33,7 @@ class PluginPersistToCsv extends ContainerAwareCommand
     protected function configure()
     {
         $this
-            ->setName('app:riprap:plugin:persist:to:database')
+            ->setName('app:riprap:plugin:persist:to:csv')
             ->setDescription('A Riprap plugin for persisting fixity events to a relational database.');
 
         // phpcs:disable
@@ -37,6 +41,7 @@ class PluginPersistToCsv extends ContainerAwareCommand
             ->addOption('timestamp', null, InputOption::VALUE_REQUIRED, 'ISO 8601 date when the fixity validation event occured.')
             ->addOption('resource_id', null, InputOption::VALUE_REQUIRED, 'Fully qualifid URL of the resource to validate.')
             ->addOption('event_uuid', null, InputOption::VALUE_REQUIRED, 'UUID of the fixity validation event.')
+            ->addOption('event_detail', null, InputOption::VALUE_REQUIRED, 'Fixity check event detail.')
             ->addOption('digest_algorithm', null, InputOption::VALUE_REQUIRED, 'Algorithm used to generate the digest.')
             ->addOption('digest_value', null, InputOption::VALUE_REQUIRED, 'Value of the digest retrieved from the Fedora repository.')
             ->addOption('outcome', null, InputOption::VALUE_REQUIRED, 'Outcome of the event.')
@@ -48,6 +53,22 @@ class PluginPersistToCsv extends ContainerAwareCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        if (!file_exists($this->fixity_peristence_csv)) {
+            $csv_headers = array(
+                'event_uuid',
+                'event_type',
+                'resource_id',
+                'datestamp',
+                'hash_algorithm',
+                'hash_value',
+                'event_detail',
+                'event_outcome',
+                'event_outcome_detail_note'
+            );
+            $header_row = implode(',', $csv_headers);
+            file_put_contents($this->fixity_peristence_csv, $header_row . "\n");
+        }
+
         if ($input->getOption('operation') == 'get_last_digest') {
             $repository = $this->getContainer()->get('doctrine')->getRepository(FixityCheckEvent::class);
             $event = $repository->findLastFixityCheckEvent(
@@ -85,23 +106,19 @@ class PluginPersistToCsv extends ContainerAwareCommand
             $output->write(serialize($event_entries));
         }
         if ($input->getOption('operation') == 'persist_fix_event') {
-            $entityManager = $this->getContainer()->get('doctrine')->getEntityManager();
-            $event = new FixityCheckEvent();
-            $event->setEventUuid($input->getOption('event_uuid'));
-            $event->setEventType('fix');
-            $event->setResourceId($input->getOption('resource_id'));
-            // @todo: Apparently PHP's DateTime class can't do valid ISO8601. The values end up
-            // like 2018-09-20 08:44:29, without the ISO8601-specific formatting, even if the date
-            // string value is valid 8601 (e.g. produced by date('c'). If we want ISO8601
-            // dates for our fixity validation events, we'll need a workaround.
-            $event->setDatestamp(\DateTime::createFromFormat(\DateTime::ISO8601, $input->getOption('timestamp')));
-            $event->setHashAlgorithm($input->getOption('digest_algorithm'));
-            $event->setHashValue($input->getOption('digest_value'));
-            $event->setEventDetail('');
-            $event->setEventOutcome($input->getOption('outcome'));
-            $event->setEventOutcomeDetailNote('');
-            $entityManager->persist($event);
-            $entityManager->flush();
+            $record = array(
+                $input->getOption('event_uuid'),
+                $this->event_type,
+                $input->getOption('resource_id'),
+                $input->getOption('timestamp'),
+                $input->getOption('digest_algorithm'),
+                $input->getOption('digest_value'),
+                '',
+                $input->getOption('outcome'),
+                ''
+            );
+            $record = implode(',', $record);
+            file_put_contents($this->fixity_peristence_csv, $record . "\n", FILE_APPEND);
         }
     }
 }

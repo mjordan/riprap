@@ -35,17 +35,9 @@ class PluginFetchResourceListFromGlob extends ContainerAwareCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        // @todo: glob() the directory at $this->file_directory and return the resulting array.
-        // $filepaths = glob($this->file_directory . '/*.bin');
-
-        /*
-        foreach ($this->input_files as $input_file) {
-            $resource_ids = file($input_file, FILE_IGNORE_NEW_LINES);
-            foreach ($resource_ids as $resource_id) {
-                // This is a string containing one resource ID (URL) per line;
-                $output->writeln($resource_id);
-            }
+        $file_paths = glob($this->file_directory . '/*.bin');
+        foreach ($file_paths as &$resource_id) {
+            $output->writeln($resource_id);
         }
-        */
     }
 }
