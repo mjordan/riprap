@@ -19,6 +19,7 @@ class PluginPersistToDatabase extends ContainerAwareCommand
     public function __construct(ParameterBagInterface $params = null, LoggerInterface $logger = null)
     {
         $this->params = $params;
+        $this->event_type = $this->http_method = $this->params->get('app.fixity.eventtype.code');
 
         // Set log output path in config/packages/{environment}/monolog.yaml
         $this->logger = $logger;
@@ -34,12 +35,13 @@ class PluginPersistToDatabase extends ContainerAwareCommand
 
         // phpcs:disable
         $this
-            ->addOption('timestamp', null, InputOption::VALUE_REQUIRED, 'ISO 8601 date when the fixity validation event occured.')
+            ->addOption('timestamp', null, InputOption::VALUE_REQUIRED, 'ISO 8601 date when the fixity check event occured.')
             ->addOption('resource_id', null, InputOption::VALUE_REQUIRED, 'Fully qualifid URL of the resource to validate.')
-            ->addOption('event_uuid', null, InputOption::VALUE_REQUIRED, 'UUID of the fixity validation event.')
+            ->addOption('event_uuid', null, InputOption::VALUE_REQUIRED, 'UUID of the fixity check event.')
+            ->addOption('event_detail', null, InputOption::VALUE_REQUIRED, 'Fixity check event detail.')            
             ->addOption('digest_algorithm', null, InputOption::VALUE_REQUIRED, 'Algorithm used to generate the digest.')
             ->addOption('digest_value', null, InputOption::VALUE_REQUIRED, 'Value of the digest retrieved from the Fedora repository.')
-            ->addOption('outcome', null, InputOption::VALUE_REQUIRED, 'Outcome of the event.')
+            ->addOption('outcome', null, InputOption::VALUE_REQUIRED, 'Coded outcome of the event.')
             // Persist plugins are special in that they are executed twice, once to get the last digest for the resource
             // and again to persist the event resulting from comparing that digest with a new one.
             ->addOption('operation', null, InputOption::VALUE_REQUIRED, 'One of "get_last_digest", "get_events", or "persist_new_event".');
@@ -88,7 +90,7 @@ class PluginPersistToDatabase extends ContainerAwareCommand
             $entityManager = $this->getContainer()->get('doctrine')->getEntityManager();
             $event = new FixityCheckEvent();
             $event->setEventUuid($input->getOption('event_uuid'));
-            $event->setEventType('fix');
+            $event->setEventType($this->event_type);
             $event->setResourceId($input->getOption('resource_id'));
             // @todo: Apparently PHP's DateTime class can't do valid ISO8601. The values end up
             // like 2018-09-20 08:44:29, without the ISO8601-specific formatting, even if the date
@@ -97,7 +99,7 @@ class PluginPersistToDatabase extends ContainerAwareCommand
             $event->setDatestamp(\DateTime::createFromFormat(\DateTime::ISO8601, $input->getOption('timestamp')));
             $event->setHashAlgorithm($input->getOption('digest_algorithm'));
             $event->setHashValue($input->getOption('digest_value'));
-            $event->setEventDetail('');
+            $event->setEventDetail($input->getOption('event_detail'));
             $event->setEventOutcome($input->getOption('outcome'));
             $event->setEventOutcomeDetailNote('');
             $entityManager->persist($event);
