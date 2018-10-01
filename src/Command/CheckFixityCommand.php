@@ -94,6 +94,8 @@ class CheckFixityCommand extends ContainerAwareCommand
             $event_uuid = $uuid4->toString();
             $now_iso8601 = date('c');
 
+            $event_detail = '';
+
             // Print output and log it.
             $this->logger->info("check_fixity ran.", array('event_uuid' => $event_uuid));
 
@@ -111,6 +113,7 @@ class CheckFixityCommand extends ContainerAwareCommand
                         '--timestamp' => $now_iso8601,
                         '--digest_algorithm' => $this->fixity_algorithm,
                         '--event_uuid' => '',
+                        '--event_detail' => $event_detail,
                         '--digest_value' => '',
                         '--outcome' => '',
                         '--operation' => 'get_last_digest',
@@ -160,6 +163,13 @@ class CheckFixityCommand extends ContainerAwareCommand
                             $outcome = 'suc';
                             $num_successful_events++;
                             $current_digest_value = $current_digest_plugin_return_value;
+                        // Riprap has no entries in its db for this resource; this is OK, since this will
+                        // be the case for new resources detected by the fetchresourcelist plugins.
+                        } elseif (strlen($last_digest_for_resource) == 0) {
+                            $outcome = 'suc';
+                            $event_detail = 'Initial fixity check.';
+                            $num_successful_events++;
+                            $current_digest_value = $current_digest_plugin_return_value;
                         } else {
                             $num_failed_events++;
                             $current_digest_value = $current_digest_plugin_return_value;
@@ -181,6 +191,7 @@ class CheckFixityCommand extends ContainerAwareCommand
                         '--timestamp' => $now_iso8601,
                         '--digest_algorithm' => $this->fixity_algorithm,
                         '--event_uuid' => $event_uuid,
+                        '--event_detail' => $event_detail,
                         '--digest_value' => $current_digest_value,
                         '--outcome' => $outcome,
                         '--operation' => 'persist_fix_event',
