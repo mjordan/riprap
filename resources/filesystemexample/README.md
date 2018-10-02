@@ -1,6 +1,6 @@
 # "Filesystem" examples for Riprap plugin development.
 
-The plugins in this directory are samples intended for developers who want to write new plugins. They illustrate how the three requrired types of plugins ("fetchresourcelist", "fetchdigest", and "persist" plugins) and the optional "postcheck" type of plugin function.
+The plugins `src/Command/PluginFetchResourceListFromGlob.php`, `src/Command/PluginFetchDigestFromShell.php`, `src/Command/PluginPersistToCsv.php`, and `src/Command/PluginPostCheckSayHello.php` are samples for developers who want to write new plugins. They illustrate how the three requrired types of plugins ("fetchresourcelist", "fetchdigest", and "persist" plugins) and the optional "postcheck" type of plugin function.
 
 ## Overview
 
@@ -24,11 +24,21 @@ For each resource Riprap checks, the `app:riprap:plugin:persist:to:csv` plugin s
 
 For each resource Riprap checks, the `app:riprap:plugin:postcheck:sayhi` says "Hello". Not very exiting but friendly!
 
+## Running the plugins
+
+If you want to run Riprap using these plugins, you need to modify `config/services.yaml`:
+
+1. Comment out the following lines by prefixing them with a `#`:
+
+* `app.plugins.fetchresourcelist: ['app:riprap:plugin:fetchresourcelist:from:file']`
+* `app.plugins.fetchdigest: 'app:riprap:plugin:fetchdigest:from:fedoraapi'`
+* `app.plugins.persist: ['app:riprap:plugin:persist:to:database']`
+* `app.plugins.postcheck: ['app:riprap:plugin:postcheck:mailfailures', 'app:riprap:plugin:postcheck:migratefedora3auditlog']`
+
+2. Uncomment all of the lines in the ` ### Sample "filesystem" plugins` section.
+
+When you run the `app:riprap:check_fixity` command, the sample plugins will be used instead of the default plugins.
+
 ## Writing plugins
 
 Riprap plugins are Symfony console commmands, and work exactly the same as an ordinary Symfony console command. Unlike most console commands, they are registered in `services.yaml` as plugins and are invoked from within the main `check_fixity` command. Their input is via command options passed in from `check_fixity`, and their output is typically to a log file, but need not be. They can pass data back to `check_fixity` as well, via `$output->writeln()`.
-
-## Running the plugins
-
-[instructions to follow]
-

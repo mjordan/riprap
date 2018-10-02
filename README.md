@@ -40,8 +40,6 @@ If you want to play with Riprap, and you're on a Linux or OSX machine, you shoul
 
 As stated above, for now we use SQLite as our database. If you would like to generate some sample events, follow these instructions from within the `riprap` directory:
 
-In `.env`, open an editor and add the following line in the `doctrine-bundle` section: `DATABASE_URL=sqlite:///%kernel.project_dir%/var/data.db`. Then run the following commands:
-
 1. `rm var/data.db` (might not exist)
 1. `rm src/Migrations/*` (might be empty)
 1. `php bin/console -n make:migration`
@@ -229,7 +227,7 @@ One of Riprap's principle design requirements is flexibility. To meet this goal,
 * "persist" plugins persist data after performing a fixity check on each Fedora resource (e.g. to a RDBMS, into the Fedora repository, etc.). A plugin to persist fixity events to a relational database, `app:riprap:plugin:persist:to:database`, already exists and is configured in `config/services.yaml`. Multiple persist plugins can be configured at once.
 * "postcheck" plugins execute after performing a fixity check on each Fedora resource. Two plugins of this type currently exist: a plugin that sends an email on failure, `app:riprap:plugin:postcheck:mailfailures`, and a (not yet complete) plugin that will be able to migrate fixity events from a legacy system (in this case, Fedora 3.x AUDIT data). Both plugins are confiured in `config/services.yaml`. Multiple postcheck plugins can be configured at once.
 
-A second set of simple example plugins is included in the `resources/filesystemexample/src/Command` directory. See the their [README.md](resources/filesystemexample/README.md) file for more information.
+A second set of simple example plugins is included in the `resources/filesystemexample/src/Command` directory. See their [README.md](resources/filesystemexample/README.md) file for more information.
 
 ### Message queue listener
 

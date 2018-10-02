@@ -70,14 +70,16 @@ class PluginPersistToCsv extends ContainerAwareCommand
         }
 
         if ($input->getOption('operation') == 'get_last_digest') {
-            $repository = $this->getContainer()->get('doctrine')->getRepository(FixityCheckEvent::class);
-            $event = $repository->findLastFixityCheckEvent(
-                $input->getOption('resource_id'),
-                $input->getOption('digest_algorithm')
-            );
-            if (!is_null($event)) {
-                $output->write($event->getHashValue());
+            // The operation must return the latest hash value for the resource. This sloppy
+            // demo code does that, but makes a lot of assumptions about the file at
+            // $this->fixity_peristence_csv.
+            $rows = file($this->fixity_peristence_csv, FILE_IGNORE_NEW_LINES);
+            $event_records = array();
+            foreach ($rows as $row) {
+                $fields = explode(',', $row);
+                $event_records[$fields[2]] = $fields[5];
             }
+            $output->write($event_records[$input->getOption('resource_id')]);
         }
         // Returns a serialized representation of all fixity check events.
         // @todo: Add  offset and limit parameters.

@@ -13,7 +13,7 @@ use Psr\Log\LoggerInterface;
 
 use App\Entity\Event;
 
-class PluginPostPrintHelloWorld extends ContainerAwareCommand
+class PluginPostCheckSayHello extends ContainerAwareCommand
 {
     private $params;
 

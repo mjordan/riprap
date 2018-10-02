@@ -19,7 +19,9 @@ class PluginFetchResourceListFromGlob extends ContainerAwareCommand
     public function __construct(ParameterBagInterface $params = null, LoggerInterface $logger = null)
     {
         $this->params = $params;
-        $this->file_directory = $this->params->get('app.plugins.fetchresourcelist.from.glob.file_directory');
+        if ($this->params->has('app.plugins.fetchresourcelist.from.glob.file_directory')) {
+            $this->file_directory = $this->params->get('app.plugins.fetchresourcelist.from.glob.file_directory');
+        }
 
         $this->logger = $logger;
 
@@ -36,7 +38,7 @@ class PluginFetchResourceListFromGlob extends ContainerAwareCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $file_paths = glob($this->file_directory . '/*.bin');
-        foreach ($file_paths as &$resource_id) {
+        foreach ($file_paths as $resource_id) {
             $output->writeln($resource_id);
         }
     }

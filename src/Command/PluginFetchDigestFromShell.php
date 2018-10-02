@@ -21,7 +21,9 @@ class PluginFetchDigestFromShell extends ContainerAwareCommand
     public function __construct(ParameterBagInterface $params = null, LoggerInterface $logger = null)
     {
         $this->params = $params;
-        $this->external_program = $this->params->get('app.plugins.fetchdigrest.from.shell.command');
+        if ($this->params->has('app.plugins.fetchdigrest.from.shell.command')) {
+            $this->external_program = $this->params->get('app.plugins.fetchdigrest.from.shell.command');
+        }
 
         $this->logger = $logger;
 
