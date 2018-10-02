@@ -21,6 +21,7 @@ Riprap is still in early development, but all the major functional components ar
 * PHP 7.1.3 or higher
 * [composer](https://getcomposer.org/)
 * SQLite (other RDBMSs will be supported soon).
+  * To install the PHP driver for SQLite, run `sudo apt-get install php7.2-sqlite3`, replacing `7.2` with your version of PHP.
 
 ## Installation
 
