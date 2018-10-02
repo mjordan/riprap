@@ -2,7 +2,9 @@
 
 ## Overview
 
-A fixity-auditing microservice that addresses https://github.com/Islandora-CLAW/CLAW/issues/847. Developed as a successfor to Islandora 7.x's [Checksum Checker](https://github.com/Islandora/islandora_checksum_checker) module, it is intended primarily to be used with repositories compliant with the [Fedora API Specification](https://fedora.info/spec/), but can be used to provide fixity validation for other repositories as well (e.g., an [OCFL](https://ocfl.io/) repository). It periodcally requests fixity digests for resources from a repository and compares the digest with a previously request digest. It then persists the outocome of that comparison so the process can be repeated again. Riprap also provides a REST interface so that external applications (in Islandora's case, Drupal) can retrieve fixity checking event data for use in reports, etc.
+A fixity-auditing microservice that addresses https://github.com/Islandora-CLAW/CLAW/issues/847. Developed as a successfor to Islandora 7.x's [Checksum Checker](https://github.com/Islandora/islandora_checksum_checker) module, it is intended primarily to be used with repositories compliant with the [Fedora API Specification](https://fedora.info/spec/), but can be used to provide fixity validation for other repositories as well (e.g., an [OCFL](https://ocfl.io/) repository). In fact, Riprap ships with sample plugins that allow it to monitor the fixity of files on a standard attached filesystem and call `sha1sum` to get their current digests.
+
+Riprap periodcally requests fixity digests for resources from a repository and compares the digest with a previously request digest. It then persists the outocome of that comparison so the process can be repeated again. Riprap also provides a REST interface so that external applications (in Islandora's case, Drupal) can retrieve fixity checking event data for use in reports, etc.
 
 ![Overview](docs/images/overview.png)
 
@@ -12,7 +14,7 @@ All events must have a value of `suc` or `fail` (using values from the PREMIS Ev
 
 ## Current status
 
-Riprap is still in early development, but all the major functional components are working using test/sample data and the mock Fedora repository endpoint (see below). Riprap is not yet ready for production but will be by December 2018.
+Riprap is still in early development, but all the major functional components are working using test/sample data and the mock Fedora repository endpoint (see below). Riprap will be ready for production by December 2018.
 
 ## Requirements
 
@@ -225,7 +227,7 @@ One of Riprap's principle design requirements is flexibility. To meet this goal,
 * "fetchresourcelist" plugins fetch a set of Fedora resource URLs to fixity check (e.g., from the Fedora repository's triplestore, from Drupal, from a CSV file). A sample plugin that reads resource URLs from a text file, `app:riprap:plugin:fetch:from:file`, already exists and is configured in `config/services.yaml`. Multiple fetchresourcelist plugins can be configured at once.
 * "fetchdigest" plugins query an external utility or service to get the digest of the current resource. A plugin that queries a Fedora API Specification-compliant repository, `app:riprap:plugin:fetchdigest:from:fedoraapi`, and is configured in `config/services.yaml`. Only one fetchdigest plugin can be configured.
 * "persist" plugins persist data after performing a fixity check on each Fedora resource (e.g. to a RDBMS, into the Fedora repository, etc.). A plugin to persist fixity events to a relational database, `app:riprap:plugin:persist:to:database`, already exists and is configured in `config/services.yaml`. Multiple persist plugins can be configured at once.
-* "postcheck" plugins execute after performing a fixity check on each Fedora resource. Two plugins of this type currently exist: a plugin that sends an email on failure, `app:riprap:plugin:postcheck:mailfailures`, and a (not yet complete) plugin that will be able to migrate fixity events from a legacy system (in this case, Fedora 3.x AUDIT data). Both plugins are confiured in `config/services.yaml`. Multiple postcheck plugins can be configured at once.
+* "postcheck" plugins execute after performing a fixity check on each Fedora resource. Two plugins of this type currently exist (neither one is complete yet): a plugin that sends an email on failure, `app:riprap:plugin:postcheck:mailfailures`, and a plugin that migrates fixity events from Fedora 3.x AUDIT data. Both plugins are confiured in `config/services.yaml`. Multiple postcheck plugins can be configured at once.
 
 A second set of simple example plugins is included in the `resources/filesystemexample/src/Command` directory. See their [README.md](resources/filesystemexample/README.md) file for more information.
 
