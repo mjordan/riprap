@@ -125,37 +125,29 @@ The returned JSON looks like this:
 
 ```javascript
 [
-  {
-    "event_uuid": "350c8922-27c8-4a31-ab53-2d1eb4eda76e",
-    "resource_id": "http://localhost:8000/mockrepository/rest/10",
-    "event_type": "ing",
-    "datestamp": {
-      "date": "2018-09-19 05:23:20.000000",
-      "timezone_type": 3,
-      "timezone": "America/Los_Angeles"
-    },
-    "hash_algorithm": "SHA-1",
-    "hash_value": "c28097ad29ab61bfec58d9b4de53bcdec687872e",
-    "event_detail": "",
-    "event_outcome": "suc",
-    "event_outcome_detail_note": ""
-  },
-  {
-    "event_uuid": "21ef3899-e431-4c1c-a4dc-a2d168a01f69",
-    "resource_id": "http://localhost:8000/mockrepository/rest/10",
-    "event_type": "fix",
-    "datestamp": {
-      "date": "2018-09-29 09:04:46.000000",
-      "timezone_type": 3,
-      "timezone": "America/Los_Angeles"
-    },
-    "hash_algorithm": "SHA-1",
-    "hash_value": "c28097ad29ab61bfec58d9b4de53bcdec687872e",
-    "event_detail": "",
-    "event_outcome": "suc",
-    "event_outcome_detail_note": ""
-  },
-  // [...]
+   {
+      "event_uuid":"4cd2edc9-f292-49a1-9b05-d025684de559",
+      "resource_id":"http:\/\/localhost:8000\/mockrepository\/rest\/10",
+      "event_type":"fix",
+      "datestamp":"2018-10-03T07:23:40-07:00",
+      "hash_algorithm":"SHA-1",
+      "hash_value":"c28097ad29ab61bfec58d9b4de53bcdec687872e",
+      "event_detail":"Initial fixity check.",
+      "event_outcome":"suc",
+      "event_outcome_detail_note":""
+   },
+   {
+      "event_uuid":"fb73a36a-df64-4ba8-a437-ea277b65ebb7",
+      "resource_id":"http:\/\/localhost:8000\/mockrepository\/rest\/10",
+      "event_type":"fix",
+      "datestamp":"2018-12-03T07:26:39-07:00",
+      "hash_algorithm":"SHA-1",
+      "hash_value":"c28097ad29ab61bfec58d9b4de53bcdec687872e",
+      "event_detail":"",
+      "event_outcome":"suc",
+      "event_outcome_detail_note":""
+   }
+   [...]
 ]
 ```
 

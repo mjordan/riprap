@@ -92,11 +92,7 @@ class PluginPersistToDatabase extends ContainerAwareCommand
             $event->setEventUuid($input->getOption('event_uuid'));
             $event->setEventType($this->event_type);
             $event->setResourceId($input->getOption('resource_id'));
-            // @todo: Apparently PHP's DateTime class can't do valid ISO8601. The values end up
-            // like 2018-09-20 08:44:29, without the ISO8601-specific formatting, even if the date
-            // string value is valid 8601 (e.g. produced by date('c'). If we want ISO8601
-            // dates for our fixity validation events, we'll need a workaround.
-            $event->setDatestamp(\DateTime::createFromFormat(\DateTime::ISO8601, $input->getOption('timestamp')));
+            $event->setDatestamp($input->getOption('timestamp'));
             $event->setHashAlgorithm($input->getOption('digest_algorithm'));
             $event->setHashValue($input->getOption('digest_value'));
             $event->setEventDetail($input->getOption('event_detail'));

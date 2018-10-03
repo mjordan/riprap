@@ -32,7 +32,7 @@ class FixityCheckEvent
     private $resource_id;
 
     /**
-     * @ORM\Column(type="datetime")
+     * @ORM\Column(type="text")
      */
     private $datestamp;
 
@@ -102,12 +102,12 @@ class FixityCheckEvent
         return $this;
     }
 
-    public function getDatestamp(): ?\DateTimeInterface
+    public function getDatestamp(): ?string
     {
         return $this->datestamp;
     }
 
-    public function setDatestamp(\DateTimeInterface $datestamp): self
+    public function setDatestamp(string $datestamp): self
     {
         $this->datestamp = $datestamp;
 
