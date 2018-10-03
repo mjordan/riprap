@@ -29,6 +29,7 @@ Riprap is still in early development, but all the major functional components ar
 1. Clone this git repository
 1. `cd riprap`
 1. `php composer.phar install` (or equivalent on your system, e.g., `./composer install`)
+1. Create the database as described in the next section.
 
 We will eventually support deployment via Ansible.
 
@@ -40,9 +41,9 @@ If you want to play with Riprap, and you're on a Linux or OSX machine, you shoul
 * Riprap will write its log to `/tmp/riprap.log`
 * the test webserver runs on port 8000
 
-### Generating sample events
+### Creating the database
 
-As stated above, for now we use SQLite as our database. If you would like to generate some sample events, follow these instructions from within the `riprap` directory:
+As stated above, for now we use SQLite as our database. To create the database that Riprap persists fixity event data into, follow these instructions from within the `riprap` directory:
 
 1. `rm var/data.db` (might not exist)
 1. `rm src/Migrations/*` (might be empty)
