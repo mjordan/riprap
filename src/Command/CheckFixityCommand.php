@@ -249,8 +249,9 @@ class CheckFixityCommand extends ContainerAwareCommand
             }
         }
         $fixity_check = $stopwatch->stop('fixity_check');
-        var_dump($fixity_check);
+        $duration = $fixity_check->getDuration(); // milliseconds
+        $duration = $duration / 1000; // seconds
         $output->writeln("Riprap checked $num_resource_ids resources ($num_successful_events successful events, " .
-            "$num_failed_events failed events).");
+            "$num_failed_events failed events) in $duration seconds.");
     }
 }

@@ -59,7 +59,7 @@ From within the `riprap` directory, start the web server by running the `server:
 
 You should see output similar to:
 
-`Riprap checked 5 resources (5 successful events, 0 failed events).`
+`Riprap checked 5 resources (5 successful events, 0 failed events) in 0.223 seconds.`
 
 Here is what is going on when you run the `check_fixity` command:
 
