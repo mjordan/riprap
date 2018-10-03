@@ -1,7 +1,7 @@
 {
     "name": "riprap",
     "type": "project",
-    "description": "A fixity-auditing microservice for Fedora-based repositories.",
+    "description": "A PREMIS-compliant fixity checking microservice.",
     "license": "MIT",
     "authors": [
         {
