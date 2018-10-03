@@ -57,7 +57,7 @@ class PluginPersistToDatabase extends ContainerAwareCommand
                 $input->getOption('digest_algorithm')
             );
             if (!is_null($event)) {
-                $output->write($event->getHashValue());
+                $output->write($event->getDigestValue());
             }
         }
         // Returns a serialized representation of all fixity check events.
