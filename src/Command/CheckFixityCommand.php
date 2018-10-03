@@ -8,6 +8,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\BufferedOutput;
+use Symfony\Component\Stopwatch\Stopwatch;
 
 use Psr\Log\LoggerInterface;
 use Ramsey\Uuid\Uuid;
@@ -46,6 +47,9 @@ class CheckFixityCommand extends ContainerAwareCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $stopwatch = new Stopwatch();
+        $stopwatch->start('fixity_check');
+
         // Execute plugins that get a list of resource IDs to check.
         $resource_ids = array();
         $num_resource_ids = 0;
@@ -244,6 +248,8 @@ class CheckFixityCommand extends ContainerAwareCommand
                 }
             }
         }
+        $fixity_check = $stopwatch->stop('fixity_check');
+        var_dump($fixity_check);
         $output->writeln("Riprap checked $num_resource_ids resources ($num_successful_events successful events, " .
             "$num_failed_events failed events).");
     }

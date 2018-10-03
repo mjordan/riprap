@@ -275,6 +275,9 @@
             "ref": "f8a63faa0d9521526499c0a8f403c9964ecb0527"
         }
     },
+    "symfony/stopwatch": {
+        "version": "v4.1.6"
+    },
     "symfony/swiftmailer-bundle": {
         "version": "2.5",
         "recipe": {

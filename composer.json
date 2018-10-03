@@ -24,6 +24,7 @@
         "symfony/orm-pack": "*",
         "symfony/security-bundle": "*",
         "symfony/swiftmailer-bundle": "*",
+        "symfony/stopwatch": "*",
         "symfony/messenger": "*"
     },
     "require-dev": {
