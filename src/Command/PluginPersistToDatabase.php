@@ -74,9 +74,9 @@ class PluginPersistToDatabase extends ContainerAwareCommand
                     $event_array['event_uuid'] = $event->getEventUuid();
                     $event_array['resource_id'] = $event->getResourceId();
                     $event_array['event_type'] = $event->getEventType();
-                    $event_array['datestamp'] = $event->getDatestamp();
-                    $event_array['hash_algorithm'] = $event->getHashAlgorithm();
-                    $event_array['hash_value'] = $event->getHashValue();
+                    $event_array['timestamp'] = $event->getTimestamp();
+                    $event_array['digest_algorithm'] = $event->getDigestAlgorithm();
+                    $event_array['digest_value'] = $event->getDigestValue();
                     $event_array['event_detail'] = $event->getEventDetail();
                     $event_array['event_outcome'] = $event->getEventOutcome();
                     $event_array['event_outcome_detail_note'] = $event->getEventOutcomeDetailNote();
@@ -92,9 +92,9 @@ class PluginPersistToDatabase extends ContainerAwareCommand
             $event->setEventUuid($input->getOption('event_uuid'));
             $event->setEventType($this->event_type);
             $event->setResourceId($input->getOption('resource_id'));
-            $event->setDatestamp($input->getOption('timestamp'));
-            $event->setHashAlgorithm($input->getOption('digest_algorithm'));
-            $event->setHashValue($input->getOption('digest_value'));
+            $event->setTimestamp($input->getOption('timestamp'));
+            $event->setDigestAlgorithm($input->getOption('digest_algorithm'));
+            $event->setDigestValue($input->getOption('digest_value'));
             $event->setEventDetail($input->getOption('event_detail'));
             $event->setEventOutcome($input->getOption('outcome'));
             $event->setEventOutcomeDetailNote('');

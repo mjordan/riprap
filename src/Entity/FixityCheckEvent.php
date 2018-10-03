@@ -34,17 +34,17 @@ class FixityCheckEvent
     /**
      * @ORM\Column(type="text")
      */
-    private $datestamp;
+    private $timestamp;
 
     /**
      * @ORM\Column(type="text")
      */
-    private $hash_algorithm;
+    private $digest_algorithm;
 
     /**
      * @ORM\Column(type="text")
      */
-    private $hash_value;
+    private $digest_value;
 
     /**
      * @ORM\Column(type="text")
@@ -102,38 +102,38 @@ class FixityCheckEvent
         return $this;
     }
 
-    public function getDatestamp(): ?string
+    public function getTimestamp(): ?string
     {
-        return $this->datestamp;
+        return $this->timestamp;
     }
 
-    public function setDatestamp(string $datestamp): self
+    public function setTimestamp(string $timestamp): self
     {
-        $this->datestamp = $datestamp;
+        $this->timestamp = $timestamp;
 
         return $this;
     }
 
-    public function getHashAlgorithm(): ?string
+    public function getDigestAlgorithm(): ?string
     {
-        return $this->hash_algorithm;
+        return $this->digest_algorithm;
     }
 
-    public function setHashAlgorithm(string $hash_algorithm): self
+    public function setDigestAlgorithm(string $digest_algorithm): self
     {
-        $this->hash_algorithm = $hash_algorithm;
+        $this->digest_algorithm = $digest_algorithm;
 
         return $this;
     }
 
-    public function getHashValue(): ?string
+    public function getDigestValue(): ?string
     {
-        return $this->hash_value;
+        return $this->digest_value;
     }
 
-    public function setHashValue(string $hash_value): self
+    public function setDigestValue(string $digest_value): self
     {
-        $this->hash_value = $hash_value;
+        $this->digest_value = $digest_value;
 
         return $this;
     }

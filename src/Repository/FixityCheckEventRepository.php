@@ -31,20 +31,20 @@ class FixityCheckEventRepository extends ServiceEntityRepository
      *
      * @param string $resource_id
      *   The URL of the resource.
-     * @param string $hash_algorithm
-     *   The hash algorithm (e.g, SHA-1).
+     * @param string $digest_algorithm
+     *   The digest algorithm (e.g, SHA-1).
      *
      * @return object
      *   A single FixityCheckEvent object, or null.
      */
-    public function findLastFixityCheckEvent($resource_id, $hash_algorithm)
+    public function findLastFixityCheckEvent($resource_id, $digest_algorithm)
     {
         $qb = $this->createQueryBuilder('event')
             ->andWhere('event.resource_id = :resource_id')
-            ->andWhere('event.hash_algorithm = :hash_algorithm')
+            ->andWhere('event.digest_algorithm = :digest_algorithm')
             ->setParameter('resource_id', $resource_id)
-            ->setParameter('hash_algorithm', $hash_algorithm)
-            ->orderBy('event.datestamp', 'DESC')
+            ->setParameter('digest_algorithm', $digest_algorithm)
+            ->orderBy('event.timestamp', 'DESC')
             ->getQuery();
 
             $qb->execute();
@@ -68,7 +68,7 @@ class FixityCheckEventRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('event')
             ->andWhere('event.resource_id = :resource_id')
             ->setParameter('resource_id', $resource_id)
-            ->orderBy('event.datestamp', 'ASC')
+            ->orderBy('event.timestamp', 'ASC')
             ->getQuery();
 
             return $qb->execute();

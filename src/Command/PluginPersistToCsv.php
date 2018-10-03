@@ -59,8 +59,8 @@ class PluginPersistToCsv extends ContainerAwareCommand
                 'event_type',
                 'resource_id',
                 'datestamp',
-                'hash_algorithm',
-                'hash_value',
+                'digest_algorithm',
+                'digest_value',
                 'event_detail',
                 'event_outcome',
                 'event_outcome_detail_note'
@@ -70,7 +70,7 @@ class PluginPersistToCsv extends ContainerAwareCommand
         }
 
         if ($input->getOption('operation') == 'get_last_digest') {
-            // The operation must return the latest hash value for the resource. This sloppy
+            // The operation must return the latest digest value for the resource. This sloppy
             // demo code does that, but makes a lot of assumptions about the file at
             // $this->fixity_peristence_csv.
             $rows = file($this->fixity_peristence_csv, FILE_IGNORE_NEW_LINES);
@@ -96,8 +96,8 @@ class PluginPersistToCsv extends ContainerAwareCommand
                     $event_array['resource_id'] = $event->getResourceId();
                     $event_array['event_type'] = $event->getEventType();
                     $event_array['datestamp'] = $event->getDatestamp();
-                    $event_array['hash_algorithm'] = $event->getHashAlgorithm();
-                    $event_array['hash_value'] = $event->getHashValue();
+                    $event_array['digest_algorithm'] = $event->getDigestAlgorithm();
+                    $event_array['digest_value'] = $event->getDigestValue();
                     $event_array['event_detail'] = $event->getEventDetail();
                     $event_array['event_outcome'] = $event->getEventOutcome();
                     $event_array['event_outcome_detail_note'] = $event->getEventOutcomeDetailNote();

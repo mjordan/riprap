@@ -92,7 +92,7 @@ class CheckFixityCommand extends ContainerAwareCommand
         foreach ($resource_ids as $resource_id) {
             $uuid4 = Uuid::uuid4();
             $event_uuid = $uuid4->toString();
-            $now_iso8601 = date('c');
+            $now_iso8601 = date(\DateTime::ISO8601);
 
             $event_detail = '';
 
