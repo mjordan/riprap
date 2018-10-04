@@ -2,8 +2,6 @@
 
 # Riprap-specific parameters start here.
 parameters:
-    app.fixity.method: 'HEAD'
-    app.fixity.algorithm: 'SHA-1'
     app.fixity.eventtype.uri: 'http://id.loc.gov/vocabulary/preservation/eventType/fix'
     app.fixity.eventtype.code: 'fix'
 
@@ -15,6 +13,8 @@ parameters:
     # Currently we only allow one fetchdigest plugin per fixity event (i.e., this
     # value is not an array).
     # app.plugins.fetchdigest: 'app:riprap:plugin:fetchdigest:from:fedoraapi'
+    app.fixity.fetchdigest.from.fedoraapi.method: 'HEAD'
+    app.fixity.fetchdigest.from.fedoraapi.algorithm: 'SHA-1'
 
     # To not register any persist plugins, use app.plugins.persist []
     # app.plugins.persist: ['app:riprap:plugin:persist:to:database']
