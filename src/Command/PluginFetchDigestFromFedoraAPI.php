@@ -21,8 +21,8 @@ class PluginFetchDigestFromFedoraAPI extends ContainerAwareCommand
     public function __construct(ParameterBagInterface $params = null, LoggerInterface $logger = null)
     {
         $this->params = $params;
-        $this->http_method = $this->params->get('app.fixity.method');
-        $this->fixity_algorithm = $this->params->get('app.fixity.algorithm');
+        $this->http_method = $this->params->get('app.fixity.fetchdigest.from.fedoraapi.method');
+        $this->fixity_algorithm = $this->params->get('app.fixity.fetchdigest.from.fedoraapi.algorithm');
 
         $this->logger = $logger;
 

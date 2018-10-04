@@ -19,7 +19,7 @@ class PluginPersistToDatabase extends ContainerAwareCommand
     public function __construct(ParameterBagInterface $params = null, LoggerInterface $logger = null)
     {
         $this->params = $params;
-        $this->event_type = $this->http_method = $this->params->get('app.fixity.eventtype.code');
+        $this->event_type = $this->params->get('app.fixity.eventtype.code');
 
         // Set log output path in config/packages/{environment}/monolog.yaml
         $this->logger = $logger;

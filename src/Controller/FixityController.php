@@ -22,8 +22,6 @@ class FixityController
         // your request will return the fixity event entries in the database for resource 10.
         // phpcs:ensable
         $this->params = $params;
-        $this->http_method = $this->params->get('app.fixity.method');
-        $this->fixity_algorithm = $this->params->get('app.fixity.algorithm');
         $this->persistPlugins = $this->params->get('app.plugins.persist');
 
         // @todo: If we allow multiple persist plugins, the last one called determines

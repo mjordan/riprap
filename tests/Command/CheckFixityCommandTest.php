@@ -20,8 +20,8 @@ class CheckFixityCommandTest extends KernelTestCase
         // parameters locally within the test.
         $params = new ParameterBag(
             array(
-            'app.fixity.method' => 'HEAD',
-            'app.fixity.algorithm' => 'SHA-1',
+            'app.fixity.fetchdigest.from.fedoraapi.method' => 'HEAD',
+            'app.fixity.fetchdigest.from.fedoraapi.algorithm' => 'SHA-1',
             'app.plugins.fetchresourcelist' => array(),
             'app.plugins.fetchdigest' => array(),
             'app.plugins.persist' => array(),
