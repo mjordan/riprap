@@ -58,7 +58,7 @@ class PluginPersistToCsv extends ContainerAwareCommand
                 'event_uuid',
                 'event_type',
                 'resource_id',
-                'datestamp',
+                'timestamp',
                 'digest_algorithm',
                 'digest_value',
                 'event_detail',
@@ -79,8 +79,13 @@ class PluginPersistToCsv extends ContainerAwareCommand
                 $fields = explode(',', $row);
                 $event_records[$fields[2]] = $fields[5];
             }
-            $output->write($event_records[$input->getOption('resource_id')]);
+            if (!array_key_exists($input->getOption('resource_id'), $event_records)) {
+                $output->write('');
+            } else {
+                $output->write($event_records[$input->getOption('resource_id')]);
+            }
         }
+
         // Returns a serialized representation of all fixity check events.
         // @todo: Add  offset and limit parameters.
         if ($input->getOption('operation') == 'get_events') {
@@ -95,7 +100,7 @@ class PluginPersistToCsv extends ContainerAwareCommand
                     $event_array['event_uuid'] = $event->getEventUuid();
                     $event_array['resource_id'] = $event->getResourceId();
                     $event_array['event_type'] = $event->getEventType();
-                    $event_array['datestamp'] = $event->getDatestamp();
+                    $event_array['timestamp'] = $event->getTimestamp();
                     $event_array['digest_algorithm'] = $event->getDigestAlgorithm();
                     $event_array['digest_value'] = $event->getDigestValue();
                     $event_array['event_detail'] = $event->getEventDetail();

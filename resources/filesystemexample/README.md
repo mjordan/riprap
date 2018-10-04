@@ -26,16 +26,11 @@ For each resource Riprap checks, the `app:riprap:plugin:postcheck:sayhi` says "H
 
 ## Running the plugins
 
-If you want to run Riprap using these plugins, you need to modify `config/services.yaml`:
+If you want to run Riprap using these plugins, you need to replace `config/services.yaml` with `config/services.yaml.filesystemexample`. For example,
 
-1. Comment out the following lines by prefixing them with a `#`:
-
-* `app.plugins.fetchresourcelist: ['app:riprap:plugin:fetchresourcelist:from:file']`
-* `app.plugins.fetchdigest: 'app:riprap:plugin:fetchdigest:from:fedoraapi'`
-* `app.plugins.persist: ['app:riprap:plugin:persist:to:database']`
-* `app.plugins.postcheck: ['app:riprap:plugin:postcheck:mailfailures', 'app:riprap:plugin:postcheck:migratefedora3auditlog']`
-
-2. Uncomment all of the lines in the ` ### Sample "filesystem" plugins` section.
+1. `cd config`
+1. `cp services.yaml services.yaml.dist`
+1. `cp services.yaml.filesystemexample services.yaml`
 
 When you run the `app:riprap:check_fixity` command, the sample plugins will be used instead of the default plugins.
 
