@@ -2,18 +2,19 @@
 // src/Service/FixityEventDetailManager.php
 namespace App\Service;
 
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+
 /**
  * This class provides a way for Riprap plugins to pass 'event_detail' and
  * 'event_outcome_detail_note' data to 'persist' plugins.
- *
- * @todo: $glue should be defined as a parameter in services.yaml.
  */
 
 class FixityEventDetailManager
 {
-    public function __construct()
+    public function __construct(ParameterBagInterface $params = null)
     {
         $this->event_details = array('event_detail' => array(), 'event_outcome_detail_note' => array());
+        $this->serialize_delimiter = $params->get('app.service.detailmanager.delimiter');
     }
 
     /**
@@ -59,18 +60,15 @@ class FixityEventDetailManager
      *
      * @param array $details
      *    An array of strings.
-     * @param array $glue
-     *    The character to join the memebers of $details with.
      *
      * @return array
      *    Associative array with 'event_detail' and 'event_outcome_detail_note'
-     *    as keys whose values are a string of the corresponding details
-     *    joined with $glue.
+     *    as keys whose values are a string of the corresponding imploded details.
      */
-    public function serialize($details, $glue = ';')
+    public function serialize($details)
     {
-        $event_detail = implode($glue, $details['event_detail']);
-        $event_outcome_detail_note = implode($glue, $details['event_outcome_detail_note']);
+        $event_detail = implode($this->serialize_delimiter, $details['event_detail']);
+        $event_outcome_detail_note = implode($this->serialize_delimiter, $details['event_outcome_detail_note']);
         return array('event_detail' => $event_detail, 'event_outcome_detail_note' => $event_outcome_detail_note);
     }
 }

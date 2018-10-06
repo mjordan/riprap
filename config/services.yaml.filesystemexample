@@ -5,6 +5,8 @@ parameters:
     app.fixity.eventtype.uri: 'http://id.loc.gov/vocabulary/preservation/eventType/fix'
     app.fixity.eventtype.code: 'fix'
 
+    app.service.detailmanager.delimiter: ';'
+
     # To not register any fetchresourcelist plugins, use app.plugins.fetchresourcelist []
     # app.plugins.fetchresourcelist: ['app:riprap:plugin:fetchresourcelist:from:file']
     app.plugins.fetchresourcelist.from.file.paths: ['resources/riprap_resource_ids.txt']
