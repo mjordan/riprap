@@ -13,18 +13,23 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 
 use App\Entity\Event;
+use App\Service\FixityEventDetailManager;
 
 class PluginFetchDigestFromFedoraAPI extends ContainerAwareCommand
 {
     private $params;
 
-    public function __construct(ParameterBagInterface $params = null, LoggerInterface $logger = null)
-    {
+    public function __construct(
+        ParameterBagInterface $params = null,
+        LoggerInterface $logger = null,
+        FixityEventDetailManager $event_detail = null
+    ) {
         $this->params = $params;
         $this->http_method = $this->params->get('app.fixity.fetchdigest.from.fedoraapi.method');
         $this->fixity_algorithm = $this->params->get('app.fixity.fetchdigest.from.fedoraapi.algorithm');
 
         $this->logger = $logger;
+        $this->event_detail = $event_detail;
 
         parent::__construct();
     }
@@ -68,6 +73,10 @@ class PluginFetchDigestFromFedoraAPI extends ContainerAwareCommand
                 'status_code' => $status_code,
             ));
             $output->writeln($status_code);
+        }
+
+        if ($this->event_detail) {
+            $this->event_detail->add('event_outcome_detail_note', 'Fedora says hi.');
         }
 
         // $this->logger is null while testing.

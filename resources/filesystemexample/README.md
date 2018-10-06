@@ -22,7 +22,7 @@ For each resource Riprap checks, the `app:riprap:plugin:persist:to:csv` plugin s
 
 ### postcheck
 
-For each resource Riprap checks, the `app:riprap:plugin:postcheck:sayhi` says "Hello". Not very exiting but friendly!
+For each resource Riprap checks, the `app:riprap:plugin:postcheck:sayhi` writes an entry to the log that says "Resource [...] says Hello!". Not very exiting but friendly!
 
 ## Running the plugins
 

@@ -11,17 +11,22 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Psr\Log\LoggerInterface;
 
 use App\Entity\Event;
+use App\Service\FixityEventDetailManager;
 
 class PluginFetchResourceListFromFile extends ContainerAwareCommand
 {
     private $params;
 
-    public function __construct(ParameterBagInterface $params = null, LoggerInterface $logger = null)
-    {
+    public function __construct(
+        ParameterBagInterface $params = null,
+        LoggerInterface $logger = null,
+        FixityEventDetailManager $event_detail = null
+    ) {
         $this->params = $params;
         $this->input_files = $this->params->get('app.plugins.fetchresourcelist.from.file.paths');
 
         $this->logger = $logger;
+        $this->event_detail = $event_detail;
 
         parent::__construct();
     }

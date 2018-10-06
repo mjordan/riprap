@@ -15,13 +15,17 @@ use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\Exception\UnsatisfiedDependencyException;
 
 use App\Entity\Event;
+use App\Service\FixityEventDetailManager;
 
 class CheckFixityCommand extends ContainerAwareCommand
 {
     private $params;
 
-    public function __construct(ParameterBagInterface $params = null, LoggerInterface $logger = null)
-    {
+    public function __construct(
+        ParameterBagInterface $params = null,
+        LoggerInterface $logger = null,
+        FixityEventDetailManager $event_detail = null
+    ) {
         // Set in the parameters section of config/services.yaml.
         $this->params = $params;
         $this->http_method = $this->params->get('app.fixity.fetchdigest.from.fedoraapi.method');
@@ -33,6 +37,7 @@ class CheckFixityCommand extends ContainerAwareCommand
 
         // Set log output path in config/packages/{environment}/monolog.yaml
         $this->logger = $logger;
+        $this->event_detail = $event_detail;
 
         parent::__construct();
     }
@@ -117,7 +122,7 @@ class CheckFixityCommand extends ContainerAwareCommand
                         '--timestamp' => $now_iso8601,
                         '--digest_algorithm' => $this->fixity_algorithm,
                         '--event_uuid' => '',
-                        '--event_detail' => $event_detail,
+                        // '--event_detail' => $event_detail,
                         '--digest_value' => '',
                         '--outcome' => '',
                         '--operation' => 'get_last_digest',
@@ -172,7 +177,9 @@ class CheckFixityCommand extends ContainerAwareCommand
                         // be the case for new resources detected by the fetchresourcelist plugins.
                         } elseif (strlen($last_digest_for_resource) == 0) {
                             $outcome = 'suc';
-                            $event_detail = 'Initial fixity check.';
+                            if ($this->event_detail) {
+                                $this->event_detail->add('event_detail', 'Initial fixity check.');
+                            }
                             $num_successful_events++;
                             $current_digest_value = $current_digest_plugin_return_value;
                         } else {
@@ -196,7 +203,7 @@ class CheckFixityCommand extends ContainerAwareCommand
                         '--timestamp' => $now_iso8601,
                         '--digest_algorithm' => $this->fixity_algorithm,
                         '--event_uuid' => $event_uuid,
-                        '--event_detail' => $event_detail,
+                        // '--event_detail' => $event_detail,
                         '--digest_value' => $current_digest_value,
                         '--outcome' => $outcome,
                         '--operation' => 'persist_fix_event',
@@ -248,6 +255,7 @@ class CheckFixityCommand extends ContainerAwareCommand
                 }
             }
         }
+
         $fixity_check = $stopwatch->stop('fixity_check');
         $duration = $fixity_check->getDuration(); // milliseconds
         $duration = $duration / 1000; // seconds

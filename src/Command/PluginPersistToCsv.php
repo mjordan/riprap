@@ -11,13 +11,17 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Psr\Log\LoggerInterface;
 
 use App\Entity\FixityCheckEvent;
+use App\Service\FixityEventDetailManager;
 
 class PluginPersistToCsv extends ContainerAwareCommand
 {
     private $params;
 
-    public function __construct(ParameterBagInterface $params = null, LoggerInterface $logger = null)
-    {
+    public function __construct(
+        ParameterBagInterface $params = null,
+        LoggerInterface $logger = null,
+        FixityEventDetailManager $event_detail = null
+    ) {
         $this->params = $params;
         $this->event_type = $this->params->get('app.fixity.eventtype.code');
 
@@ -26,6 +30,7 @@ class PluginPersistToCsv extends ContainerAwareCommand
 
         // Set log output path in config/packages/{environment}/monolog.yaml
         $this->logger = $logger;
+        $this->event_detail = $event_detail;
 
         parent::__construct();
     }
@@ -41,7 +46,7 @@ class PluginPersistToCsv extends ContainerAwareCommand
             ->addOption('timestamp', null, InputOption::VALUE_REQUIRED, 'ISO 8601 date when the fixity validation event occured.')
             ->addOption('resource_id', null, InputOption::VALUE_REQUIRED, 'Fully qualifid URL of the resource to validate.')
             ->addOption('event_uuid', null, InputOption::VALUE_REQUIRED, 'UUID of the fixity validation event.')
-            ->addOption('event_detail', null, InputOption::VALUE_REQUIRED, 'Fixity check event detail.')
+            // ->addOption('event_detail', null, InputOption::VALUE_REQUIRED, 'Fixity check event detail.')
             ->addOption('digest_algorithm', null, InputOption::VALUE_REQUIRED, 'Algorithm used to generate the digest.')
             ->addOption('digest_value', null, InputOption::VALUE_REQUIRED, 'Value of the digest retrieved from the Fedora repository.')
             ->addOption('outcome', null, InputOption::VALUE_REQUIRED, 'Outcome of the event.')
@@ -113,6 +118,8 @@ class PluginPersistToCsv extends ContainerAwareCommand
             $output->write(serialize($event_entries));
         }
         if ($input->getOption('operation') == 'persist_fix_event') {
+            $details = $this->event_detail->getDetails();
+            $event_details = $this->event_detail->serialize($details);
             $record = array(
                 $input->getOption('event_uuid'),
                 $this->event_type,
@@ -120,9 +127,9 @@ class PluginPersistToCsv extends ContainerAwareCommand
                 $input->getOption('timestamp'),
                 $input->getOption('digest_algorithm'),
                 $input->getOption('digest_value'),
-                '',
+                $event_details['event_detail'],
                 $input->getOption('outcome'),
-                ''
+                $event_details['event_outcome_detail_note']
             );
             $record = implode(',', $record);
             file_put_contents($this->fixity_peristence_csv, $record . "\n", FILE_APPEND);
