@@ -1,3 +1,4 @@
+![RipRap](https://user-images.githubusercontent.com/2371345/48165629-86513c80-e2bc-11e8-9577-dc0525c74184.png)
 # Riprap
 
 [![Contribution Guidelines](http://img.shields.io/badge/CONTRIBUTING-Guidelines-blue.svg)](./docs/CONTRIBUTING.md)
