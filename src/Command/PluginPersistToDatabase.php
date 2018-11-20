@@ -43,8 +43,8 @@ class PluginPersistToDatabase extends ContainerAwareCommand
             ->addOption('timestamp', null, InputOption::VALUE_REQUIRED, 'ISO 8601 date when the fixity check event occured.')
             ->addOption('timestamp_start', null, InputOption::VALUE_OPTIONAL, 'ISO8601 date indicating start of date range in queries.', null)
             ->addOption('timestamp_end', null, InputOption::VALUE_OPTIONAL, 'ISO8601 date indicating end of date range in queries.', null)
-            ->addOption('limit', null, InputOption::VALUE_OPTIONAL, 'Number of events to return.', null)
-            ->addOption('offset', null, InputOption::VALUE_OPTIONAL, 'The offset in the result set.', null)
+            ->addOption('limit', null, InputOption::VALUE_OPTIONAL, 'Number of items in the result set to return, starting at the value of "offset".', null)
+            ->addOption('offset', null, InputOption::VALUE_OPTIONAL, 'The number of items in the result set, starting at the beginning, that are skipped in the result set (i.e., same as standard SQL use of "offset"). Default is 0.', null)
             ->addOption('resource_id', null, InputOption::VALUE_REQUIRED, 'Fully qualifid URL of the resource to validate.')
             ->addOption('event_uuid', null, InputOption::VALUE_REQUIRED, 'UUID of the fixity check event.')          
             ->addOption('digest_algorithm', null, InputOption::VALUE_REQUIRED, 'Algorithm used to generate the digest.')
@@ -84,8 +84,8 @@ class PluginPersistToDatabase extends ContainerAwareCommand
                     $input->getOption('timestamp_start'),
                     $input->getOption('timestamp_end'),
                     $input->getOption('outcome'),
-                    (int) $input->getOption('offset'),
-                    (int) $input->getOption('limit')
+                    $input->getOption('offset'),
+                    $input->getOption('limit')
                 );
             } else {
                 // No request query parameters are present.

@@ -65,6 +65,7 @@ class FixityCheckEventRepository extends ServiceEntityRepository
      */
     public function findFixityCheckEvents($resource_id)
     {
+        // var_dump("All events");
         $qb = $this->createQueryBuilder('event')
             ->andWhere('event.resource_id = :resource_id')
             ->setParameter('resource_id', $resource_id)
@@ -120,17 +121,18 @@ class FixityCheckEventRepository extends ServiceEntityRepository
             ->setParameter('outcome', $outcome);
         }
 
-        if (!is_null($offset)) {
-            $qb->setFirstResult($offset);
+        if (is_int($limit) && $limit > 0) {
+            $qb->setMaxResults($limit);
         }
 
-        if (!is_null($limit)) {
-            $qb->setMaxResults($limit);
+        if (is_int($offset) && $offset > 0) {
+            $qb->setFirstResult($offset);
         }
 
         $qb->orderBy('event.timestamp', 'ASC');
         
         $query = $qb->getQuery();
+
         return $query->getResult();
     }
 
