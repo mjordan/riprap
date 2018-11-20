@@ -85,12 +85,22 @@ class FixityCheckEventRepository extends ServiceEntityRepository
      *   ISO8601 date indicating end of query range.
      * @param string|null $outcome
      *   The outcome value.
+     * @param int|null $offset
+     *   The offset in the result set.
+     * @param int|null $limit
+     *   Number of events to return.
      *
      * @return array
      *   A list of FixityCheckEvent objects, or null.
      */
-    public function findFixityCheckEventsWithParams($resource_id, $timestamp_start, $timestamp_end, $outcome)
-    {
+    public function findFixityCheckEventsWithParams(
+        $resource_id,
+        $timestamp_start,
+        $timestamp_end,
+        $outcome,
+        $offset,
+        $limit
+    ) {
         $qb = $this->createQueryBuilder('event')
             ->andWhere('event.resource_id = :resource_id')
             ->setParameter('resource_id', $resource_id);
@@ -108,6 +118,14 @@ class FixityCheckEventRepository extends ServiceEntityRepository
         if (!is_null($outcome)) {
             $qb->andWhere('event.event_outcome = :outcome')
             ->setParameter('outcome', $outcome);
+        }
+
+        if (!is_null($offset)) {
+            $qb->setFirstResult($offset);
+        }
+
+        if (!is_null($limit)) {
+            $qb->setMaxResults($limit);
         }
 
         $qb->orderBy('event.timestamp', 'ASC');
