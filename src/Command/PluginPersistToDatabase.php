@@ -79,7 +79,7 @@ class PluginPersistToDatabase extends ContainerAwareCommand
                     $input->getOption('resource_id'),
                     $input->getOption('timestamp_start'),
                     $input->getOption('timestamp_end'),
-                    $input->getOption('outcome')                                
+                    $input->getOption('outcome')                         
                 );
             } else {
                 // No request query parameters are present.

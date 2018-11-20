@@ -84,7 +84,7 @@ class FixityCheckEventRepository extends ServiceEntityRepository
      * @param string|null $timestamp_end
      *   ISO8601 date indicating end of query range.
      * @param string|null $outcome
-     *   The outcome value.       
+     *   The outcome value.
      *
      * @return array
      *   A list of FixityCheckEvent objects, or null.

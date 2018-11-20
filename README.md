@@ -186,7 +186,7 @@ curl -v -X POST -H "Resource-ID:http://localhost:8080/mockrepository/rest/17" ht
 
 * `timestamp_start`: ISO8601 date indicating start of date range in queries.
 * `timestamp_end`: ISO8601 date indicating end of date range in queries.
-* `outcome`: Coded outcome of the event, either 'suc' or 'fail'.
+* `outcome`: Coded outcome of the event, either `suc` or `fail`.
 
 For example, `curl -v -H 'Resource-ID:http://localhost:8000/mockrepository/rest/10' http://localhost:8000/api/fixity?timestamp_start=2018-12-03` would return only the events for `http://localhost:8000/mockrepository/rest/10` that have a timestamp equal to or later than `2018-12-03`.
 
