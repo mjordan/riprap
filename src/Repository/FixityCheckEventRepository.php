@@ -74,6 +74,48 @@ class FixityCheckEventRepository extends ServiceEntityRepository
             return $qb->execute();
     }
 
+    /**
+     * Finds all entries in the 'event' table for the current resource, with URL request parameters.
+     *
+     * @param string $resource_id
+     *   The URL of the resource.
+     * @param string|null $timestamp_start
+     *   ISO8601 date indicating start of query range.
+     * @param string|null $timestamp_end
+     *   ISO8601 date indicating end of query range.
+     * @param string|null $outcome
+     *   The outcome value.       
+     *
+     * @return array
+     *   A list of FixityCheckEvent objects, or null.
+     */
+    public function findFixityCheckEventsWithParams($resource_id, $timestamp_start, $timestamp_end, $outcome)
+    {
+        $qb = $this->createQueryBuilder('event')
+            ->andWhere('event.resource_id = :resource_id')
+            ->setParameter('resource_id', $resource_id);
+
+        if (!is_null($timestamp_start)) {
+            $qb->andWhere('event.timestamp >= :timestamp_start')
+            ->setParameter('timestamp_start', $timestamp_start);
+        }
+
+        if (!is_null($timestamp_end)) {
+            $qb->andWhere('event.timestamp <= :timestamp_end')
+            ->setParameter('timestamp_end', $timestamp_end);
+        }
+        
+        if (!is_null($outcome)) {
+            $qb->andWhere('event.event_outcome = :outcome')
+            ->setParameter('outcome', $outcome);
+        }
+
+        $qb->orderBy('event.timestamp', 'ASC');
+        
+        $query = $qb->getQuery();
+        return $query->getResult();
+    }
+
     /*
     public function findByExampleField($value)
     {

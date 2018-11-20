@@ -41,11 +41,13 @@ class PluginPersistToDatabase extends ContainerAwareCommand
         // phpcs:disable
         $this
             ->addOption('timestamp', null, InputOption::VALUE_REQUIRED, 'ISO 8601 date when the fixity check event occured.')
+            ->addOption('timestamp_start', null, InputOption::VALUE_OPTIONAL, 'ISO8601 date indicating start of date range in queries.', null)
+            ->addOption('timestamp_end', null, InputOption::VALUE_OPTIONAL, 'ISO8601 date indicating end of date range in queries.', null)
             ->addOption('resource_id', null, InputOption::VALUE_REQUIRED, 'Fully qualifid URL of the resource to validate.')
             ->addOption('event_uuid', null, InputOption::VALUE_REQUIRED, 'UUID of the fixity check event.')          
             ->addOption('digest_algorithm', null, InputOption::VALUE_REQUIRED, 'Algorithm used to generate the digest.')
             ->addOption('digest_value', null, InputOption::VALUE_REQUIRED, 'Value of the digest retrieved from the Fedora repository.')
-            ->addOption('outcome', null, InputOption::VALUE_REQUIRED, 'Coded outcome of the event.')
+            ->addOption('outcome', null, InputOption::VALUE_OPTIONAL, 'Coded outcome of the event.', null)
             // Persist plugins are special in that they are executed twice, once to get the last digest for the resource
             // and again to persist the event resulting from comparing that digest with a new one.
             ->addOption('operation', null, InputOption::VALUE_REQUIRED, 'One of "get_last_digest", "get_events", or "persist_new_event".');
@@ -68,11 +70,26 @@ class PluginPersistToDatabase extends ContainerAwareCommand
         // @todo: Add  offset and limit parameters.
         if ($input->getOption('operation') == 'get_events') {
             $repository = $this->getContainer()->get('doctrine')->getRepository(FixityCheckEvent::class);
-            $events = $repository->findFixityCheckEvents(
-                $input->getOption('resource_id')
-            );
+
+            // If these request query parameters are not present, they are NULL.
+            if (!is_null($input->getOption('timestamp_start')) ||
+                !is_null($input->getOption('timestamp_end')) ||
+                !is_null($input->getOption('outcome'))) {
+                $events = $repository->findFixityCheckEventsWithParams(
+                    $input->getOption('resource_id'),
+                    $input->getOption('timestamp_start'),
+                    $input->getOption('timestamp_end'),
+                    $input->getOption('outcome')                                
+                );
+            } else {
+                // No request query parameters are present.
+                $events = $repository->findFixityCheckEvents(
+                    $input->getOption('resource_id')
+                );
+            }
+
+            $event_entries = array();
             if (count($events)) {
-                $event_entries = array();
                 foreach ($events as $event) {
                     $event_array = array();
                     $event_array['event_uuid'] = $event->getEventUuid();

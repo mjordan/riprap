@@ -101,7 +101,7 @@ would return a list of all fixity events for the Fedora resource `http://example
 To see the API in action,
 
 1. run `php bin/console server:start`
-1. run ``curl -v -H 'Resource-ID:http://localhost:8000/mockrepository/rest/10' http://localhost:8000/api/fixity``
+1. run `curl -v -H 'Resource-ID:http://localhost:8000/mockrepository/rest/10' http://localhost:8000/api/fixity`
 
 You should get a response like this:
 
@@ -134,7 +134,7 @@ The returned JSON looks like this:
       "event_uuid":"4cd2edc9-f292-49a1-9b05-d025684de559",
       "resource_id":"http:\/\/localhost:8000\/mockrepository\/rest\/10",
       "event_type":"fix",
-      "datestamp":"2018-10-03T07:23:40-07:00",
+      "timestamp":"2018-10-03T07:23:40-07:00",
       "hash_algorithm":"SHA-1",
       "hash_value":"c28097ad29ab61bfec58d9b4de53bcdec687872e",
       "event_detail":"Initial fixity check.",
@@ -145,7 +145,7 @@ The returned JSON looks like this:
       "event_uuid":"fb73a36a-df64-4ba8-a437-ea277b65ebb7",
       "resource_id":"http:\/\/localhost:8000\/mockrepository\/rest\/10",
       "event_type":"fix",
-      "datestamp":"2018-12-03T07:26:39-07:00",
+      "timestamp":"2018-12-03T07:26:39-07:00",
       "hash_algorithm":"SHA-1",
       "hash_value":"c28097ad29ab61bfec58d9b4de53bcdec687872e",
       "event_detail":"",
@@ -181,6 +181,14 @@ curl -v -X POST -H "Resource-ID:http://localhost:8080/mockrepository/rest/17" ht
 * Closing connection 0
 ["new fixity event for resource http:\/\/localhost:8080\/mockrepository\/rest\/17"]
 ```
+
+`GET` requests can optionally take the following URL parameters:
+
+* `timestamp_start`: ISO8601 date indicating start of date range in queries.
+* `timestamp_end`: ISO8601 date indicating end of date range in queries.
+* `outcome`: Coded outcome of the event, either 'suc' or 'fail'.
+
+For example, `curl -v -H 'Resource-ID:http://localhost:8000/mockrepository/rest/10' http://localhost:8000/api/fixity?timestamp_start=2018-12-03` would return only the events for `http://localhost:8000/mockrepository/rest/10` that have a timestamp equal to or later than `2018-12-03`.
 
 ## Mock Fedora repository endpoint
 

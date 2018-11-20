@@ -16,6 +16,11 @@ class FixityController
     {
         $resource_id = $request->headers->get('Resource-ID');
 
+        // Will be NULL if not present in request.
+        $timestamp_start = $request->query->get('timestamp_start');
+        $timestamp_end = $request->query->get('timestamp_end');
+        $outcome = $request->query->get('outcome');
+
         // phpcs:disable
         // Initial implementation of calling plugin from controller. If you run
         // curl -v -H 'Resource-ID:http://localhost:8000/mockrepository/rest/10' http://localhost:8000/api/fixity
@@ -38,8 +43,10 @@ class FixityController
             '--digest_algorithm' => '',
             '--event_uuid' => '',
             '--digest_value' => '',
-            '--outcome' => '',
+            '--outcome' => $outcome,
             '--operation' => 'get_events',
+            '--timestamp_start' => $timestamp_start,
+            '--timestamp_end' => $timestamp_end,
         ));
         $get_events_plugin_output = new BufferedOutput();
         $get_events_plugin_return_code = $get_events_plugin_command->run($get_events_plugin_input, $get_events_plugin_output);
