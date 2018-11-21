@@ -20,6 +20,8 @@ class FixityController
         $timestamp_start = $request->query->get('timestamp_start');
         $timestamp_end = $request->query->get('timestamp_end');
         $outcome = $request->query->get('outcome');
+        // Set default to 'asc' if not in request.
+        $sort = !is_null($request->query->get('sort')) ? $request->query->get('sort') : 'asc';
         // This typecasting makes the derault value of $limit and $offset to be 0.
         $limit = (int) $request->query->get('limit');
         $offset = (int) $request->query->get('offset');
@@ -51,7 +53,8 @@ class FixityController
             '--timestamp_start' => $timestamp_start,
             '--timestamp_end' => $timestamp_end,
             '--limit' => $limit,
-            '--offset' => $offset
+            '--offset' => $offset,
+            '--sort' => $sort
         ));
         $get_events_plugin_output = new BufferedOutput();
         $get_events_plugin_return_code = $get_events_plugin_command->run($get_events_plugin_input, $get_events_plugin_output);

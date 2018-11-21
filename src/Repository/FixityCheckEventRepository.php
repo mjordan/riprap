@@ -65,7 +65,6 @@ class FixityCheckEventRepository extends ServiceEntityRepository
      */
     public function findFixityCheckEvents($resource_id)
     {
-        // var_dump("All events");
         $qb = $this->createQueryBuilder('event')
             ->andWhere('event.resource_id = :resource_id')
             ->setParameter('resource_id', $resource_id)
@@ -90,6 +89,8 @@ class FixityCheckEventRepository extends ServiceEntityRepository
      *   The offset in the result set.
      * @param int|null $limit
      *   Number of events to return.
+     * @param string $sort
+     *   Either 'asc' (the default) or 'desc'.
      *
      * @return array
      *   A list of FixityCheckEvent objects, or null.
@@ -100,7 +101,8 @@ class FixityCheckEventRepository extends ServiceEntityRepository
         $timestamp_end,
         $outcome,
         $offset,
-        $limit
+        $limit,
+        $sort
     ) {
         $qb = $this->createQueryBuilder('event')
             ->andWhere('event.resource_id = :resource_id')
@@ -129,7 +131,7 @@ class FixityCheckEventRepository extends ServiceEntityRepository
             $qb->setFirstResult($offset);
         }
 
-        $qb->orderBy('event.timestamp', 'ASC');
+        $qb->orderBy('event.timestamp', strtoupper($sort));
         
         $query = $qb->getQuery();
 
