@@ -25,6 +25,8 @@ Riprap is still in early development, but all the major functional components ar
 * SQLite (other RDBMSs will be supported soon).
   * To install the PHP driver for SQLite on Ubuntu, run `sudo apt-get install php7.2-sqlite3`, replacing `7.2` with your version of PHP.
 
+While not a requirement, a [module for Islandora](https://github.com/mjordan/islandora_riprap) is available that provides node-level reports on binary resources using data from Riprap.
+
 ## Installation
 
 1. Clone this git repository
