@@ -155,6 +155,13 @@ The returned JSON looks like this:
    [...]
 ]
 ```
+Note that if the resource identified by `Resource-ID` does not have any events in Riprap, the REST API will return a `200` response and an empty body, e.g.,
+
+```javascript
+[]
+```
+
+This means that consumers of this API will need to not only check for the HTTP response code, but also count the number of members in the returned list.
 
 HTTP `POST` and `PATCH` will also be supported, e.g.:
 
