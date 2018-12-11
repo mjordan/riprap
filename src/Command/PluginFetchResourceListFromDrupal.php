@@ -56,7 +56,7 @@ class PluginFetchResourceListFromDrupal extends ContainerAwareCommand
         $response = $client->request('GET', $url, [
             'http_errors' => false,
             'headers' => [$this->jsonapi_authorization_headers[0]], // @todo: Loop through this array and add each header. 
-            'query' => ['page[offset]' => '1', 'page[limit]' => '3']
+            'query' => ['page[offset]' => '1', 'page[limit]' => '50']
         ]);
         $status_code = $response->getStatusCode();
         // var_dump($status_code);
@@ -91,7 +91,11 @@ class PluginFetchResourceListFromDrupal extends ContainerAwareCommand
                     // In that case, we need to figure out how to get Drupal's checksum for the file over HTTP.
                     // var_dump($media->field_media_image[0]->url);
                     // $output->writeln($media['field_media_image'][0]['url']);
-                    var_dump($media['field_media_image'][0]['url']);
+                    if (isset($media['field_media_image'])) {
+                        var_dump($media['field_media_image'][0]['url']);
+                    } else {
+                        var_dump($media['field_media_file'][0]['url']);
+                    }
                   }
                 }
               }
