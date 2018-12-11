@@ -31,6 +31,9 @@ class PluginFetchResourceListFromDrupal extends ContainerAwareCommand
         // For now we only use the first one, not sure how to handle multiple content types.
         $this->drupal_content_types = $this->params->get('app.plugins.fetchresourcelist.from.drupal.content_types');
         $this->media_tags = $this->params->get('app.plugins.fetchresourcelist.from.drupal.media_tags');
+        $this->use_fedora_urls = $this->params->get('app.plugins.fetchresourcelist.from.drupal.use_fedora_urls');
+        $this->gemini_endpoint = $this->params->get('app.plugins.fetchresourcelist.from.drupal.gemini_endpoint');
+        $this->gemini_jwt_token = $this->params->get('app.plugins.fetchresourcelist.from.drupal.gemini_jwt_token');
 
         $this->logger = $logger;
         $this->event_detail = $event_detail;
@@ -47,22 +50,19 @@ class PluginFetchResourceListFromDrupal extends ContainerAwareCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        // @todo: See https://github.com/mjordan/riprap/issues/14.
-
         $client = new \GuzzleHttp\Client();
         $url = $this->drupal_base_url . '/jsonapi/node/' . $this->drupal_content_types[0];
         // First, get JSON:API's first page of nodes, then loop through each one and print it to output.
-        // curl -v -H 'Authorization: Basic YWRtaW46aXNsYW5kb3Jh'  "http://localhost:8000/jsonapi/node/islandora_object?page[offset]=2&page[limit]=1"
+        // @todo: persist page offset somewhere so the next page can be retrieved during next cron run.
+        // We can probably leave the page limit hard coded at 50, at least until someone has a reason to change it.
         $response = $client->request('GET', $url, [
             'http_errors' => false,
             'headers' => [$this->jsonapi_authorization_headers[0]], // @todo: Loop through this array and add each header. 
             'query' => ['page[offset]' => '1', 'page[limit]' => '50']
         ]);
         $status_code = $response->getStatusCode();
-        // var_dump($status_code);
         $node_list = (string) $response->getBody();
         $node_list_array = json_decode($node_list, true);
-        // var_dump($node_list_array);
 
         foreach ($node_list_array['data'] as $node) {
             $nid = $node['attributes']['nid'];
@@ -79,28 +79,31 @@ class PluginFetchResourceListFromDrupal extends ContainerAwareCommand
             $media_list = (string) $media_response->getBody();
             $media_list = json_decode($media_list, true);
 
-            // Loop through all the media and pick the ones that
-            // are tagged with terms in $taxonomy_terms_to_check.
+            // Loop through all the media and pick the ones that are tagged with terms in $taxonomy_terms_to_check.
             foreach ($media_list as $media) {
-              // var_dump($media);
-              if (count($media['field_media_use'])) {
-                foreach ($media['field_media_use'] as $term) {
-                  if (in_array($term['url'], $this->media_tags)) {
-                    // @todo: Convert to the equivalent Fedora URL and add to the plugin's output by querying Gemini.
-                    // Add option to not convert to Fedora URL if the site doesn't use Fedora.
-                    // In that case, we need to figure out how to get Drupal's checksum for the file over HTTP.
-                    // var_dump($media->field_media_image[0]->url);
-                    // $output->writeln($media['field_media_image'][0]['url']);
-                    if (isset($media['field_media_image'])) {
-                        var_dump($media['field_media_image'][0]['url']);
-                    } else {
-                        var_dump($media['field_media_file'][0]['url']);
+                if (count($media['field_media_use'])) {
+                    foreach ($media['field_media_use'] as $term) {
+                        if (in_array($term['url'], $this->media_tags)) {
+                            if ($this->use_fedora_urls) {
+                                // @todo: getFedoraUrl() returns false on failure, so build in logic here to account for that.
+                                if (isset($media['field_media_image'])) {
+                                    $fedora_url = $this->getFedoraUrl($media['field_media_image'][0]['target_uuid']);
+                                    var_dump($fedora_url);
+                                } else {
+                                    $fedora_url = $this->getFedoraUrl($media['field_media_file'][0]['target_uuid']);
+                                    var_dump($fedora_url);                                    
+                                }
+                            } else {
+                                if (isset($media['field_media_image'])) {
+                                    var_dump($media['field_media_image'][0]['url']);
+                                } else {
+                                    var_dump($media['field_media_file'][0]['url']);
+                                }
+                            }
+                        }
                     }
-                  }
                 }
-              }
             }
-
         }
 
         // $this->logger is null while testing.
@@ -108,7 +111,60 @@ class PluginFetchResourceListFromDrupal extends ContainerAwareCommand
             $this->logger->info("PluginFetchResourceListFromDrupal executed");
         }
 
-        // during development, so downstream plugins aren't fired.
+        // !!!!! during development, so downstream plugins aren't fired. !!!!!!SSS
         exit;
+    }
+
+   /**
+    * Get a Fedora URL for a File entity from Gemini.
+    *
+    * @param string $uuid
+    *   The File entity's UUID.
+    *
+    * @return string
+    *    The Fedora URL corresponding to the UUID, or false.
+    */
+    private function getFedoraUrl($uuid)
+    {
+        try {
+            $auth = 'Bearer ' . $this->gemini_jwt_token;
+            $client = new \GuzzleHttp\Client();
+            $options = [
+                'http_errors' => false,
+                'headers' => ['Authorization' => $auth],
+            ];
+            $url = $this->gemini_endpoint . '/' . $uuid;
+            $response = $client->request('GET', $url, $options);
+            $code = $response->getStatusCode();
+            if ($code == 200) {
+                $body = $response->getBody()->getContents();
+                $body_array = json_decode($body, true);
+                return $body_array['fedora'];
+            }
+            elseif ($code == 404) {
+                return false;
+            }
+            else {
+                if ($this->logger) {
+                    $this->logger->error("PluginFetchResourceListFromDrupal could not get Fedora URL from Gemini",
+                        array(
+                            'HTTP response code' => $code
+                        )
+                    );
+                }
+                return false;
+            }
+        }
+        catch (Exception $e) {
+            if ($this->logger) {
+                $this->logger->error("PluginFetchResourceListFromDrupal could not get Fedora URL from Gemini",
+                    array(
+                        'HTTP response code' => $code,
+                        'Exception message' => $e->getMessage()
+                    )
+                );
+            }
+            return false;
+        }
     }
 }
