@@ -14,9 +14,10 @@ parameters:
     # Settings for the app:riprap:plugin:fetchresourcelist:from:drupal plugin.
     app.plugins.fetchresourcelist: ['app:riprap:plugin:fetchresourcelist:from:drupal']
     app.plugins.fetchresourcelist.from.drupal.baseurl: 'http://localhost:8000'
-    app.plugins.fetchresourcelist.from.drupal.authorization_headers: ['Authorization: Basic YWRtaW46aXNsYW5kb3Jh'] # admin:islandora
+    app.plugins.fetchresourcelist.from.drupal.json_authorization_headers: ['Authorization: Basic YWRtaW46aXNsYW5kb3Jh'] # admin:islandora
+    app.plugins.fetchresourcelist.from.drupal.media_auth: ['admin', 'islandora']
     app.plugins.fetchresourcelist.from.drupal.content_types: ['islandora_object']
-    app.plugins.fetchresourcelist.from.drupal.media_tags: ['/taxonomy/term/2']
+    app.plugins.fetchresourcelist.from.drupal.media_tags: ['/taxonomy/term/15']
 
     # To not register any fetchdigest plugins, use app.plugins.fetchdigest [].
     # Currently we only allow one fetchdigest plugin per fixity event (i.e., this
