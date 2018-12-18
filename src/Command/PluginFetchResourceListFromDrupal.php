@@ -33,7 +33,7 @@ class PluginFetchResourceListFromDrupal extends ContainerAwareCommand
         $this->media_tags = $this->params->get('app.plugins.fetchresourcelist.from.drupal.media_tags');
         $this->use_fedora_urls = $this->params->get('app.plugins.fetchresourcelist.from.drupal.use_fedora_urls');
         $this->gemini_endpoint = $this->params->get('app.plugins.fetchresourcelist.from.drupal.gemini_endpoint');
-        $this->gemini_jwt_token = $this->params->get('app.plugins.fetchresourcelist.from.drupal.gemini_jwt_token');
+        $this->gemini_auth_header = $this->params->get('app.plugins.fetchresourcelist.from.drupal.gemini_auth_header');
 
         $this->logger = $logger;
         $this->event_detail = $event_detail;
@@ -58,15 +58,24 @@ class PluginFetchResourceListFromDrupal extends ContainerAwareCommand
         $response = $client->request('GET', $url, [
             'http_errors' => false,
             'headers' => [$this->jsonapi_authorization_headers[0]], // @todo: Loop through this array and add each header. 
-            'query' => ['page[offset]' => '1', 'page[limit]' => '50']
+            'query' => ['page[offset]' => '0', 'page[limit]' => '50']
         ]);
         $status_code = $response->getStatusCode();
         $node_list = (string) $response->getBody();
         $node_list_array = json_decode($node_list, true);
 
+        if (count($node_list_array['data']) == 0) {
+            if ($this->logger) {
+                $this->logger->warning("PluginFetchResourceListFromDrupal retrieved an empty node list from Drupal",
+                    array(
+                        'HTTP response code' => $status_code
+                    )
+                );
+            }
+        }
+
         foreach ($node_list_array['data'] as $node) {
-            $nid = $node['attributes']['nid'];
-            // var_dump($nid);            
+            $nid = $node['attributes']['nid']; 
             // Get the media associated with this node using the Islandora-supplied Manage Media View.
             $media_client = new \GuzzleHttp\Client();
             $media_url = $this->drupal_base_url . '/node/' . $nid . '/media';
@@ -85,18 +94,29 @@ class PluginFetchResourceListFromDrupal extends ContainerAwareCommand
                     foreach ($media['field_media_use'] as $term) {
                         if (in_array($term['url'], $this->media_tags)) {
                             if ($this->use_fedora_urls) {
-                                // @todo: getFedoraUrl() returns false on failure, so build in logic here to account for that.
+                                // @todo: getFedoraUrl() returns false on failure, so build in logic here to log that
+                                // the resource ID / URL cannot be found. (But, http responses are already logged in
+                                // getFedoraUrl() so maybe we don't need to log here?)
                                 if (isset($media['field_media_image'])) {
                                     $fedora_url = $this->getFedoraUrl($media['field_media_image'][0]['target_uuid']);
+                                    // This is a string containing one resource ID (URL) per line;
+                                    // $output->writeln($fedora_url);
                                     var_dump($fedora_url);
+                                    // var_dump($media['field_media_image'][0]['target_uuid']);
                                 } else {
                                     $fedora_url = $this->getFedoraUrl($media['field_media_file'][0]['target_uuid']);
+                                    // This is a string containing one resource ID (URL) per line;
+                                    // $output->writeln($fedora_url);
                                     var_dump($fedora_url);                                    
                                 }
                             } else {
                                 if (isset($media['field_media_image'])) {
+                                    // This is a string containing one resource ID (URL) per line;
+                                    // $output->writeln($media['field_media_image'][0]['url']);
                                     var_dump($media['field_media_image'][0]['url']);
                                 } else {
+                                    // This is a string containing one resource ID (URL) per line;
+                                    // $output->writeln($media['field_media_file'][0]['url']); 
                                     var_dump($media['field_media_file'][0]['url']);
                                 }
                             }
@@ -111,7 +131,7 @@ class PluginFetchResourceListFromDrupal extends ContainerAwareCommand
             $this->logger->info("PluginFetchResourceListFromDrupal executed");
         }
 
-        // !!!!! during development, so downstream plugins aren't fired. !!!!!!SSS
+        // !!!!! during development, so downstream plugins aren't fired. !!!!!!
         exit;
     }
 
@@ -127,11 +147,10 @@ class PluginFetchResourceListFromDrupal extends ContainerAwareCommand
     private function getFedoraUrl($uuid)
     {
         try {
-            $auth = 'Bearer ' . $this->gemini_jwt_token;
             $client = new \GuzzleHttp\Client();
             $options = [
                 'http_errors' => false,
-                'headers' => ['Authorization' => $auth],
+                'headers' => ['Authorization' => $this->gemini_auth_header],
             ];
             $url = $this->gemini_endpoint . '/' . $uuid;
             $response = $client->request('GET', $url, $options);

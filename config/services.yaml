@@ -20,7 +20,8 @@ parameters:
     app.plugins.fetchresourcelist.from.drupal.content_types: ['islandora_object']
     app.plugins.fetchresourcelist.from.drupal.media_tags: ['/taxonomy/term/15']
     app.plugins.fetchresourcelist.from.drupal.gemini_endpoint: 'http://localhost:8000/gemini' 
-    app.plugins.fetchresourcelist.from.drupal.gemini_jwt_token: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJpYXQiOjE1NDQ1NTQxMDYsImV4cCI6MTU0NDU2MTMwNiwid2ViaWQiOiIxIiwiaXNzIjoiaHR0cHM6XC9cL2xvY2FsaG9zdDo4MDAwIiwic3ViIjoiYWRtaW4iLCJyb2xlcyI6WyJhdXRoZW50aWNhdGVkIiwiYWRtaW5pc3RyYXRvciJdfQ.TQdGHkJC_X5XCj5_3-jdASN_7K0C9E_ayMRvz6XudDq7w-An8GM-QcuXc92OjbwgSmzicVKDjwfPWLoluALR2CQLSr9aWG0FoZdCHKXC04iz8Zd-JAHz9sXv3lQ047Nrv7eL9-cwDNSurT0ja2tSOH5OZyRX1krhv9hkwQNoEucsvaTYtDrxJwiIffxfLPqk53aSdPyGXHp2Z0UC8G_0IAigXNfWxqoHPvf0mfYOp0NrOnRtdzwt9EtBfh1uGQHFzkkjCilVCSXmP4-7tCBc9NP4g-kf3c5egNrqDLB0SRSCy3POsIEE08qS97fcYO-QItDXm8ngr4QapCajBcMTsQ'
+    # For now, will need to be replaced pending outcome of https://github.com/mjordan/riprap/issues/21.
+    app.plugins.fetchresourcelist.from.drupal.gemini_auth_header: 'Bearer islandora'
 
     # To not register any fetchdigest plugins, use app.plugins.fetchdigest [].
     # Currently we only allow one fetchdigest plugin per fixity event (i.e., this
