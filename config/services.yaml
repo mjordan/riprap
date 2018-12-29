@@ -22,8 +22,8 @@ parameters:
     app.plugins.fetchresourcelist.from.drupal.gemini_endpoint: 'http://localhost:8000/gemini' 
     # Will need to be replaced pending outcome of https://github.com/mjordan/riprap/issues/21.
     app.plugins.fetchresourcelist.from.drupal.gemini_auth_header: 'Bearer islandora'
-    # For now, we store paging data in a local file instead of a db table.
-    app.plugins.fetchresourcelist.from.drupal.page_size: 5
+    # Drupal's JSON:API allows a maximum page size of 50.
+    app.plugins.fetchresourcelist.from.drupal.page_size: 5 
     app.plugins.fetchresourcelist.from.drupal.pager_data: '%kernel.project_dir%/var/fetchresourcelist.from.drupal.pager.txt'
 
     # To not register any fetchdigest plugins, use app.plugins.fetchdigest [].

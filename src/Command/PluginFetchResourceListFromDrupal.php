@@ -220,20 +220,20 @@ class PluginFetchResourceListFromDrupal extends ContainerAwareCommand
         // We are on the last page, so reset the offset value to start the
         // verification cycle from the beginning.
         else {
-            $first_url = $links['first'];
-            $query_string = parse_url(urldecode($first_url), PHP_URL_QUERY);
-            parse_str($query_string, $query_array);
-            $first_offset = $query_array['page']['offset'];
-            file_put_contents($this->page_data_file, trim($first_offset));
+            if (array_key_exists('first', $links)) {
+                $first_url = $links['first'];
+                $query_string = parse_url(urldecode($first_url), PHP_URL_QUERY);
+                parse_str($query_string, $query_array);
+                $first_offset = $query_array['page']['offset'];
+                file_put_contents($this->page_data_file, trim($first_offset));
 
-
-            // file_put_contents($this->page_data_file, '0');
-            if ($this->logger) {
-                $this->logger->info("PluginFetchResourceListFromDrupal has reset its page offset to 0",
-                    array(
-                        'Last page offset value' => $page_offset
-                    )
-                );
+                if ($this->logger) {
+                    $this->logger->info("PluginFetchResourceListFromDrupal has reset Drupal's JSON:API page offset to the first page.",
+                        array(
+                            'Pager self URL' => $links['self']
+                        )
+                    );
+                }                
             }
         }
     }
