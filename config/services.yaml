@@ -9,7 +9,7 @@ parameters:
 
     # To not register any fetchresourcelist plugins, use app.plugins.fetchresourcelist []
     # app.plugins.fetchresourcelist: ['app:riprap:plugin:fetchresourcelist:from:file']
-    app.plugins.fetchresourcelist.from.file.paths: ['resources/riprap_resource_ids.txt']
+    # app.plugins.fetchresourcelist.from.file.paths: ['resources/riprap_resource_ids.txt']
 
     # Settings for the app:riprap:plugin:fetchresourcelist:from:drupal plugin.
     app.plugins.fetchresourcelist: ['app:riprap:plugin:fetchresourcelist:from:drupal']
@@ -20,15 +20,21 @@ parameters:
     app.plugins.fetchresourcelist.from.drupal.content_types: ['islandora_object']
     app.plugins.fetchresourcelist.from.drupal.media_tags: ['/taxonomy/term/15']
     app.plugins.fetchresourcelist.from.drupal.gemini_endpoint: 'http://localhost:8000/gemini' 
-    # For now, will need to be replaced pending outcome of https://github.com/mjordan/riprap/issues/21.
+    # Will need to be replaced pending outcome of https://github.com/mjordan/riprap/issues/21.
     app.plugins.fetchresourcelist.from.drupal.gemini_auth_header: 'Bearer islandora'
+    # For now, we store paging data in a local file instead of a db table.
+    app.plugins.fetchresourcelist.from.drupal.page_size: 5
+    app.plugins.fetchresourcelist.from.drupal.pager_data: '%kernel.project_dir%/var/fetchresourcelist.from.drupal.pager.txt'
 
     # To not register any fetchdigest plugins, use app.plugins.fetchdigest [].
     # Currently we only allow one fetchdigest plugin per fixity event (i.e., this
     # value is not an array).
     app.plugins.fetchdigest: 'app:riprap:plugin:fetchdigest:from:fedoraapi'
     app.fixity.fetchdigest.from.fedoraapi.method: 'HEAD'
-    app.fixity.fetchdigest.from.fedoraapi.algorithm: 'SHA-1'    
+    app.fixity.fetchdigest.from.fedoraapi.algorithm: 'sha256'
+    # Fedora's response looks like sha-256=cef971b6697fa92c7125a329437b69f9161c2472cce873a229a329d1424a4ff1
+    # so we need to remove the 'sha-256=' to get the hash value using this regex pattern.
+    app.fixity.fetchdigest.from.fedoraapi.digest_header.leader_pattern: "^.+="
 
     # To not register any persist plugins, use app.plugins.persist []
     app.plugins.persist: ['app:riprap:plugin:persist:to:database']

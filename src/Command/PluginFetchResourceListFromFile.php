@@ -23,7 +23,9 @@ class PluginFetchResourceListFromFile extends ContainerAwareCommand
         FixityEventDetailManager $event_detail = null
     ) {
         $this->params = $params;
-        $this->input_files = $this->params->get('app.plugins.fetchresourcelist.from.file.paths');
+        if ($this->params->has('app.plugins.fetchresourcelist.from.file.paths')) {
+            $this->input_files = $this->params->get('app.plugins.fetchresourcelist.from.file.paths');
+        }
 
         $this->logger = $logger;
         $this->event_detail = $event_detail;

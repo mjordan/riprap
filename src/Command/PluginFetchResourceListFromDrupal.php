@@ -34,6 +34,8 @@ class PluginFetchResourceListFromDrupal extends ContainerAwareCommand
         $this->use_fedora_urls = $this->params->get('app.plugins.fetchresourcelist.from.drupal.use_fedora_urls');
         $this->gemini_endpoint = $this->params->get('app.plugins.fetchresourcelist.from.drupal.gemini_endpoint');
         $this->gemini_auth_header = $this->params->get('app.plugins.fetchresourcelist.from.drupal.gemini_auth_header');
+        $this->page_size = $this->params->get('app.plugins.fetchresourcelist.from.drupal.page_size');
+        $this->page_data_file = $this->params->get('app.plugins.fetchresourcelist.from.drupal.pager_data');
 
         $this->logger = $logger;
         $this->event_detail = $event_detail;
@@ -50,23 +52,39 @@ class PluginFetchResourceListFromDrupal extends ContainerAwareCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+
+        if (file_exists($this->page_data_file)) {
+            $page_offset = (int) trim(file_get_contents($this->page_data_file));
+        }
+        else {
+            $page_offset = 0;
+            file_put_contents($this->page_data_file, $page_offset);
+        }
+
         $client = new \GuzzleHttp\Client();
         $url = $this->drupal_base_url . '/jsonapi/node/' . $this->drupal_content_types[0];
-        // First, get JSON:API's first page of nodes, then loop through each one and print it to output.
-        // @todo: persist page offset somewhere so the next page can be retrieved during next cron run.
-        // We can probably leave the page limit hard coded at 50, at least until someone has a reason to change it.
         $response = $client->request('GET', $url, [
             'http_errors' => false,
-            'headers' => [$this->jsonapi_authorization_headers[0]], // @todo: Loop through this array and add each header. 
-            'query' => ['page[offset]' => '0', 'page[limit]' => '50']
+            // @todo: Loop through this array and add each header.
+            'headers' => [$this->jsonapi_authorization_headers[0]],
+            // Sort descending by 'changed' so new and updated nodes
+            // get checked immediately after they are added/updated.
+            'query' => ['page[offset]' => $page_offset, 'page[limit]' => $this->page_size, 'sort' => '-changed']
         ]);
+        var_dump($page_offset);
+        var_dump($this->page_size);
         $status_code = $response->getStatusCode();
         $node_list = (string) $response->getBody();
         $node_list_array = json_decode($node_list, true);
+        var_dump($node_list_array['links']);
+
+        if ($status_code === 200) {
+            $this->setPageOffset($page_offset, $node_list_array['links']);
+        }
 
         if (count($node_list_array['data']) == 0) {
             if ($this->logger) {
-                $this->logger->warning("PluginFetchResourceListFromDrupal retrieved an empty node list from Drupal",
+                $this->logger->info("PluginFetchResourceListFromDrupal retrieved an empty node list from Drupal",
                     array(
                         'HTTP response code' => $status_code
                     )
@@ -100,24 +118,19 @@ class PluginFetchResourceListFromDrupal extends ContainerAwareCommand
                                 if (isset($media['field_media_image'])) {
                                     $fedora_url = $this->getFedoraUrl($media['field_media_image'][0]['target_uuid']);
                                     // This is a string containing one resource ID (URL) per line;
-                                    // $output->writeln($fedora_url);
-                                    var_dump($fedora_url);
-                                    // var_dump($media['field_media_image'][0]['target_uuid']);
+                                    $output->writeln($fedora_url);
                                 } else {
                                     $fedora_url = $this->getFedoraUrl($media['field_media_file'][0]['target_uuid']);
                                     // This is a string containing one resource ID (URL) per line;
-                                    // $output->writeln($fedora_url);
-                                    var_dump($fedora_url);                                    
+                                    $output->writeln($fedora_url);                                 
                                 }
                             } else {
                                 if (isset($media['field_media_image'])) {
                                     // This is a string containing one resource ID (URL) per line;
-                                    // $output->writeln($media['field_media_image'][0]['url']);
-                                    var_dump($media['field_media_image'][0]['url']);
+                                    $output->writeln($media['field_media_image'][0]['url']);
                                 } else {
                                     // This is a string containing one resource ID (URL) per line;
-                                    // $output->writeln($media['field_media_file'][0]['url']); 
-                                    var_dump($media['field_media_file'][0]['url']);
+                                    $output->writeln($media['field_media_file'][0]['url']); 
                                 }
                             }
                         }
@@ -130,9 +143,6 @@ class PluginFetchResourceListFromDrupal extends ContainerAwareCommand
         if ($this->logger) {
             $this->logger->info("PluginFetchResourceListFromDrupal executed");
         }
-
-        // !!!!! during development, so downstream plugins aren't fired. !!!!!!
-        exit;
     }
 
    /**
@@ -184,6 +194,47 @@ class PluginFetchResourceListFromDrupal extends ContainerAwareCommand
                 );
             }
             return false;
+        }
+    }
+
+   /**
+    * Sets the page offset to use in the next JSON:API request.
+    *
+    * @param int $page_offset
+    *   The page offset used in the current JSON:API request.
+    * @param string $links
+    *   The 'links' array member from the JSON:API response.
+    */
+    private function setPageOffset($page_offset, $links)
+    {
+        // We are not on the last page, so increment the page offset counter.
+        // See https://www.drupal.org/docs/8/modules/jsonapi/pagination for
+        // info on the JSON API paging logic.
+        if (array_key_exists('next', $links)) {
+            $next_url = $links['next'];
+            $query_string = parse_url(urldecode($next_url), PHP_URL_QUERY);
+            parse_str($query_string, $query_array);
+            $next_offset = $query_array['page']['offset'];
+            file_put_contents($this->page_data_file, trim($next_offset));
+        }
+        // We are on the last page, so reset the offset value to start the
+        // verification cycle from the beginning.
+        else {
+            $first_url = $links['first'];
+            $query_string = parse_url(urldecode($first_url), PHP_URL_QUERY);
+            parse_str($query_string, $query_array);
+            $first_offset = $query_array['page']['offset'];
+            file_put_contents($this->page_data_file, trim($first_offset));
+
+
+            // file_put_contents($this->page_data_file, '0');
+            if ($this->logger) {
+                $this->logger->info("PluginFetchResourceListFromDrupal has reset its page offset to 0",
+                    array(
+                        'Last page offset value' => $page_offset
+                    )
+                );
+            }
         }
     }
 }

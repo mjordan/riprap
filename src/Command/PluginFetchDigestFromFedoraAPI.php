@@ -27,6 +27,7 @@ class PluginFetchDigestFromFedoraAPI extends ContainerAwareCommand
         $this->params = $params;
         $this->http_method = $this->params->get('app.fixity.fetchdigest.from.fedoraapi.method');
         $this->fixity_algorithm = $this->params->get('app.fixity.fetchdigest.from.fedoraapi.algorithm');
+        $this->hash_leader_pattern = $this->params->get('app.fixity.fetchdigest.from.fedoraapi.digest_header.leader_pattern');
 
         $this->logger = $logger;
         $this->event_detail = $event_detail;
@@ -64,8 +65,11 @@ class PluginFetchDigestFromFedoraAPI extends ContainerAwareCommand
         $allowed_codes = array(200);
         if (in_array($status_code, $allowed_codes)) {
             $digest_header_values = $response->getHeader('digest');
-            // Assumes there is only one 'digiest' header - is this always the case?
-            $output->writeln($digest_header_values[0]);
+            // Digest header looks like Digest: sha-256=cef971b6697fa92c7125a329437b69f9161c2472cce873a229a329d1424a4ff1,
+            // so we need to remove the 'sha-256=' leader.
+            $digest_header_value = preg_replace('/' . $this->hash_leader_pattern . '/', '', $digest_header_values[0]);
+            // Assumes there is only one 'digest' header - is this always the case?
+            $output->writeln($digest_header_value);
         } else {
             // If the HTTP status code is not in the allowed list, log it.
             $this->logger->warning("check_fixity cannot retrieve digest from repository.", array(
@@ -76,7 +80,7 @@ class PluginFetchDigestFromFedoraAPI extends ContainerAwareCommand
         }
 
         if ($this->event_detail) {
-            $this->event_detail->add('event_outcome_detail_note', 'Fedora says hi.');
+            $this->event_detail->add('event_outcome_detail_note', '');
         }
 
         // $this->logger is null while testing.
