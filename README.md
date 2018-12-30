@@ -22,7 +22,7 @@ Riprap's major functionality is in place, with the exception of the ActiveMQ eve
 
 * PHP 7.1.3 or higher
 * [composer](https://getcomposer.org/)
-* A SQLite, MySQL, or PostgreSQL relational database, with appropriate PHP drivers.
+* An SQLite, MySQL, or PostgreSQL relational database, with appropriate PHP drivers.
 
 While not a requirement, a [module for Islandora](https://github.com/mjordan/islandora_riprap) is available that provides node-level reports on binary resources using data from Riprap.
 
@@ -63,7 +63,7 @@ In `config/packages/doctrine.yaml`, make sure you have:
 doctrine:
     dbal:
         driver: 'pdo_mysql'
-        server_version: '5.7'
+        server_version: '5.7' # Or whatever version you are running.
         charset: utf8mb4
         default_table_options:
             charset: utf8mb4
@@ -127,11 +127,11 @@ Enter ".help" for usage hints.
 sqlite> .headers on
 sqlite> select * from fixity_check_event;
 id|event_uuid|event_type|resource_id|timestamp|digest_algorithm|digest_value|event_detail|event_outcome|event_outcome_detail_note
-1|92224d93-563a-4c6e-8a2e-251084fb9cdc|fix|http://localhost:8000/mockrepository/rest/10|2018-10-01 07:49:13|SHA-1|c28097ad29ab61bfec58d9b4de53bcdec687872e|Initial fixity check.|suc|
-2|4e0efd4e-f6c5-4e7d-af4c-015b696f6047|fix|http://localhost:8000/mockrepository/rest/11|2018-10-01 07:49:13|SHA-1|339e2ebc99d2a81e7786a466b5cbb9f8b3b81377|Initial fixity check.|suc|
-3|70c91ae4-6a3e-4160-8985-00b4ffc626f7|fix|http://localhost:8000/mockrepository/rest/12|2018-10-01 07:49:13|SHA-1|0bad865a02d82f4970687ffe1b80822b76cc0626|Initial fixity check.|suc|
-4|10af3a5f-309a-4962-9b80-a6f8c17d8a0c|fix|http://localhost:8000/mockrepository/rest/13|2018-10-01 07:49:13|SHA-1|667be543b02294b7624119adc3a725473df39885|Initial fixity check.|suc|
-5|e64db74c-471e-4347-b256-5597470157c4|fix|http://localhost:8000/mockrepository/rest/14|2018-10-01 07:49:13|SHA-1|86cf294a07a8aa25f6a2d82a8938f707a2d80ac3|Initial fixity check.|suc|
+1|92224d93-563a-4c6e-8a2e-251084fb9cdc|fix|http://localhost:8000/mockrepository/rest/10|2018-10-01 07:49:13|SHA-1|c28097ad29ab61bfec58d9b4de53bcdec687872e|Initial fixity check.|success|
+2|4e0efd4e-f6c5-4e7d-af4c-015b696f6047|fix|http://localhost:8000/mockrepository/rest/11|2018-10-01 07:49:13|SHA-1|339e2ebc99d2a81e7786a466b5cbb9f8b3b81377|Initial fixity check.|success|
+3|70c91ae4-6a3e-4160-8985-00b4ffc626f7|fix|http://localhost:8000/mockrepository/rest/12|2018-10-01 07:49:13|SHA-1|0bad865a02d82f4970687ffe1b80822b76cc0626|Initial fixity check.|success|
+4|10af3a5f-309a-4962-9b80-a6f8c17d8a0c|fix|http://localhost:8000/mockrepository/rest/13|2018-10-01 07:49:13|SHA-1|667be543b02294b7624119adc3a725473df39885|Initial fixity check.|success|
+5|e64db74c-471e-4347-b256-5597470157c4|fix|http://localhost:8000/mockrepository/rest/14|2018-10-01 07:49:13|SHA-1|86cf294a07a8aa25f6a2d82a8938f707a2d80ac3|Initial fixity check.|success|
 sqlite>
 sqlite> .quit
 ```
