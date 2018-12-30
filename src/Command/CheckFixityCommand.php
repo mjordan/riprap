@@ -85,7 +85,12 @@ class CheckFixityCommand extends ContainerAwareCommand
             $ids_from_plugin = preg_split("/\r\n|\n|\r/", trim($ids_from_plugin));
             // Combine the output of all fetchPlugins.
             $resource_ids = array_merge($resource_ids, $ids_from_plugin);
-            $num_resource_ids = count($resource_ids);
+            if (count($resource_ids) > 0 && strlen($resource_ids[0])) {
+                $num_resource_ids = count($resource_ids);
+            }
+            else {
+                $num_resource_ids = 0;   
+            }
         }
 
         // Workaround for making tests pass.
@@ -255,7 +260,7 @@ class CheckFixityCommand extends ContainerAwareCommand
             }
 
             // Print output and log it.
-            // $this->logger->info("check_fixity ran.", array('event_uuid' => $event_uuid));
+            $this->logger->info("check_fixity ran.", array('event_uuid' => $event_uuid));
         }
 
         $fixity_check = $stopwatch->stop('fixity_check');
