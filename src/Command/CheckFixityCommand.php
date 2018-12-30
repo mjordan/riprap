@@ -99,14 +99,15 @@ class CheckFixityCommand extends ContainerAwareCommand
         $num_successful_events = 0;
         $num_failed_events = 0;
         foreach ($resource_ids as $resource_id) {
+            // If the resource ID is empty, don't continue.
+            if (!strlen($resource_id)) {
+                continue;
+            }
             $uuid4 = Uuid::uuid4();
             $event_uuid = $uuid4->toString();
             $now_iso8601 = date(\DateTime::ISO8601);
 
             $event_detail = '';
-
-            // Print output and log it.
-            $this->logger->info("check_fixity ran.", array('event_uuid' => $event_uuid));
 
             // Execute plugins that persist event data. We execute them twice and pass in an 'operation' option,
             // once to get the last digest for the resource and again to persist the event resulting from comparing
@@ -252,11 +253,15 @@ class CheckFixityCommand extends ContainerAwareCommand
                     );
                 }
             }
+
+            // Print output and log it.
+            // $this->logger->info("check_fixity ran.", array('event_uuid' => $event_uuid));
         }
 
         $fixity_check = $stopwatch->stop('fixity_check');
         $duration = $fixity_check->getDuration(); // milliseconds
         $duration = $duration / 1000; // seconds
+        
         $output->writeln("Riprap checked $num_resource_ids resources ($num_successful_events successful events, " .
             "$num_failed_events failed events) in $duration seconds.");
     }

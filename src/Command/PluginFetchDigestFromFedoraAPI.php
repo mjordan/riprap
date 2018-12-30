@@ -56,6 +56,12 @@ class PluginFetchDigestFromFedoraAPI extends ContainerAwareCommand
         $client = new \GuzzleHttp\Client();
         // @todo: Wrap in try/catch.
         $url = $input->getOption('resource_id');
+        if (!strlen($url)) {
+            if ($this->logger) {
+                $this->logger->info("PluginFetchDigestFromFedoraAPI exited due to empty resource ID.");
+            }
+            return;
+        }
 
         $response = $client->request($this->http_method, $url, [
             'http_errors' => false,
@@ -85,7 +91,7 @@ class PluginFetchDigestFromFedoraAPI extends ContainerAwareCommand
 
         // $this->logger is null while testing.
         if ($this->logger) {
-            $this->logger->info("PluginPersistToDatabase executed");
+            $this->logger->info("PluginFetchDigestFromFedoraAPI executed");
         }
     }
 }

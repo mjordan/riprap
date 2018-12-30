@@ -71,12 +71,10 @@ class PluginFetchResourceListFromDrupal extends ContainerAwareCommand
             // get checked immediately after they are added/updated.
             'query' => ['page[offset]' => $page_offset, 'page[limit]' => $this->page_size, 'sort' => '-changed']
         ]);
-        var_dump($page_offset);
-        var_dump($this->page_size);
+
         $status_code = $response->getStatusCode();
         $node_list = (string) $response->getBody();
         $node_list_array = json_decode($node_list, true);
-        var_dump($node_list_array['links']);
 
         if ($status_code === 200) {
             $this->setPageOffset($page_offset, $node_list_array['links']);
@@ -93,7 +91,7 @@ class PluginFetchResourceListFromDrupal extends ContainerAwareCommand
         }
 
         foreach ($node_list_array['data'] as $node) {
-            $nid = $node['attributes']['nid']; 
+            $nid = $node['attributes']['nid'];
             // Get the media associated with this node using the Islandora-supplied Manage Media View.
             $media_client = new \GuzzleHttp\Client();
             $media_url = $this->drupal_base_url . '/node/' . $nid . '/media';
@@ -105,6 +103,17 @@ class PluginFetchResourceListFromDrupal extends ContainerAwareCommand
             $media_status_code = $media_response->getStatusCode();
             $media_list = (string) $media_response->getBody();
             $media_list = json_decode($media_list, true);
+
+            if (count($media_list) === 0) {
+                if ($this->logger) {
+                    $this->logger->info("PluginFetchResourceListFromDrupal is skipping node with an empty media list.",
+                        array(
+                            'Node ID' => $nid
+                        )
+                    );
+                }
+                continue;
+            }
 
             // Loop through all the media and pick the ones that are tagged with terms in $taxonomy_terms_to_check.
             foreach ($media_list as $media) {
@@ -118,19 +127,27 @@ class PluginFetchResourceListFromDrupal extends ContainerAwareCommand
                                 if (isset($media['field_media_image'])) {
                                     $fedora_url = $this->getFedoraUrl($media['field_media_image'][0]['target_uuid']);
                                     // This is a string containing one resource ID (URL) per line;
-                                    $output->writeln($fedora_url);
+                                    if (strlen($fedora_url)) {
+                                        $output->writeln($fedora_url);
+                                    }
                                 } else {
                                     $fedora_url = $this->getFedoraUrl($media['field_media_file'][0]['target_uuid']);
                                     // This is a string containing one resource ID (URL) per line;
-                                    $output->writeln($fedora_url);                                 
+                                    if (strlen($fedora_url)) {
+                                        $output->writeln($fedora_url);
+                                    }                             
                                 }
                             } else {
                                 if (isset($media['field_media_image'])) {
                                     // This is a string containing one resource ID (URL) per line;
-                                    $output->writeln($media['field_media_image'][0]['url']);
+                                    if (strlen($media['field_media_image'][0]['url'])) {
+                                        $output->writeln($media['field_media_image'][0]['url']);
+                                    }
                                 } else {
                                     // This is a string containing one resource ID (URL) per line;
-                                    $output->writeln($media['field_media_file'][0]['url']); 
+                                    if (strlen($media['field_media_file'][0]['url'])) {
+                                        $output->writeln($media['field_media_file'][0]['url']);
+                                    }
                                 }
                             }
                         }
