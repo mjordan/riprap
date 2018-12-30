@@ -38,18 +38,62 @@ We will eventually support deployment via Ansible.
 
 ## Trying it out
 
-If you want to play with Riprap, and you're on a Linux or OSX machine, you should not need to configure anything. Assuming you have sqlite installed, you should be able to run the `check_fixity` command against the sample data and local web server, and perform basic API requests as documented below. A couple of things you will want to know:
+If you want to play with Riprap, and you're on a Linux or OSX machine, you should not need to configure anything. However, you will need to choose which relational database to use.
 
-* the database created by Symfony will be in located at `[riprap directory]/var/data.db`
+Assuming you have the database installed installed and configured properly (as described below), you should be able to run the `check_fixity` command against the sample data and local web server, and perform basic API requests as documented below. A couple of things you will want to know:
+
 * Riprap will write its log to `/tmp/riprap.log`
 * the test webserver runs on port 8000
 
-### Creating the database
+### Using Riprap with SQLite
 
 As stated above, for now we use SQLite as our database. To create the database that Riprap persists fixity event data into, follow these instructions from within the `riprap` directory:
 
+1. Edit .env so that this line is uncommented: `DATABASE_URL=sqlite:///%kernel.project_dir%/var/data.db` and the other lines starting with `DATABASE_URL` are commented out.
 1. `rm var/data.db` (might not exist)
 1. `rm src/Migrations/*` (might be empty)
+1. `php bin/console -n make:migration`
+1. `php bin/console -n doctrine:migrations:migrate`
+1. Optional: When you run the `check_fixity` command as described below, it will create events based on the fixity checks. If you want to populate the database with some sample fixity events prior to running `check_fixity` (you don't need to), run `php bin/console -n doctrine:fixtures:load`
+
+### Using MySQL with Riprap
+
+In `config/packages/doctrine.yaml`, make sure you have:
+
+```
+doctrine:
+    dbal:
+        driver: 'pdo_mysql'
+        server_version: '5.7'
+        charset: utf8mb4
+        default_table_options:
+            charset: utf8mb4
+            collate: utf8mb4_unicode_ci
+```
+
+1. Create a MySQL user with `create` privileges
+1. Edit .env so that this line contains the user, password, and database name you want: `DATABASE_URL=mysql://user:password@127.0.0.1:3306/riprap`
+1. `rm src/Migrations/*` (might be empty)
+1. `php bin/console doctrine:database:create`
+1. `php bin/console -n make:migration`
+1. `php bin/console -n doctrine:migrations:migrate`
+1. Optional: When you run the `check_fixity` command as described below, it will create events based on the fixity checks. If you want to populate the database with some sample fixity events prior to running `check_fixity` (you don't need to), run `php bin/console -n doctrine:fixtures:load`
+
+### Using PostgreSQL with Riprap
+
+In `config/packages/doctrine.yaml`, make sure you have:
+
+```
+doctrine:
+    dbal:
+        driver: 'pdo_pgsql'
+        charset: utf8
+```
+
+1. Create a PostgreSQL user with 'createdb` privileges
+1. Edit .env so that this line contains the user, password, and database name you want: `DATABASE_URL=pgsql://user:password@127.0.0.1:5432/riprap`
+1. `rm src/Migrations/*` (might be empty)
+1. `php bin/console doctrine:database:create`
 1. `php bin/console -n make:migration`
 1. `php bin/console -n doctrine:migrations:migrate`
 1. Optional: When you run the `check_fixity` command as described below, it will create events based on the fixity checks. If you want to populate the database with some sample fixity events prior to running `check_fixity` (you don't need to), run `php bin/console -n doctrine:fixtures:load`
