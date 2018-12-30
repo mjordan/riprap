@@ -48,7 +48,7 @@ class PluginPostCheckMailFailures extends ContainerAwareCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        if ($input->getOption('outcome') == 'failure') {
+        if ($input->getOption('outcome') == 'fail') {
             $resource_id = $input->getOption('resource_id');
             $timestamp = $input->getOption('timestamp');
             $mail_command = $this->getApplication()->find('swiftmailer:email:send');

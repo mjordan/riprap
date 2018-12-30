@@ -175,13 +175,13 @@ class CheckFixityCommand extends ContainerAwareCommand
                     $outcome = 'fail';
                     if (strlen($current_digest_plugin_return_value) > 3) {
                         if ($last_digest_for_resource == $current_digest_plugin_return_value) {
-                            $outcome = 'suc';
+                            $outcome = 'success';
                             $num_successful_events++;
                             $current_digest_value = $current_digest_plugin_return_value;
                         // Riprap has no entries in its db for this resource; this is OK, since this will
                         // be the case for new resources detected by the fetchresourcelist plugins.
                         } elseif (strlen($last_digest_for_resource) == 0) {
-                            $outcome = 'suc';
+                            $outcome = 'success';
                             if ($this->event_detail) {
                                 $this->event_detail->add('event_detail', 'Initial fixity check.');
                             }

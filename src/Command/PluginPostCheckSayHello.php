@@ -45,7 +45,7 @@ class PluginPostCheckSayHello extends ContainerAwareCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        if ($input->getOption('outcome') == 'suc') {
+        if ($input->getOption('outcome') == 'success') {
             $resource_id = $input->getOption('resource_id');
             $timestamp = $input->getOption('timestamp');
             // Postcheck plugins typically don't write output to STDOUT, since `check_fixity` is not expecting

@@ -43,7 +43,7 @@ class AppFixtures extends Fixture
             $event->setTimestamp(date(\DateTime::ISO8601));
             $event->setDigestAlgorithm('SHA-1');
             $event->setDigestValue($data[$i]['SHA-1']);
-            $event->setEventOutcome('suc');
+            $event->setEventOutcome('success');
             $event->setEventDetail('');
             $event->setEventOutcomeDetailNote('');
 
