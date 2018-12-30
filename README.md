@@ -242,7 +242,7 @@ If the resource is not found, the response will be `404`. If the `{id}` is not v
 One of Riprap's principle design requirements is flexibility. To meet this goal, it uses plugins to process most of its input and output. It supports four types of plugins:
 
 * "fetchresourcelist" plugins fetch a set of resource URIs/URLs to fixity check (e.g., from a Fedora repository's triplestore, from Drupal, from a CSV file). Multiple fetchresourcelist plugins can be configured at once.
-   * A plugin is available that queries Drupal for a list of nodes of a specific content type (e.g. "islandora_repository") is available. To use this plugin, the Drupal site must have the [JSON:API](https://www.drupal.org/project/jsonapi) Drupal module installed and enabled.
+   * A plugin is available that queries Drupal for a list of nodes of a specific content type (e.g. "islandora_repository"). To use this plugin, the Drupal site must have the [JSON:API](https://www.drupal.org/project/jsonapi) Drupal module installed and enabled.
    * There is also a sample plugin that reads resource URLs from a text file, `app:riprap:plugin:fetch:from:file`.
 * "fetchdigest" plugins query an external utility or service to get the digest of the current resource. Only one fetchdigest plugin can be configured.
    * A plugin is available that queries a Fedora API Specification-compliant repository, `app:riprap:plugin:fetchdigest:from:fedoraapi`.
