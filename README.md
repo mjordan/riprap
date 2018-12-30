@@ -22,8 +22,7 @@ Riprap's major functionality is in place, with the exception of the ActiveMQ eve
 
 * PHP 7.1.3 or higher
 * [composer](https://getcomposer.org/)
-* SQLite (other RDBMSs will be supported soon).
-  * To install the PHP driver for SQLite on Ubuntu, run `sudo apt-get install php7.2-sqlite3`, replacing `7.2` with your version of PHP.
+* A SQLite, MySQL, or PostgreSQL relational database, with appropriate PHP drivers.
 
 While not a requirement, a [module for Islandora](https://github.com/mjordan/islandora_riprap) is available that provides node-level reports on binary resources using data from Riprap.
 
@@ -47,7 +46,7 @@ Assuming you have the database installed installed and configured properly (as d
 
 ### Using SQLite
 
-As stated above, for now we use SQLite as our database. To create the database that Riprap persists fixity event data into, follow these instructions from within the `riprap` directory:
+To create the database that Riprap persists fixity event data into, follow these instructions from within the `riprap` directory:
 
 1. Edit .env so that this line is uncommented: `DATABASE_URL=sqlite:///%kernel.project_dir%/var/data.db` and the other lines starting with `DATABASE_URL` are commented out.
 1. `rm var/data.db` (might not exist)
@@ -70,6 +69,7 @@ doctrine:
             charset: utf8mb4
             collate: utf8mb4_unicode_ci
 ```
+Then follow these instructions from within the `riprap` directory:
 
 1. Create a MySQL user with `create` privileges
 1. Edit .env so that this line contains the user, password, and database name you want: `DATABASE_URL=mysql://user:password@127.0.0.1:3306/riprap` and the other lines starting with DATABASE_URL are commented out.
@@ -89,6 +89,7 @@ doctrine:
         driver: 'pdo_pgsql'
         charset: utf8
 ```
+Then follow these instructions from within the `riprap` directory:
 
 1. Create a PostgreSQL user with 'createdb` privileges
 1. Edit .env so that this line contains the user, password, and database name you want: `DATABASE_URL=pgsql://user:password@127.0.0.1:5432/riprap` and the other lines starting with DATABASE_URL are commented out.
@@ -113,12 +114,12 @@ Here is what is going on when you run the `check_fixity` command:
 
 1. Riprap calls whatever `fetchresourcelist` plugins are enabled (there can be more than one), and from them gets a list of all resources to check. In the default sample configuration, this list of resources is a plain text file at `resources/iprap_resource_ids.txt`.
 1. For each of the resources identifed by the `fetchresourcelist` plugins, Riprap calls the `fetchdigest` plugin that is enabled, and gets the resource's digest value from the repository. In the default sample configuration, Riprap is calling its mock repository endpoint.
-1. Riprap then gets the digest value in the most recent fixity check event stored in its database (in the default sample configuration, this is fixity events stored in the SQLite database), and compares the newly retrieved digest value with the most recent one on record.
+1. Riprap then gets the digest value in the most recent fixity check event stored in its database (in the default sample configuration, this is fixity events stored in the relational database), and compares the newly retrieved digest value with the most recent one on record.
 1. Riprap then persists information about the fixity check event it just performed (in the default sample configuration, back into the SQLite database). If you repeat the SQL query above, you will see five more events in your database, one corresponding to each URL listed in `resources/iprap_resource_ids.txt`.
 1. Riprap then executes all `postcheck` plugins that are enabled.
 1. After Riprap has checked all resources in the current list, it reports out how many resources it checked, including how many checks were successful and how many failed.
 
-If you query the table you will see the following output:
+If you query the table you will see the following output (this example uses SQLite, but the `SELECT` statement works in all relational databases):
 
 ```
 SQLite version 3.22.0 2018-01-22 18:45:57
