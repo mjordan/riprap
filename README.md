@@ -241,10 +241,14 @@ If the resource is not found, the response will be `404`. If the `{id}` is not v
 
 One of Riprap's principle design requirements is flexibility. To meet this goal, it uses plugins to process most of its input and output. It supports four types of plugins:
 
-* "fetchresourcelist" plugins fetch a set of resource URIs/URLs to fixity check (e.g., from a Fedora repository's triplestore, from Drupal, from a CSV file). A sample plugin that reads resource URLs from a text file, `app:riprap:plugin:fetch:from:file`, already exists and is configured in `config/services.yaml`. Multiple fetchresourcelist plugins can be configured at once.
-* "fetchdigest" plugins query an external utility or service to get the digest of the current resource. A plugin that queries a Fedora API Specification-compliant repository, `app:riprap:plugin:fetchdigest:from:fedoraapi`, and is configured in `config/services.yaml`. Only one fetchdigest plugin can be configured.
-* "persist" plugins persist data after performing a fixity check on each resource (e.g. to a RDBMS, back into the Fedora repository that manages the resources, etc.). A plugin to persist fixity events to a relational database, `app:riprap:plugin:persist:to:database`, already exists and is configured in `config/services.yaml`. Multiple persist plugins can be configured at once.
-* "postcheck" plugins execute after performing a fixity check on each resource. Two plugins of this type currently exist (neither one is complete yet): a plugin that sends an email on failure, `app:riprap:plugin:postcheck:mailfailures`, and a plugin that migrates fixity events from Fedora 3.x AUDIT data. Both plugins are confiured in `config/services.yaml`. Multiple postcheck plugins can be configured at once.
+* "fetchresourcelist" plugins fetch a set of resource URIs/URLs to fixity check (e.g., from a Fedora repository's triplestore, from Drupal, from a CSV file). Multiple fetchresourcelist plugins can be configured at once.
+   * A plugin is available that queries Drupal for a list of nodes of a specific content type (e.g. "islandora_repository") is available. To use this plugin, the Drupal site must have the [JSON:API](https://www.drupal.org/project/jsonapi) Drupal module installed and enabled.
+   * There is also a sample plugin that reads resource URLs from a text file, `app:riprap:plugin:fetch:from:file`.
+* "fetchdigest" plugins query an external utility or service to get the digest of the current resource. Only one fetchdigest plugin can be configured.
+   * A plugin is available that queries a Fedora API Specification-compliant repository, `app:riprap:plugin:fetchdigest:from:fedoraapi`.
+* "persist" plugins persist data after performing a fixity check on each resource (e.g. to a RDBMS, back into the Fedora repository that manages the resources, etc.). Multiple persist plugins can be configured at once.
+   * A plugin is available to persist fixity events to a relational database, `app:riprap:plugin:persist:to:database`.
+* "postcheck" plugins execute after performing a fixity check on each resource. Multiple postcheck plugins can be configured at once. Two plugins of this type currently exist (but neither one is complete yet): a plugin that sends an email on failure, `app:riprap:plugin:postcheck:mailfailures`, and a plugin that migrates fixity events from Fedora 3.x AUDIT data.
 
 A second set of simple example plugins is included in the `resources/filesystemexample/src/Command` directory. See their [README.md](resources/filesystemexample/README.md) file for more information.
 
