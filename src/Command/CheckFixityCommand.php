@@ -28,8 +28,8 @@ class CheckFixityCommand extends ContainerAwareCommand
     ) {
         // Set in the parameters section of config/services.yaml.
         $this->params = $params;
-        $this->http_method = $this->params->get('app.fixity.fetchdigest.from.fedoraapi.method');
-        $this->fixity_algorithm = $this->params->get('app.fixity.fetchdigest.from.fedoraapi.algorithm');
+        // $this->http_method = $this->params->get('app.fixity.fetchdigest.from.fedoraapi.method');
+        $this->fixity_algorithm = $this->params->get('app.fixity_algorithm');
         $this->fetchResourceListPlugins = $this->params->get('app.plugins.fetchresourcelist');
         $this->fetchDigestPlugin = $this->params->get('app.plugins.fetchdigest');
         $this->persistPlugins = $this->params->get('app.plugins.persist');

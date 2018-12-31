@@ -25,8 +25,11 @@ class PluginPersistToCsv extends ContainerAwareCommand
         $this->params = $params;
         $this->event_type = $this->params->get('app.fixity.eventtype.code');
 
-        // This path should be configured in services.yaml but we hard code it here as an example.
-        $this->fixity_peristence_csv = '/tmp/riprap_sample_persist_plugin.csv';
+        if ($this->params->has('app.plugins.persist.to.csv.output_path')) {
+            $this->fixity_peristence_csv = $this->params->get('app.plugins.persist.to.csv.output_path');
+        } else {
+            $this->fixity_peristence_csv = '%kernel.project_dir%/var/riprap_persist_to_csv_plugin_events.csv';
+        }
 
         // Set log output path in config/packages/{environment}/monolog.yaml
         $this->logger = $logger;

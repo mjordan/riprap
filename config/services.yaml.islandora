@@ -1,23 +1,38 @@
-# Symfony 4 services.yaml file for Riprap, illustrating using the mock Fedora REST endpoint.
+# Symfony 4 services.yaml file for Riprap.
 
 # Riprap-specific parameters start here.
 parameters:
     app.fixity.eventtype.uri: 'http://id.loc.gov/vocabulary/preservation/eventType/fix'
     app.fixity.eventtype.code: 'fix'
 
-    app.fixity_algorithm: 'SHA-1'
-
     app.service.detailmanager.delimiter: ';'
 
-    app.plugins.fetchresourcelist: ['app:riprap:plugin:fetchresourcelist:from:file']
-    app.plugins.fetchresourcelist.from.file.paths: ['resources/riprap_resource_ids.txt']
+    # Settings for the app:riprap:plugin:fetchresourcelist:from:drupal plugin.
+    app.plugins.fetchresourcelist: ['app:riprap:plugin:fetchresourcelist:from:drupal']
+    app.plugins.fetchresourcelist.from.drupal.baseurl: 'http://localhost:8000'
+    app.plugins.fetchresourcelist.from.drupal.json_authorization_headers: ['Authorization: Basic YWRtaW46aXNsYW5kb3Jh'] # admin:islandora
+    app.plugins.fetchresourcelist.from.drupal.use_fedora_urls: true
+    app.plugins.fetchresourcelist.from.drupal.media_auth: ['admin', 'islandora']
+    app.plugins.fetchresourcelist.from.drupal.content_types: ['islandora_object']
+    app.plugins.fetchresourcelist.from.drupal.media_tags: ['/taxonomy/term/15']
+    app.plugins.fetchresourcelist.from.drupal.gemini_endpoint: 'http://localhost:8000/gemini' 
+    # Will need to be replaced pending outcome of https://github.com/mjordan/riprap/issues/21.
+    app.plugins.fetchresourcelist.from.drupal.gemini_auth_header: 'Bearer islandora'
+    # Drupal's JSON:API allows a maximum page size of 50.
+    app.plugins.fetchresourcelist.from.drupal.page_size: 50
+    app.plugins.fetchresourcelist.from.drupal.pager_data: '%kernel.project_dir%/var/fetchresourcelist.from.drupal.pager.txt'
 
+    # To not register any fetchdigest plugins, use app.plugins.fetchdigest [].
     # Currently we only allow one fetchdigest plugin per fixity event (i.e., this
     # value is not an array).
     app.plugins.fetchdigest: 'app:riprap:plugin:fetchdigest:from:fedoraapi'
     app.fixity.fetchdigest.from.fedoraapi.method: 'HEAD'
-    app.fixity.fetchdigest.from.fedoraapi.algorithm: 'SHA-1'    
+    app.fixity.fetchdigest.from.fedoraapi.algorithm: 'sha256'
+    # Fedora's response looks like sha-256=cef971b6697fa92c7125a329437b69f9161c2472cce873a229a329d1424a4ff1
+    # so we need to remove the 'sha-256=' to get the hash value using this regex pattern.
+    app.fixity.fetchdigest.from.fedoraapi.digest_header.leader_pattern: "^.+="
 
+    # To not register any persist plugins, use app.plugins.persist []
     app.plugins.persist: ['app:riprap:plugin:persist:to:database']
   
     # To not register any postcheck plugins, use app.plugins.postcheck []
@@ -25,8 +40,8 @@ parameters:
     app.plugins.postcheck.mailfailures.from: 'from@example.com'
     app.plugins.postcheck.mailfailures.to: 'to@example.com'
 
-    # Set to 'disabled' in production.
-    app.mockrepository: 'enabled'
+    # # Set to 'disabled' if not using the mock Fedora repository endpoint.
+    app.mockrepository: 'disabled'
 
 ### Do not modify any of the values below this line.
 services:

@@ -25,10 +25,22 @@ class PluginFetchDigestFromFedoraAPI extends ContainerAwareCommand
         FixityEventDetailManager $event_detail = null
     ) {
         $this->params = $params;
-        $this->http_method = $this->params->get('app.fixity.fetchdigest.from.fedoraapi.method');
-        $this->fixity_algorithm = $this->params->get('app.fixity.fetchdigest.from.fedoraapi.algorithm');
-        $this->hash_leader_pattern = $this->params->get('app.fixity.fetchdigest.from.fedoraapi.digest_header.leader_pattern');
-
+        if ($this->params->has('app.fixity.fetchdigest.from.fedoraapi.method')) {
+            $this->http_method = $this->params->get('app.fixity.fetchdigest.from.fedoraapi.method');
+        } else {
+            $this->http_method = 'HEAD';
+        }
+        if ($this->params->has('app.fixity_algorithm')) {
+            $this->fixity_algorithm = $this->params->get('app.fixity_algorithm');
+        } else {
+            $this->fixity_algorithm = 'sha256';
+        }
+        if ($this->params->has('app.fixity.fetchdigest.from.fedoraapi.digest_header.leader_pattern')) {
+            $this->hash_leader_pattern = $this->params->get('app.fixity.fetchdigest.from.fedoraapi.digest_header.leader_pattern');
+        } else {
+            $this->hash_leader_pattern = "^.+=";
+        }
+        
         $this->logger = $logger;
         $this->event_detail = $event_detail;
 

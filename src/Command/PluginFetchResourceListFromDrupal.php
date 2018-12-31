@@ -24,18 +24,58 @@ class PluginFetchResourceListFromDrupal extends ContainerAwareCommand
         FixityEventDetailManager $event_detail = null
     ) {
         $this->params = $params;
-        $this->drupal_base_url = $this->params->get('app.plugins.fetchresourcelist.from.drupal.baseurl');
+        if ($this->params->has('app.plugins.fetchresourcelist.from.drupal.baseurl')) {
+            $this->drupal_base_url = $this->params->get('app.plugins.fetchresourcelist.from.drupal.baseurl');
+        } else {
+            $this->drupal_base_url = 'http://localhost:8000';
+        }
         // An array, we need to loop through and add to guzzle request.
-        $this->jsonapi_authorization_headers = $this->params->get('app.plugins.fetchresourcelist.from.drupal.json_authorization_headers');
-        $this->media_auth = $this->params->get('app.plugins.fetchresourcelist.from.drupal.media_auth');
+        if ($this->params->has('app.plugins.fetchresourcelist.from.drupal.json_authorization_headers')) {
+            $this->jsonapi_authorization_headers = $this->params->get('app.plugins.fetchresourcelist.from.drupal.json_authorization_headers');
+        } else {
+            $this->jsonapi_authorization_headers = array();
+        }
+        if ($this->params->has('app.plugins.fetchresourcelist.from.drupal.media_auth')) {
+            $this->media_auth = $this->params->get('app.plugins.fetchresourcelist.from.drupal.media_auth');
+        } else {
+            $this->media_auth = '';
+        }
         // For now we only use the first one, not sure how to handle multiple content types.
-        $this->drupal_content_types = $this->params->get('app.plugins.fetchresourcelist.from.drupal.content_types');
-        $this->media_tags = $this->params->get('app.plugins.fetchresourcelist.from.drupal.media_tags');
-        $this->use_fedora_urls = $this->params->get('app.plugins.fetchresourcelist.from.drupal.use_fedora_urls');
-        $this->gemini_endpoint = $this->params->get('app.plugins.fetchresourcelist.from.drupal.gemini_endpoint');
-        $this->gemini_auth_header = $this->params->get('app.plugins.fetchresourcelist.from.drupal.gemini_auth_header');
-        $this->page_size = $this->params->get('app.plugins.fetchresourcelist.from.drupal.page_size');
-        $this->page_data_file = $this->params->get('app.plugins.fetchresourcelist.from.drupal.pager_data');
+        if ($this->params->has('app.plugins.fetchresourcelist.from.drupal.content_types')) {
+            $this->drupal_content_types = $this->params->get('app.plugins.fetchresourcelist.from.drupal.content_types');
+        } else {
+            $this->drupal_content_types = array();
+        }
+        if ($this->params->has('app.plugins.fetchresourcelist.from.drupal.media_tags')) {
+            $this->media_tags = $this->params->get('app.plugins.fetchresourcelist.from.drupal.media_tags');
+        } else {
+            $this->media_tags = array();
+        }
+        if ($this->params->has('app.plugins.fetchresourcelist.from.drupal.use_fedora_urls')) {
+            $this->use_fedora_urls = $this->params->get('app.plugins.fetchresourcelist.from.drupal.use_fedora_urls');
+        } else {
+            $this->use_fedora_urls = true;
+        }
+        if ($this->params->has('app.plugins.fetchresourcelist.from.drupal.gemini_endpoint')) {
+            $this->gemini_endpoint = $this->params->get('app.plugins.fetchresourcelist.from.drupal.gemini_endpoint');
+        } else {
+            $this->gemini_endpoint = '';
+        }
+        if ($this->params->has('app.plugins.fetchresourcelist.from.drupal.gemini_auth_header')) {
+            $this->gemini_auth_header = $this->params->get('app.plugins.fetchresourcelist.from.drupal.gemini_auth_header');
+        } else {
+            $this->gemini_auth_header = '';
+        }
+        if ($this->params->has('app.plugins.fetchresourcelist.from.drupal.page_size')) {
+            $this->page_size = $this->params->get('app.plugins.fetchresourcelist.from.drupal.page_size');
+        } else {
+            $this->page_size = 50;
+        }
+        if ($this->params->has('app.plugins.fetchresourcelist.from.drupal.pager_data')) {
+            $this->page_data_file = $this->params->get('app.plugins.fetchresourcelist.from.drupal.pager_data');
+        } else {
+            $this->page_data_file = '';
+        }
 
         $this->logger = $logger;
         $this->event_detail = $event_detail;
