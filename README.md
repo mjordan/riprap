@@ -4,7 +4,7 @@
 [![Contribution Guidelines](http://img.shields.io/badge/CONTRIBUTING-Guidelines-blue.svg)](./docs/CONTRIBUTING.md)
 [![LICENSE](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](./LICENSE)
 
-A fixity-auditing microservice that addresses https://github.com/Islandora-CLAW/CLAW/issues/847. Developed as a successfor to Islandora 7.x's [Checksum Checker](https://github.com/Islandora/islandora_checksum_checker) module, it is intended primarily to be used with repositories compliant with the [Fedora API Specification](https://fedora.info/spec/), but can be used to provide fixity validation for other repositories as well (e.g., an [OCFL](https://ocfl.io/) repository). In fact, Riprap ships with sample plugins that allow it to monitor the fixity of files on a standard attached filesystem and call `sha1sum` to get their current digests.
+A fixity-auditing microservice. Developed as a successfor to Islandora 7.x's [Checksum Checker](https://github.com/Islandora/islandora_checksum_checker) module (see [this Github issue](https://github.com/Islandora-CLAW/CLAW/issues/847) for background), it is intended primarily to be used with repositories compliant with the [Fedora API Specification](https://fedora.info/spec/), but can be used to provide fixity validation for other repositories as well (e.g., an [OCFL](https://ocfl.io/) repository). In fact, Riprap ships with sample plugins that allow it to monitor the fixity of files on a standard attached filesystem and call `sha1sum` to get their current digests.
 
 Riprap periodcally requests fixity digests for resources from a repository and compares the digest with a previously request digest. It then persists the outocome of that comparison so the process can be repeated again. Riprap also provides a REST interface so that external applications (in Islandora's case, Drupal) can retrieve fixity checking event data for use in reports, etc.
 
@@ -240,7 +240,7 @@ curl -v -X POST -H "Resource-ID:http://localhost:8080/mockrepository/rest/17" ht
 
 * `timestamp_start`: ISO8601 (full or partial) date indicating start of date range in queries.
 * `timestamp_end`: ISO8601 (full or partial) date indicating end of date range in queries.
-* `outcome`: Coded outcome of the event, either `suc` or `fail`.
+* `outcome`: Coded outcome of the event, either `success` or `fail`.
 * `offset`: The number of items in the result set, starting at the beginning, that are skipped in the result set (i.e., same as standard SQL use of 'offset'). Default is 0.
 * `limit`: Number of items in the result set to return, starting at the value of `offset`.
 * `sort`: Sort events on timestamp. Specify "desc" or "asc" (if not present, will sort "asc").
