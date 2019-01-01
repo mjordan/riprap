@@ -103,19 +103,50 @@ Then follow these instructions from within the `riprap` directory:
 
 ## The sample configuration files
 
+Riprap comes with three sample configuration files:
+
 * `services.yaml.filesystemexample`: This configuration uses a set of plugins that check the fixity of the files in a specified directory.
 * `services.yaml.mockfedorarepository`: This configuration checks the fixity of a set of resources in a mock Fedora API-compliant repository. Riprap includes this mock endpoint via its built-in web server.
 * `services.yaml.islandora`: This configuration is used in conjuction with an Islandora 8.x-1.x instance, such as the one provided by the [CLAW Vagrant Playbook](https://github.com/Islandora-Devops/claw-playbook). It audits the fixity of resources in a real (not mock) Fedora 5 repository.
 
-To use these configuration files, copy the one you want to try from `config/[filename]` to `config/services.yaml`. Which is the configuration file that Riprap uses when you run the `check_fixity` command.
+To use these configuration files, copy the one you want to try from `config/[filename]` to `config/services.yaml`, which is the configuration file that Riprap uses when you run the `check_fixity` command.
 
 ### The Filesystem configuration
 
-Whereas the other two sample configurations audit the fixity of resources in a Fedora API-compliant repository and perist fixity events to a relational database, this configuration audits a set of files in a filesystem directory and perists events to a CSV file. While you could use this configuration in production, its real purpose is to illustrate how Riprap plugins work together to provide all the functionality required to audit fixity over time.
+Whereas the other two sample configurations audit the fixity of resources in a Fedora API-compliant repository (either a mocked up one or a real one) and perist fixity events to a relational database, the "filesystemexample" configuration audits a set of files in a filesystem directory and perists events to a CSV file. While you could use this configuration in production, its real purpose is to illustrate how Riprap plugins work together to provide all the functionality required to audit fixity over time.
+
+Let's look at the `config/services.yaml.filesystemexample` configuration file to see what the plugins are doing. The section we are interested in (with line number added so we can refer to specific lines in the explanation) is:
+
+```
+ ### 'filesystemexample' plugins
+ 1. app.plugins.fetchresourcelist: ['app:riprap:plugin:fetchresourcelist:from:glob']
+ 2. app.plugins.fetchresourcelist.from.glob.file_directory: 'resources/filesystemexample/resourcefiles'
+ 3. app.plugins.fetchdigest: 'app:riprap:plugin:fetchdigest:from:shell'
+ 4. app.fixity_algorithm: 'SHA-1'
+ 5. app.plugins.fetchdigrest.from.shell.command: '/usr/bin/sha1sum'
+ 6. app.plugins.persist: ['app:riprap:plugin:persist:to:csv']
+ 7. app.plugins.persist.to.csv.output_path: '%kernel.project_dir%/var/riprap_persist_to_csv_plugin_events.csv'
+```
+
+The "fetchresourcelist" plugin registered in line 1 corresponds to the plugin class file located at `src/Command/PluginFetchResourceListFromGlob.php`. If you look at that file, it's pretty simple - its `execute()` method returns a file path for each of the files ending in `.bin` in a directory.
+
+The specific directory that plugin lists files from is indicated in line 2. In this case, the directory is relative to the riprap installation directory (e.g., `resources/`).
+
+Whereas the "fetchresourcelist" plugin provides a list of resources (files) whose fixity we want to audit, the "fetchdigest" plugin (identified in line 3) generates the digest that we use in the audit. In this case, that plugin is `app:riprap:plugin:fetchdigest:from:shell`, which corresponds to the class file at `src/Command/PluginFetchDigestFromShell.php`. If you look at its `execute()` function, you will see that if runs the command identified in the `app.plugins.fetchdigrest.from.shell.command` configuration option (line 5) on each of the files listed by the "fetchresourcelist" plugin. All configurations must register the digest algorithm (line 4) they are using.
+
+There is a third plugin that Riprap requires to do its job, one that persists the outcome of the fixity check event somewhere. This class of plugin is registered in the `app.plugins.persist` option (line 6). In this case, that plugin corresponds to the PHP file at `src/Command/PluginPersistToCsv.php`. The path to the CSV file is identified in line 7. `'%kernel.project_dir%` is Symfony's environment variable containing the path to the running project, or in our case, the directory `riprap` is located in. Each of the CSV records in this file corrsponds to the fixity check event on a specific file; Riprap uses the last event to confirm that the digest (SHA-1, for example) it generates during execution is identical. If it is, the event is successful; if it is not, the event is flagged as a failre.
+
+If you copy `config/services.yaml.filesystemexample` to `config/services.yaml` and run Riprap:
+
+`php bin/console app:riprap:check_fixity`
+
+You will see the persisted events in the CSV file at `var/riprap_persist_to_csv_plugin_events.csv`, one per `.bin` file under the `resources/ ` directory. If you rerun Riprap, you will see three more events in the CVS file.
+
+This walkthrough of the "filesystem" plugins illustrates Riprap's basic functionality: it takes a list of resources (a.k.a. files) whose fixity it is auditing, for each of those resources, gets the digest using a particular hash_algorithm. It then checks the current digest against the digest of the same algorithm in the previous fixity check event for that resource, and finally saves the outcome of the current fixity check event for use in the next execution cycle. It also illustrates how a developer would write additional plugins for performing fixity auditing of resources managed by arbitrary storage platforms.
 
 ### The Mock Fedora Repository configuration
 
-Before we describe how to use Riprap against the mockd Fedora endpoint, we should tell you a little about it. The endpoint simulates the behaviour described in section [7.2](https://fcrepo.github.io/fcrepo-specification/#persistence-fixity) of the Fedora API spec. If you start Symfony's test server as described below, this endpoint is available via `GET` or `HEAD` requests at `http://localhost:8000/mockrepository/rest/{id}`, where `{id}` is a number from 1-20 (these are mock "resource IDs" included in the sample data). Calls to it should include a `Want-Digest` header with the value `SHA-1`, e.g.:
+Before we describe how to use Riprap against the mockd Fedora endpoint, we should tell you a little about it. As its name suggests, the endpoint simulates the behaviour described in section [7.2](https://fcrepo.github.io/fcrepo-specification/#persistence-fixity) of the Fedora API spec. If you start Symfony's test server as described below, this endpoint is available via `GET` or `HEAD` requests at `http://localhost:8000/mockrepository/rest/{id}`, where `{id}` is a number from 1-20 (these are mock "resource IDs" included in the sample data). Calls to it should include a `Want-Digest` header with the value `SHA-1`, e.g.:
 
 `curl -v -X HEAD -H 'Want-Digest: SHA-1' http://localhost:8000/mockrepository/rest/2`
 
@@ -189,7 +220,11 @@ If you populated the database prior to running `check_fixity`, you will see 20 a
 
 ### The Islandora configuration
 
-If you are running Islandora in a CLAW Playbook Vagrant machine and Riprap on the Vagrant host machine, start the Riprap web server by running `php bin/console server:start *:8001` in the Riprap directory. See the [Islandora Riprap](https://github.com/mjordan/islandora_riprap) README file for more information.
+> If you are running Islandora in a CLAW Playbook Vagrant machine and Riprap on the Vagrant host machine, start the Riprap web server by running `php bin/console server:start *:8001` in the Riprap directory. See the [Islandora Riprap](https://github.com/mjordan/islandora_riprap) README file for more information.
+
+The "islandora" configuration works like the other two sample configurations, but it queries Drupal's JSON:API for the list of resources to audit (using the descriptively named `app:riprap:plugin:fetchresourcelist:from:drupal` plugin), and it queries the REST API of the Fedora repository that Drupal uses to store files for the hashes of those files (using the `app:riprap:plugin:fetchdigest:from:fedoraapi` plugin).
+
+Within the Drupal user interface, the [Islandora Riprap](https://github.com/mjordan/islandora_riprap) module provides reports on whether Riprap has recorded any failed fixity check events (i.e., digest mismatches for the same resource) over time. It gets this information via the Riprap REST API, described in the next section.
 
 ## Riprap's REST API
 
