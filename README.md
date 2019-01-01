@@ -16,7 +16,9 @@ All events must have a value of `success` or `fail`, using values from the Libra
 
 ## Current status
 
-Riprap's major functionality is in place, with the exception of the ActiveMQ event queue listener. Riprap's current fixity auditing capabilities are illustrated in "The sample configuration files" section below. Additional funcitonality can be added via new plugins (contibutions are welcome).
+Riprap's major functionality is in place, with the exception of the ActiveMQ event queue listener and write operations (`POST` and `PATCH`) in the REST API.
+
+Riprap's current fixity auditing capabilities are illustrated in "The sample configuration files" section below. Additional funcitonality can be added via new plugins (contibutions are welcome).
 
 ## Requirements
 
