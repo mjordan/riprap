@@ -46,62 +46,7 @@ Assuming you have the database installed installed and configured properly (as d
 * Riprap will write its log to `/tmp/riprap.log`
 * the built-in webserver runs on port 8000 (but you can change that)
 
-Here are instructions for setting up an SQLite, MySQL, or PostgreSQL database.
-
-### Using SQLite
-
-To create the database that Riprap persists fixity event data into, follow these instructions from within the `riprap` directory:
-
-1. Edit .env so that this line is uncommented: `DATABASE_URL=sqlite:///%kernel.project_dir%/var/data.db` and the other lines starting with `DATABASE_URL` are commented out.
-1. `rm var/data.db` (might not exist)
-1. `rm src/Migrations/*` (might be empty)
-1. `php bin/console -n make:migration`
-1. `php bin/console -n doctrine:migrations:migrate`
-1. Optional: When you run the `check_fixity` command as described below, it will create events based on the fixity checks. If you want to populate the database with some sample fixity events prior to running `check_fixity` (you don't need to), run `php bin/console -n doctrine:fixtures:load`
-
-### Using MySQL
-
-In `config/packages/doctrine.yaml`, make sure you have:
-
-```
-doctrine:
-    dbal:
-        driver: 'pdo_mysql'
-        server_version: '5.7' # Or whatever version you are running.
-        charset: utf8mb4
-        default_table_options:
-            charset: utf8mb4
-            collate: utf8mb4_unicode_ci
-```
-Then follow these instructions from within the `riprap` directory:
-
-1. Create a MySQL user with `create` privileges
-1. Edit .env so that this line contains the user, password, and database name you want: `DATABASE_URL=mysql://user:password@127.0.0.1:3306/riprap` and the other lines starting with DATABASE_URL are commented out.
-1. `rm src/Migrations/*` (might be empty)
-1. `php bin/console doctrine:database:create`
-1. `php bin/console -n make:migration`
-1. `php bin/console -n doctrine:migrations:migrate`
-1. Optional: When you run the `check_fixity` command as described below, it will create events based on the fixity checks. If you want to populate the database with some sample fixity events prior to running `check_fixity` (you don't need to), run `php bin/console -n doctrine:fixtures:load`
-
-### Using PostgreSQL
-
-In `config/packages/doctrine.yaml`, make sure you have:
-
-```
-doctrine:
-    dbal:
-        driver: 'pdo_pgsql'
-        charset: utf8
-```
-Then follow these instructions from within the `riprap` directory:
-
-1. Create a PostgreSQL user with 'createdb' privileges
-1. Edit .env so that this line contains the user, password, and database name you want: `DATABASE_URL=pgsql://user:password@127.0.0.1:5432/riprap` and the other lines starting with DATABASE_URL are commented out.
-1. `rm src/Migrations/*` (might be empty)
-1. `php bin/console doctrine:database:create`
-1. `php bin/console -n make:migration`
-1. `php bin/console -n doctrine:migrations:migrate`
-1. Optional: When you run the `check_fixity` command as described below, it will create events based on the fixity checks. If you want to populate the database with some sample fixity events prior to running `check_fixity` (you don't need to), run `php bin/console -n doctrine:fixtures:load`
+You do not need to create a database to try out Riprap using the "filesystemexample" configuration, but if you want to use the "mockfedorarepository" or "islandora" configurations described below, you will need to create a database using [these instructions](docs/databases.md).
 
 ## The sample configuration files
 
@@ -150,7 +95,7 @@ This walkthrough also illustrates how a developer would write additional plugins
 
 ### The Mock Fedora Repository configuration
 
-Before we describe how to use Riprap against the mockd Fedora endpoint, we should tell you a little about it. As its name suggests, the endpoint simulates the behaviour described in section [7.2](https://fcrepo.github.io/fcrepo-specification/#persistence-fixity) of the Fedora API spec. If you start Symfony's test server as described below, this endpoint is available via `GET` or `HEAD` requests at `http://localhost:8000/mockrepository/rest/{id}`, where `{id}` is a number from 1-20 (these are mock "resource IDs" included in the sample data). Calls to it should include a `Want-Digest` header with the value `SHA-1`, e.g.:
+Before we describe how to use Riprap against the mock Fedora endpoint, we should tell you a little about it. As its name suggests, the endpoint simulates the behaviour described in section [7.2](https://fcrepo.github.io/fcrepo-specification/#persistence-fixity) of the Fedora API spec. If you start Symfony's test server as described below, this endpoint is available via `GET` or `HEAD` requests at `http://localhost:8000/mockrepository/rest/{id}`, where `{id}` is a number from 1-20 (these are mock "resource IDs" included in the sample data). Calls to it should include a `Want-Digest` header with the value `SHA-1`, e.g.:
 
 `curl -v -X HEAD -H 'Want-Digest: SHA-1' http://localhost:8000/mockrepository/rest/2`
 
