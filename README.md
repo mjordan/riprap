@@ -41,11 +41,6 @@ We will eventually support deployment via Ansible.
 
 If you want to play with Riprap, and you're on a Linux or OSX machine, you should not need to configure anything. Riprap comes with three sample configuration files that are ready to use (we will describe each one below). However, you will need to choose which relational database to use.
 
-Assuming you have the database installed installed and configured properly (as described below), you should be able to run the `check_fixity` command against the sample data and local web server, and perform basic API requests as documented below. A couple of things you will want to know:
-
-* Riprap will write its log to `/tmp/riprap.log`
-* the built-in webserver runs on port 8000 (but you can change that)
-
 You do not need to create a database to try out Riprap using the "filesystemexample" configuration, but if you want to use the "mockfedorarepository" or "islandora" configurations described below, you will need to create a database using [these instructions](docs/databases.md).
 
 ## The sample configuration files
