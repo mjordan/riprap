@@ -33,7 +33,7 @@ While not a requirement, a [module for Islandora](https://github.com/mjordan/isl
 1. Clone this git repository
 1. `cd riprap`
 1. `php composer.phar install` (or equivalent on your system, e.g., `./composer install`)
-1. Create the database as described in the next section.
+1. If necessary, create the database as described [here](docs/databases.md).
 
 We will eventually support deployment via Ansible.
 
@@ -285,15 +285,15 @@ For example, `curl -v -H 'Resource-ID:http://localhost:8000/mockrepository/rest/
 
 ### Plugins
 
-One of Riprap's principle design requirements is flexibility. To meet this goal, it uses plugins to process most of its input and output. We have already been introduced to three types (and combinations of) plugins in the three sample configurations above:
+One of Riprap's principle design requirements is flexibility. To meet this goal, it uses plugins to process most of its input and output. We have already been introduced to three types (and different combinations of) plugins in the sample configurations above:
 
-* "fetchresourcelist" plugins fetch a set of resource URIs/URLs to fixity check (e.g., from a Fedora repository's triplestore, from Drupal, from a CSV file). Multiple fetchresourcelist plugins can be configured at once.
+* "fetchresourcelist" plugins fetch a set of resource URIs/URLs to fixity check (e.g., from a Fedora repository's triplestore, from Drupal, from a CSV file). Multiple fetchresourcelist plugins can be configured to run at the same time.
 * "fetchdigest" plugins query an external utility or service to get the digest of the current resource. Only one fetchdigest plugin can be configured.
-* "persist" plugins persist data after performing a fixity check on each resource (e.g. to a RDBMS, back into the Fedora repository that manages the resources, etc.). Multiple persist plugins can be configured at once.
+* "persist" plugins persist data after performing a fixity check on each resource (e.g. to a RDBMS, back into the Fedora repository that manages the resources, etc.). Multiple persist plugins can be configured to run at the same time..
 
-Riprap supports a fourth class of plugin (which we didn't see in our sample configurations):
+Riprap supports a fourth class of plugin, which we didn't see in our sample configurations:
 
-* "postcheck" plugins execute after performing a fixity check on each resource. Multiple postcheck plugins can be configured at once. Two plugins of this type currently exist (but neither one is complete yet): a plugin that sends an email on failure, `app:riprap:plugin:postcheck:mailfailures`, and a plugin that migrates fixity events from Fedora 3.x AUDIT data.
+* "postcheck" plugins execute after performing a fixity check on each resource. Multiple postcheck plugins can be configured to run at the same time. Preliminary versions of two plugins of this type currently exist (but neither one is complete yet): a plugin that sends an email on failure, `app:riprap:plugin:postcheck:mailfailures`, and a plugin that migrates fixity events from Fedora 3.x AUDIT data.
 
 ### Message queue listener
 
@@ -305,6 +305,13 @@ Riprap will also be able to listen to an ActiveMQ queue and generate correspondi
 * Riprap also provides a REST interface so other applications can retrieve fixity check event data from it and add/modify fixity check event data. Using Symfony's firewall to provide IP-based access to the API should provide sufficient security.
 
 ## Miscellaneous
+
+### To do
+
+* Add an ActiveMQ listener.
+* Add write operations to the REST interface.
+* Complete the postcheck plugins.
+* Write more plugins so Riprap can be used with additional storage platforms.
 
 ### Contributing
 
