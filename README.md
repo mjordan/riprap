@@ -16,7 +16,7 @@ All events must have a value of `success` or `fail`, using values from the Libra
 
 ## Current status
 
-Riprap's major functionality is in place, with the exception of the ActiveMQ event queue listener. Additional funcitonality can be added via new plugins.
+Riprap's major functionality is in place, with the exception of the ActiveMQ event queue listener. Riprap's current fixity auditing capabilities are illustrated in "The sample configuration files" section below. Additional funcitonality can be added via new plugins (contibutions are welcome).
 
 ## Requirements
 
@@ -134,15 +134,17 @@ The specific directory that plugin lists files from is indicated in line 2. In t
 
 Whereas the "fetchresourcelist" plugin provides a list of resources (files) whose fixity we want to audit, the "fetchdigest" plugin (identified in line 3) generates the digest that we use in the audit. In this case, that plugin is `app:riprap:plugin:fetchdigest:from:shell`, which corresponds to the class file at `src/Command/PluginFetchDigestFromShell.php`. If you look at its `execute()` function, you will see that if runs the command identified in the `app.plugins.fetchdigrest.from.shell.command` configuration option (line 5) on each of the files listed by the "fetchresourcelist" plugin. All configurations must register the digest algorithm (line 4) they are using.
 
-There is a third plugin that Riprap requires to do its job, one that persists the outcome of the fixity check event somewhere. This class of plugin is registered in the `app.plugins.persist` option (line 6). In this case, that plugin corresponds to the PHP file at `src/Command/PluginPersistToCsv.php`. The path to the CSV file is identified in line 7. `'%kernel.project_dir%` is Symfony's environment variable containing the path to the running project, or in our case, the directory `riprap` is located in. Each of the CSV records in this file corrsponds to the fixity check event on a specific file; Riprap uses the last event to confirm that the digest (SHA-1, for example) it generates during execution is identical. If it is, the event is successful; if it is not, the event is flagged as a failre.
+There is a third plugin that Riprap requires to do its job, one that persists the outcome of the fixity check event somewhere. This class of plugin is registered in the `app.plugins.persist` option (line 6). In this case, that plugin corresponds to the PHP file at `src/Command/PluginPersistToCsv.php`. The path to the CSV file is identified in line 7. `'%kernel.project_dir%` is Symfony's environment variable containing the path to the running project, or in our case, the directory `riprap` is located in. Each of the CSV records in this file corrsponds to a fixity check event on a specific file; Riprap uses the last event to confirm that the digest (SHA-1, for example) it generates during execution is identical. If it is, the event is successful; if it is not, the event is flagged as a failre.
 
 If you copy `config/services.yaml.filesystemexample` to `config/services.yaml` and run Riprap:
 
 `php bin/console app:riprap:check_fixity`
 
-You will see the persisted events in the CSV file at `var/riprap_persist_to_csv_plugin_events.csv`, one per `.bin` file under the `resources/ ` directory. If you rerun Riprap, you will see three more events in the CVS file.
+you will see the persisted events in the CSV file at `var/riprap_persist_to_csv_plugin_events.csv`, one per `.bin` file under the `resources/ ` directory. If you rerun Riprap, you will see three more events in the CVS file.
 
-This walkthrough of the "filesystem" plugins illustrates Riprap's basic functionality: it takes a list of resources (a.k.a. files) whose fixity it is auditing, for each of those resources, gets the digest using a particular hash_algorithm. It then checks the current digest against the digest of the same algorithm in the previous fixity check event for that resource, and finally saves the outcome of the current fixity check event for use in the next execution cycle. It also illustrates how a developer would write additional plugins for performing fixity auditing of resources managed by arbitrary storage platforms.
+This walkthrough of the "filesystem" plugins illustrates Riprap's basic functionality: it takes a list of resources (a.k.a. files) whose fixity we are auditing, and for each of those resources, gets the digest using a particular hash_algorithm. Riprap then checks the current digest against the digest of the same algorithm in the previous fixity check event for the resource, and finally saves the outcome of the current fixity check event for use in the next execution cycle.
+
+This walkthrough also illustrates how a developer would write additional plugins for performing fixity auditing of resources managed by arbitrary storage platforms.
 
 ### The Mock Fedora Repository configuration
 
@@ -340,18 +342,15 @@ For example, `curl -v -H 'Resource-ID:http://localhost:8000/mockrepository/rest/
 
 ### Plugins
 
-One of Riprap's principle design requirements is flexibility. To meet this goal, it uses plugins to process most of its input and output. It supports four types of plugins:
+One of Riprap's principle design requirements is flexibility. To meet this goal, it uses plugins to process most of its input and output. We have already been introduced to three types of plugins:
 
 * "fetchresourcelist" plugins fetch a set of resource URIs/URLs to fixity check (e.g., from a Fedora repository's triplestore, from Drupal, from a CSV file). Multiple fetchresourcelist plugins can be configured at once.
-   * A plugin is available that queries Drupal for a list of nodes of a specific content type (e.g. "islandora_repository"). To use this plugin, the Drupal site must have the [JSON:API](https://www.drupal.org/project/jsonapi) Drupal module installed and enabled.
-   * There is also a sample plugin that reads resource URLs from a text file, `app:riprap:plugin:fetch:from:file`.
 * "fetchdigest" plugins query an external utility or service to get the digest of the current resource. Only one fetchdigest plugin can be configured.
-   * A plugin is available that queries a Fedora API Specification-compliant repository, `app:riprap:plugin:fetchdigest:from:fedoraapi`.
 * "persist" plugins persist data after performing a fixity check on each resource (e.g. to a RDBMS, back into the Fedora repository that manages the resources, etc.). Multiple persist plugins can be configured at once.
-   * A plugin is available to persist fixity events to a relational database, `app:riprap:plugin:persist:to:database`.
-* "postcheck" plugins execute after performing a fixity check on each resource. Multiple postcheck plugins can be configured at once. Two plugins of this type currently exist (but neither one is complete yet): a plugin that sends an email on failure, `app:riprap:plugin:postcheck:mailfailures`, and a plugin that migrates fixity events from Fedora 3.x AUDIT data.
 
-A second set of simple example plugins is included in the `resources/filesystemexample/src/Command` directory. See their [README.md](resources/filesystemexample/README.md) file for more information.
+Riprap supports a fourth class of plugin (which we didn't see in our sample configurations):
+
+* "postcheck" plugins execute after performing a fixity check on each resource. Multiple postcheck plugins can be configured at once. Two plugins of this type currently exist (but neither one is complete yet): a plugin that sends an email on failure, `app:riprap:plugin:postcheck:mailfailures`, and a plugin that migrates fixity events from Fedora 3.x AUDIT data.
 
 ### Message queue listener
 
