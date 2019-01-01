@@ -37,12 +37,14 @@ We will eventually support deployment via Ansible.
 
 ## Trying it out
 
-If you want to play with Riprap, and you're on a Linux or OSX machine, you should not need to configure anything. However, you will need to choose which relational database to use.
+If you want to play with Riprap, and you're on a Linux or OSX machine, you should not need to configure anything. Riprap comes with three sample configuration files that are ready to use (we will describe each one below). However, you will need to choose which relational database to use.
 
 Assuming you have the database installed installed and configured properly (as described below), you should be able to run the `check_fixity` command against the sample data and local web server, and perform basic API requests as documented below. A couple of things you will want to know:
 
 * Riprap will write its log to `/tmp/riprap.log`
-* the test webserver runs on port 8000
+* the built-in webserver runs on port 8000 (but you can change that)
+
+Here are instructions for setting up an SQLite, MySQL, or PostgreSQL database.
 
 ### Using SQLite
 
@@ -91,7 +93,7 @@ doctrine:
 ```
 Then follow these instructions from within the `riprap` directory:
 
-1. Create a PostgreSQL user with 'createdb` privileges
+1. Create a PostgreSQL user with 'createdb' privileges
 1. Edit .env so that this line contains the user, password, and database name you want: `DATABASE_URL=pgsql://user:password@127.0.0.1:5432/riprap` and the other lines starting with DATABASE_URL are commented out.
 1. `rm src/Migrations/*` (might be empty)
 1. `php bin/console doctrine:database:create`
@@ -99,12 +101,60 @@ Then follow these instructions from within the `riprap` directory:
 1. `php bin/console -n doctrine:migrations:migrate`
 1. Optional: When you run the `check_fixity` command as described below, it will create events based on the fixity checks. If you want to populate the database with some sample fixity events prior to running `check_fixity` (you don't need to), run `php bin/console -n doctrine:fixtures:load`
 
-### Running the check_fixity command
+## The sample configuration files
 
-From within the `riprap` directory, start the web server by running the `server:start` command. Then, run the `app:riprap:check_fixity` command, e.g.:
+* `services.yaml.filesystemexample`: This configuration uses a set of plugins that check the fixity of the files in a specified directory.
+* `services.yaml.mockfedorarepository`: This configuration checks the fixity of a set of resources in a mock Fedora API-compliant repository. Riprap includes this mock endpoint via its built-in web server.
+* `services.yaml.islandora`: This configuration is used in conjuction with an Islandora 8.x-1.x instance, such as the one provided by the [CLAW Vagrant Playbook](https://github.com/Islandora-Devops/claw-playbook). It audits the fixity of resources in a real (not mock) Fedora 5 repository.
 
-* `php bin/console server:start`
-* `php bin/console app:riprap:check_fixity`
+To use these configuration files, copy the one you want to try from `config/[filename]` to `config/services.yaml`. Which is the configuration file that Riprap uses when you run the `check_fixity` command.
+
+### The Filesystem configuration
+
+Whereas the other two sample configurations audit the fixity of resources in a Fedora API-compliant repository and perist fixity events to a relational database, this configuration audits a set of files in a filesystem directory and perists events to a CSV file. While you could use this configuration in production, its real purpose is to illustrate how Riprap plugins work together to provide all the functionality required to audit fixity over time.
+
+### The Mock Fedora Repository configuration
+
+Before we describe how to use Riprap against the mockd Fedora endpoint, we should tell you a little about it. The endpoint simulates the behaviour described in section [7.2](https://fcrepo.github.io/fcrepo-specification/#persistence-fixity) of the Fedora API spec. If you start Symfony's test server as described below, this endpoint is available via `GET` or `HEAD` requests at `http://localhost:8000/mockrepository/rest/{id}`, where `{id}` is a number from 1-20 (these are mock "resource IDs" included in the sample data). Calls to it should include a `Want-Digest` header with the value `SHA-1`, e.g.:
+
+`curl -v -X HEAD -H 'Want-Digest: SHA-1' http://localhost:8000/mockrepository/rest/2`
+
+If the `{id}` is valid, the response will contain the `Digest` header containing the specified SHA-1 hash:
+
+```
+*   Trying 127.0.0.1...
+* TCP_NODELAY set
+* Connected to localhost (127.0.0.1) port 8000 (#0)
+> HEAD /mockrepository/rest/2 HTTP/1.1
+> Host: localhost:8000
+> User-Agent: curl/7.58.0
+> Accept: */*
+> Want-Digest: SHA-1
+>
+< HTTP/1.1 200 OK
+< Host: localhost:8000
+< Date: Thu, 20 Sep 2018 05:28:57 -0700
+< Connection: close
+< X-Powered-By: PHP/7.2.7-0ubuntu0.18.04.2
+< Cache-Control: no-cache, private
+< Date: Thu, 20 Sep 2018 12:28:57 GMT
+< Digest: b1d5781111d84f7b3fe45a0852e59758cd7a87e5
+< Content-Type: text/html; charset=UTF-8
+<
+* Closing connection 0
+```
+
+If the resource is not found, the response will be `404`. If the `{id}` is not valid for some other reason, the HTTP response will be `400`.
+
+To start the web server, From within the `riprap` directory run the following command:
+
+`php bin/console server:start`
+
+This will start the server listening on `localhost:8000`. The [official Symfony documentation](https://symfony.com/doc/current/setup/built_in_web_server.html) provides details on how to start it on a different port.
+
+After the web server starts, run Riprap:
+
+`php bin/console app:riprap:check_fixity`
 
 You should see output similar to:
 
@@ -112,14 +162,14 @@ You should see output similar to:
 
 Here is what is going on when you run the `check_fixity` command:
 
-1. Riprap calls whatever `fetchresourcelist` plugins are enabled (there can be more than one), and from them gets a list of all resources to check. In the default sample configuration, this list of resources is a plain text file at `resources/iprap_resource_ids.txt`.
+1. Riprap calls whatever `fetchresourcelist` plugins are enabled, and from them gets a list of all resources to check. In the default sample configuration, this list of resources is a plain text file at `resources/iprap_resource_ids.txt`.
 1. For each of the resources identifed by the `fetchresourcelist` plugins, Riprap calls the `fetchdigest` plugin that is enabled, and gets the resource's digest value from the repository. In the default sample configuration, Riprap is calling its mock repository endpoint.
 1. Riprap then gets the digest value in the most recent fixity check event stored in its database (in the default sample configuration, this is fixity events stored in the relational database), and compares the newly retrieved digest value with the most recent one on record.
 1. Riprap then persists information about the fixity check event it just performed (in the default sample configuration, back into the SQLite database). If you repeat the SQL query above, you will see five more events in your database, one corresponding to each URL listed in `resources/iprap_resource_ids.txt`.
 1. Riprap then executes all `postcheck` plugins that are enabled.
 1. After Riprap has checked all resources in the current list, it reports out how many resources it checked, including how many checks were successful and how many failed.
 
-If you query the table you will see the following output (this example uses SQLite, but the `SELECT` statement works in all relational databases):
+If you query Riprap's database table you will see the fixity events. From within the `riprap` directory, run `sqlite3 var/data.db` to access the database. then run the commands illustrated below (this example uses SQLite, but the `SELECT` statement works in all relational databases):
 
 ```
 SQLite version 3.22.0 2018-01-22 18:45:57
@@ -137,9 +187,13 @@ sqlite> .quit
 ```
 If you populated the database prior to running `check_fixity`, you will see 20 additional events in the database.
 
-### REST API
+### The Islandora configuration
 
-Preliminary scaffolding is in place for a simple HTTP REST API, which will allow external applications like Drupal to retrieve fixity check data on specific Fedora resources and to add new and updated fixity check data. For example, a `GET` request to:
+If you are running Islandora in a CLAW Playbook Vagrant machine and Riprap on the Vagrant host machine, start the Riprap web server by running `php bin/console server:start *:8001` in the Riprap directory. See the [Islandora Riprap](https://github.com/mjordan/islandora_riprap) README file for more information.
+
+## Riprap's REST API
+
+Riprap provides a simple HTTP REST API (completely separate from the mock Fedora API), which will allow external applications like Drupal to retrieve fixity check data on specific Fedora resources and to add new and updated fixity check data. For example, a `GET` request to:
 
 `curl -v -H "Resource-ID:http://example.com/repository/resource/12345" http://localhost:8000/api/fixity`
 
@@ -161,7 +215,7 @@ You should get a response like this:
 > User-Agent: curl/7.58.0
 > Accept: */*
 > Resource-ID:http://localhost:8000/mockrepository/rest/10
-> 
+>
 < HTTP/1.1 200 OK
 < Host: localhost:8000
 < Date: Sun, 30 Sep 2018 10:13:49 -0700
@@ -170,7 +224,7 @@ You should get a response like this:
 < Cache-Control: no-cache, private
 < Date: Sun, 30 Sep 2018 17:13:49 GMT
 < Content-Type: application/json
-< 
+<
 ```
 
 The returned JSON looks like this:
@@ -222,7 +276,7 @@ curl -v -X POST -H "Resource-ID:http://localhost:8080/mockrepository/rest/17" ht
 > User-Agent: curl/7.58.0
 > Accept: */*
 > Resource-ID:http://localhost:8080/mockrepository/rest/17
-> 
+>
 < HTTP/1.1 200 OK
 < Host: localhost:8000
 < Date: Thu, 27 Sep 2018 11:56:02 -0700
@@ -231,7 +285,7 @@ curl -v -X POST -H "Resource-ID:http://localhost:8080/mockrepository/rest/17" ht
 < Cache-Control: no-cache, private
 < Date: Thu, 27 Sep 2018 18:56:02 GMT
 < Content-Type: application/json
-< 
+<
 * Closing connection 0
 ["new fixity event for resource http:\/\/localhost:8080\/mockrepository\/rest\/17"]
 ```
@@ -246,39 +300,6 @@ curl -v -X POST -H "Resource-ID:http://localhost:8080/mockrepository/rest/17" ht
 * `sort`: Sort events on timestamp. Specify "desc" or "asc" (if not present, will sort "asc").
 
 For example, `curl -v -H 'Resource-ID:http://localhost:8000/mockrepository/rest/10' http://localhost:8000/api/fixity?timestamp_start=2018-12-03` would return only the events for `http://localhost:8000/mockrepository/rest/10` that have a timestamp equal to or later than `2018-12-03`.
-
-## Mock Fedora repository endpoint
-
-To assist in development and testing, Riprap includes an endpoint that simulates the behaviour described in section [7.2](https://fcrepo.github.io/fcrepo-specification/#persistence-fixity) of the spec. If you start Symfony's test server as described above, this endpoint is available via `GET` or `HEAD` requests at `http://localhost:8000/mockrepository/rest/{id}`, where `{id}` is a number from 1-20 (these are mock "resource IDs" included in the sample data). Calls to it should include a `Want-Digest` header with the value `SHA-1`, e.g.:
-
-`curl -v -X HEAD -H 'Want-Digest: SHA-1' http://localhost:8000/mockrepository/rest/2`
-
-If the `{id}` is valid, the response will contain the `Digest` header containing the specified SHA-1 hash:
-
-```
-*   Trying 127.0.0.1...
-* TCP_NODELAY set
-* Connected to localhost (127.0.0.1) port 8000 (#0)
-> HEAD /mockrepository/rest/2 HTTP/1.1
-> Host: localhost:8000
-> User-Agent: curl/7.58.0
-> Accept: */*
-> Want-Digest: SHA-1
-> 
-< HTTP/1.1 200 OK
-< Host: localhost:8000
-< Date: Thu, 20 Sep 2018 05:28:57 -0700
-< Connection: close
-< X-Powered-By: PHP/7.2.7-0ubuntu0.18.04.2
-< Cache-Control: no-cache, private
-< Date: Thu, 20 Sep 2018 12:28:57 GMT
-< Digest: b1d5781111d84f7b3fe45a0852e59758cd7a87e5
-< Content-Type: text/html; charset=UTF-8
-< 
-* Closing connection 0
-```
-
-If the resource is not found, the response will be `404`. If the `{id}` is not valid for some other reason, the HTTP response will be `400`.
 
 ## More about Riprap
 
