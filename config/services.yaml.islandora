@@ -1,4 +1,4 @@
-# Symfony 4 services.yaml file for Riprap.
+# Symfony 4 services.yaml file for Riprap, providing configuration for use with Islandora (Fedora 5).
 
 # Riprap-specific parameters start here.
 parameters:
@@ -27,7 +27,7 @@ parameters:
     # value is not an array).
     app.plugins.fetchdigest: 'app:riprap:plugin:fetchdigest:from:fedoraapi'
     app.fixity.fetchdigest.from.fedoraapi.method: 'HEAD'
-    app.fixity.fetchdigest.from.fedoraapi.algorithm: 'sha256'
+    app.fixity_algorithm: 'sha256'
     # Fedora's response looks like sha-256=cef971b6697fa92c7125a329437b69f9161c2472cce873a229a329d1424a4ff1
     # so we need to remove the 'sha-256=' to get the hash value using this regex pattern.
     app.fixity.fetchdigest.from.fedoraapi.digest_header.leader_pattern: "^.+="
