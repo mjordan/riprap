@@ -77,7 +77,7 @@ class FixityCheckEventRepository extends ServiceEntityRepository
     /**
      * Finds all entries in the 'event' table for the current resource, with URL request parameters.
      *
-     * @param string $resource_id
+     * @param string|null $resource_id
      *   The URL of the resource.
      * @param string|null $timestamp_start
      *   ISO8601 date indicating start of query range.
@@ -104,9 +104,12 @@ class FixityCheckEventRepository extends ServiceEntityRepository
         $limit,
         $sort
     ) {
-        $qb = $this->createQueryBuilder('event')
-            ->andWhere('event.resource_id = :resource_id')
+        $qb = $this->createQueryBuilder('event');
+
+        if (!is_null($resource_id)) {
+            $qb->andWhere('event.resource_id = :resource_id')
             ->setParameter('resource_id', $resource_id);
+        }
 
         if (!is_null($timestamp_start)) {
             $qb->andWhere('event.timestamp >= :timestamp_start')

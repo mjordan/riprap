@@ -14,9 +14,8 @@ class FixityController
 {
     public function read(Request $request, ParameterBagInterface $params, KernelInterface $kernel)
     {
-        $resource_id = $request->headers->get('Resource-ID');
-
         // Will be NULL if not present in request.
+        $resource_id = $request->headers->get('Resource-ID');
         $timestamp_start = $request->query->get('timestamp_start');
         $timestamp_end = $request->query->get('timestamp_end');
         $outcome = $request->query->get('outcome');

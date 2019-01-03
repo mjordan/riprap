@@ -46,7 +46,7 @@ class PluginPersistToDatabase extends ContainerAwareCommand
             ->addOption('limit', null, InputOption::VALUE_OPTIONAL, 'Number of items in the result set to return, starting at the value of "offset".', null)
             ->addOption('offset', null, InputOption::VALUE_OPTIONAL, 'The number of items in the result set, starting at the beginning, that are skipped in the result set (i.e., same as standard SQL use of "offset"). Default is 0.', null)
             ->addOption('sort', null, InputOption::VALUE_OPTIONAL, 'Sort events on timestamp. Specify "desc" or "asc" (if not present, will sort "asc").', 'asc')
-            ->addOption('resource_id', null, InputOption::VALUE_REQUIRED, 'Fully qualifid URL of the resource to validate.')
+            ->addOption('resource_id', null, InputOption::VALUE_OPTIONAL, 'Fully qualifid URL of the resource to validate.')
             ->addOption('event_uuid', null, InputOption::VALUE_REQUIRED, 'UUID of the fixity check event.')          
             ->addOption('digest_algorithm', null, InputOption::VALUE_REQUIRED, 'Algorithm used to generate the digest.')
             ->addOption('digest_value', null, InputOption::VALUE_REQUIRED, 'Value of the digest retrieved from the Fedora repository.')
@@ -75,7 +75,8 @@ class PluginPersistToDatabase extends ContainerAwareCommand
             $repository = $this->getContainer()->get('doctrine')->getRepository(FixityCheckEvent::class);
 
             // If these request query parameters are not present, they are NULL.
-            if (!is_null($input->getOption('timestamp_start')) ||
+            if (!is_null($input->getOption('resource_id')) ||
+                !is_null($input->getOption('timestamp_start')) ||
                 !is_null($input->getOption('timestamp_end')) ||
                 !is_null($input->getOption('outcome')) ||
                 !is_null($input->getOption('sort')) ||

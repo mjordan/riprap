@@ -281,6 +281,8 @@ curl -v -X POST -H "Resource-ID:http://localhost:8080/mockrepository/rest/17" ht
 
 For example, `curl -v -H 'Resource-ID:http://localhost:8000/mockrepository/rest/10' http://localhost:8000/api/fixity?timestamp_start=2018-12-03` would return only the events for `http://localhost:8000/mockrepository/rest/10` that have a timestamp equal to or later than `2018-12-03`.
 
+If you want to get fixity events that are not specific to a resource, for example all failed events, do not include the `Resource-ID` header, e.g., `curl http://localhost:8000/api/fixity?outcome=fail`.
+
 ## More about Riprap
 
 ### Plugins
