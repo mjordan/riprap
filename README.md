@@ -41,6 +41,12 @@ We will eventually support deployment via Ansible.
 
 If you want to play with Riprap, and you're on a Linux or OSX machine, you should not need to configure anything. Riprap comes with three sample configuration files that are ready to use (we will describe each one below). You do not need to create a database to try out Riprap using the "filesystemexample" configuration, but if you want to use the "mockfedorarepository" or "islandora" configurations described below, or create your own plugins that use a database, you will need to create a database using [these instructions](docs/databases.md).
 
+Once Riprap is installed and configured, run it to generate the initial fixity values:
+
+`php bin/console app:riprap:check_fixity`
+
+Monitor fixity by scheduling the command to run periodically.
+
 ## The sample configuration files
 
 Riprap comes with three sample configuration files:
@@ -167,7 +173,7 @@ If you rerun the `check_fixity` command, and then repeat the SQL query above, yo
 
 > If you are running Islandora in a CLAW Playbook Vagrant guest virtual machine and Riprap on the Vagrant host machine, start the Riprap web server by running `php bin/console server:start *:8001` in the Riprap directory. See the [Islandora Riprap](https://github.com/mjordan/islandora_riprap) README file for more information. Otherwise, the Symfony web server will have a port conflict with the Apache web server mapped to port `8000` on the host machine.
 
-The "islandora" configuration works like the other two sample configurations, but it queries Drupal's JSON:API for the list of resources to audit (using the descriptively named `app:riprap:plugin:fetchresourcelist:from:drupal` plugin), and it queries the REST API of the (real, not mock) Fedora repository that accompanies Drupal in the Islandora stack for the digests of those files (using the `app:riprap:plugin:fetchdigest:from:fedoraapi` plugin).
+The "islandora" configuration works like the other two sample configurations, but it queries Drupal's [JSON:API](https://www.drupal.org/project/jsonapi) (not included in the default CLAW installation) for the list of resources to audit (using the descriptively named `app:riprap:plugin:fetchresourcelist:from:drupal` plugin), and it queries the REST API of the (real, not mock) Fedora repository that accompanies Drupal in the Islandora stack for the digests of those files (using the `app:riprap:plugin:fetchdigest:from:fedoraapi` plugin).
 
 Within the Drupal user interface, the [Islandora Riprap](https://github.com/mjordan/islandora_riprap) module provides reports on whether Riprap has recorded any failed fixity check events (i.e., digest mismatches for the same resource) over time. The module gets this information via the Riprap REST API, described in the next section.
 
