@@ -274,14 +274,14 @@ curl -v -X POST -H "Resource-ID:http://localhost:8080/mockrepository/rest/17" ht
 
 * `timestamp_start`: ISO8601 (full or partial) date indicating start of date range in queries.
 * `timestamp_end`: ISO8601 (full or partial) date indicating end of date range in queries.
-* `outcome`: Coded outcome of the event, either `success` or `fail`.
+* `outcome`: Coded outcome of the event, either `success` or `fail`. If no `outcome` is specified, all events are returned in the response.
 * `offset`: The number of items in the result set, starting at the beginning, that are skipped in the result set (i.e., same as standard SQL use of 'offset'). Default is 0.
 * `limit`: Number of items in the result set to return, starting at the value of `offset`.
 * `sort`: Sort events on timestamp. Specify "desc" or "asc" (if not present, will sort "asc").
 
 For example, `curl -v -H 'Resource-ID:http://localhost:8000/mockrepository/rest/10' http://localhost:8000/api/fixity?timestamp_start=2018-12-03` would return only the events for `http://localhost:8000/mockrepository/rest/10` that have a timestamp equal to or later than `2018-12-03`.
 
-If you want to get fixity events that are not specific to a resource, for example all failed events, do not include the `Resource-ID` header, e.g., `curl http://localhost:8000/api/fixity?outcome=fail`.
+If you want to `GET` fixity events that are not specific to a resource, for example all failed events, do not include the `Resource-ID` header, e.g., `curl http://localhost:8000/api/fixity?outcome=fail`.
 
 ## More about Riprap
 
