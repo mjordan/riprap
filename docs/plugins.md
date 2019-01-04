@@ -1,12 +1,14 @@
 # Plugins
 
+Riprap is designed so that it can be used to audit the fixity of data stored in a variety of platforms, and so that the results of its fixity checks can be managed in a variety of ways. To meet these goals, Riprap uses plugins to process most of its input and output.
+
 ## Types of plugins
 
 Plugins perform the specific work of:
 
 1. getting a list of resources to perform fixity checks on (these are called "fetchresourcelist" plugins)
 1. calculating the digest on the resource using a specific digest digest_algorithm (these are called "fetchdigest" plugins)
-1. persisting the results of the fixity check ("persist" plugins; these also retrieve the digest value from the last fixity check event, and produce lists of events that are passed to the REST interface in response to `GET` requests)
+1. persisting the results of the fixity check to a database or other datastore ("persist" plugins; these also retrieve the digest value from the last fixity check event, and produce lists of events that are passed to the REST interface in response to `GET` requests)
 1. performing tasks after the fixity check has been performed and persisted (these are called "postcheck" plugins)
 
 These four classes of plugins are executed, in that order, within the main `app:riprap:check_fixity` console command.
@@ -131,3 +133,5 @@ Output is writen from within a plugin's `execute()` method like this:
       '--outcome'
 * output
   * none
+
+ Note that plugins may take optional input parameters, but if they do so, they must use preemptive checks to determine whether those options are populated. For example, persist plugins may take optional `--timestamp` or `--timestamp_start`/`--timestamp_end` parameters.
