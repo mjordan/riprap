@@ -100,22 +100,22 @@ Output is writen from within a plugin's `execute()` method like this:
 * input
     * '--operation'
       * "get_last_digest" operation
-            '--resource_id'
-            '--digest_algorithm'
+        * '--resource_id'
+        * '--digest_algorithm'
       * "persist_fix_event" operation
-            '--resource_id'
-            '--digest_algorithm'
-            '--event_uuid'
-            '--digest_value'
-            '--outcome'
+        * '--resource_id'
+        * '--digest_algorithm'
+        * '--event_uuid'
+        * '--digest_value'
+        * '--outcome'
       * "get_events" operation
-             '--resource_id'
-             '--timestamp_start'
-             '--timestamp_end'           
-             '--offset'
-             '--limit'
-             '--sort'
-             '--outcome'
+        * '--resource_id'
+        * '--timestamp_start'
+        * '--timestamp_end'           
+        * '--offset'
+        * '--limit'
+        * '--sort'
+        * '--outcome'
 * output
     * "get_last_digest" operation
       * a digest (string)

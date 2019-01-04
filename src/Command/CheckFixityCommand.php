@@ -64,7 +64,7 @@ class CheckFixityCommand extends ContainerAwareCommand
                 // This class of plugin doesn't take any command-line options.
                 $fetchresourcelist_plugin_input = new ArrayInput(array());
                 $fetchresourcelist_plugin_output = new BufferedOutput();
-                // @todo: Check $returnCode and log+continue if non-0.
+                // @todo: Check $returnCode and log, continue if non-0.
                 $fetchresourcelist_plugin_return_code = $fetchresourcelist_plugin_command->run(
                     $fetchresourcelist_plugin_input,
                     $fetchresourcelist_plugin_output
@@ -79,9 +79,10 @@ class CheckFixityCommand extends ContainerAwareCommand
                 );
             }
 
-            // Split $ids_from_plugin on newline to get an array of URLs. Assumes that all
-            // fetchresourcelistPlugins will return a string, which is probably the case
-            // since Symfony console commands output strings, not arrays.
+            // Split $ids_from_plugin on newline to get an array of resource URIs.
+            // Assumes that all fetchresourcelistPlugins will return a string,
+            // which is probably the case since Symfony console commands output
+            // strings, not arrays.
             $ids_from_plugin = preg_split("/\r\n|\n|\r/", trim($ids_from_plugin));
             // Combine the output of all fetchPlugins.
             $resource_ids = array_merge($resource_ids, $ids_from_plugin);
@@ -89,7 +90,7 @@ class CheckFixityCommand extends ContainerAwareCommand
                 $num_resource_ids = count($resource_ids);
             }
             else {
-                $num_resource_ids = 0;   
+                $num_resource_ids = 0;
             }
         }
 
@@ -119,6 +120,10 @@ class CheckFixityCommand extends ContainerAwareCommand
             // that digest with a new one.
             if (count($this->persistPlugins) > 0) {
                 foreach ($this->persistPlugins as $persist_plugin_name) {
+
+                    // !!! #26: Here, break out the JSON resource object and get the resource ID
+                    // to pass into the 'get_last_digest' operation !!!
+
                     // 'get_last_digest' operation.
                     $get_last_digest_plugin_command = $this->getApplication()->find($persist_plugin_name);
                     // Even though some of these options aren't used in the 'get_last_digest'
@@ -145,6 +150,14 @@ class CheckFixityCommand extends ContainerAwareCommand
                     // the value of $last_digest_for_resource. Is that OK? Is there a real use case
                     // for persisting to multiple places? If so, can we persist to additional places
                     // using a postcheck plugin instead of multiple persist plugins?
+
+                    // !!! # 26: In addition to the $last_digest_for_resource, we need the timestamp
+                    // of the corresponding event so we can compare the lastmodified_timestamp
+                    // in the resource object to it. If the lastmodified_timestamp is later than
+                    // the event timestamp, it's OK for the digest to be different (the resource
+                    // was modified); if the lastmodified_timestamp is equal to or earlier than
+                    // the event timestamp, we have a mismatch. !!!
+
                     $last_digest_for_resource = $get_last_digest_plugin_output->fetch();
                     $this->logger->info("Persist plugin ran.", array(
                         'plugin_name' => $persist_plugin_name,
@@ -180,6 +193,17 @@ class CheckFixityCommand extends ContainerAwareCommand
                             $current_digest_value = $current_digest_plugin_return_value;
                         // Riprap has no entries in its db for this resource; this is OK, since this will
                         // be the case for new resources detected by the fetchresourcelist plugins.
+
+                        // !!! # 26: If the incoming resource object has an event_detail, persist it here.
+                        // If we have detected above that the resource has been modified since the
+                        // last fixity check event, add "Resource modified since last fixity check."
+                        // as the event detail. !!!
+
+                        // !!! #26: We do not need to modify any other plugins other than the persist plugins,
+                        // which now need to return both the digest value *and* the timestamp from the last
+                        // fixity event as part of their get_last_digest operation. See PluginPersistToDatabase.php
+                        // line 70 and PluginPersistToCsv.php line 89. !!!
+
                         } elseif (strlen($last_digest_for_resource) == 0) {
                             $outcome = 'success';
                             if ($this->event_detail) {
@@ -229,8 +253,7 @@ class CheckFixityCommand extends ContainerAwareCommand
                 }
             }
 
-            // Execute post-check plugins that react to a fixity check event
-            // (email admin, migrate legacy data, etc.).
+            // Execute post-check plugins that react to a fixity check event (email admin, etc.).
             if (count($this->postCheckPlugins) > 0) {
                 foreach ($this->postCheckPlugins as $postcheck_plugin_name) {
                     $postcheck_plugin_command = $this->getApplication()->find($postcheck_plugin_name);
@@ -266,7 +289,7 @@ class CheckFixityCommand extends ContainerAwareCommand
         $fixity_check = $stopwatch->stop('fixity_check');
         $duration = $fixity_check->getDuration(); // milliseconds
         $duration = $duration / 1000; // seconds
-        
+
         $output->writeln("Riprap checked $num_resource_ids resources ($num_successful_events successful events, " .
             "$num_failed_events failed events) in $duration seconds.");
     }

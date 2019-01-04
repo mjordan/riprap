@@ -67,6 +67,7 @@ class PluginPersistToDatabase extends ContainerAwareCommand
             );
             if (!is_null($event)) {
                 $output->write($event->getDigestValue());
+                // !!! #26: We also need to add $event->getTimestamp() to $output->write(), maybe as a JSON object? !!!
             }
         }
         // Returns a serialized representation of all fixity check events.

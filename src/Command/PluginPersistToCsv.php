@@ -86,6 +86,7 @@ class PluginPersistToCsv extends ContainerAwareCommand
             foreach ($rows as $row) {
                 $fields = explode(',', $row);
                 $event_records[$fields[2]] = $fields[5];
+                // !!! #26: We also need to add $fields[3] to $output->write(), maybe as a JSON object? !!!
             }
             if (!array_key_exists($input->getOption('resource_id'), $event_records)) {
                 $output->write('');
