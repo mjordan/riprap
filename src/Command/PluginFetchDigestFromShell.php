@@ -48,6 +48,8 @@ class PluginFetchDigestFromShell extends ContainerAwareCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $file_path = $input->getOption('resource_id');
+        var_dump("From plugin");
+        var_dump($file_path);        
         $external_digest_program_command = $this->external_program . ' ' . $file_path;
         $external_digest_program_command = escapeshellcmd($external_digest_program_command);
         $external_digest_command_output = exec($external_digest_program_command, $external_digest_program_command_output, $return);
@@ -56,16 +58,17 @@ class PluginFetchDigestFromShell extends ContainerAwareCommand
 
             $mtime = exec('stat -c %Y '. escapeshellarg($file_path));
             $mtime_iso8601 = date(\DateTime::ISO8601, $mtime);
-            var_dump($mtime_iso8601);
+            // var_dump("Mtime: " . $mtime_iso8601);
 
-            $event_digest_value_and_timestamp_array = array(
+            $digest_value_and_timestamp_array = array(
                 'digest_value' => trim($digest),
                 'last_modified_timestamp' => $mtime_iso8601
-            );                
-            $event_digest_value_and_timestamp = json_encode($event_digest_value_and_timestamp_array);           
-            $output->writeln(trim($event_digest_value_and_timestamp));
+            );
+            var_dump($digest_value_and_timestamp_array);                
+            $digest_value_and_timestamp = json_encode($digest_value_and_timestamp_array);           
+            $output->writeln(trim($digest_value_and_timestamp));
         } else {
-            $this->logger->warning("check_fixity cannot retrieve digest from repository.", array(
+            $this->logger->warning("check_fixity cannot retrieve digest from file system.", array(
                 'resource_id' => $file_path,
                 'status_code' => $return,
             ));

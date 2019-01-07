@@ -23,8 +23,7 @@ class CheckFixityCommand extends ContainerAwareCommand
 
     public function __construct(
         ParameterBagInterface $params = null,
-        LoggerInterface $logger = null,
-        FixityEventDetailManager $event_detail = null
+        LoggerInterface $logger = null
     ) {
         // Set in the parameters section of config/services.yaml.
         $this->params = $params;
@@ -37,7 +36,6 @@ class CheckFixityCommand extends ContainerAwareCommand
 
         // Set log output path in config/packages/{environment}/monolog.yaml
         $this->logger = $logger;
-        $this->event_detail = $event_detail;
 
         parent::__construct();
     }
@@ -109,17 +107,21 @@ class CheckFixityCommand extends ContainerAwareCommand
             if (!strlen($resource_id)) {
                 continue;
             }
+            print "\n";
             $uuid4 = Uuid::uuid4();
             $event_uuid = $uuid4->toString();
             $now_iso8601 = date(\DateTime::ISO8601);
-
-            $event_detail = '';
 
             // Execute plugins that persist event data. We execute them twice and pass in an 'operation' option,
             // once to get the last digest for the resource and again to persist the event resulting from comparing
             // that digest with a new one.
             if (count($this->persistPlugins) > 0) {
                 foreach ($this->persistPlugins as $persist_plugin_name) {
+
+                    $this->event_detail = new FixityEventDetailManager($this->params);
+                    $this->event_detail->add('event_detail', 'wassup.');
+                    // var_dump($this->event_detail->getDetails());
+                    
                     $json_object_array = json_decode($resource_id, true);
                     $resource_id = $json_object_array['resource_id'];
                     $last_modified_timestamp = $json_object_array['last_modified_timestamp'];
@@ -144,8 +146,9 @@ class CheckFixityCommand extends ContainerAwareCommand
                         $reference_event_plugin_output
                     );
                     $reference_event = json_decode($reference_event_plugin_output->fetch(), true);
-                    var_dump($resource_id);
-                    var_dump($reference_event);
+                    // var_dump("From command");
+                    // var_dump($resource_id);
+                    // var_dump($reference_event);
                     // $reference_event contains to members, 1) the digest recorded in the last fixity
                     // event check for this resource, which we compare this value with the digest retrieved
                     // during the current fixity check, and 2) the timestamp from the last event, so we can
@@ -161,7 +164,7 @@ class CheckFixityCommand extends ContainerAwareCommand
                     // using a postcheck plugin instead of multiple persist plugins?
 
                     $reference_event_digest_value = $reference_event['digest_value'];
-                    $reference_event_last_modified_timestamp = $reference_event['last_modified_timestamp'];
+                    $reference_event_timestamp = $reference_event['timestamp'];
 
                     $this->logger->info("Persist plugin ran.", array(
                         'plugin_name' => $persist_plugin_name,
@@ -209,32 +212,38 @@ class CheckFixityCommand extends ContainerAwareCommand
                         // var_dump($reference_event_digest_value);
                         // var_dump("current_digest_value");
                         // var_dump($current_digest_value);
-                        print "\n";
 
                         // Riprap has no entries in its db for this resource; this is OK, since this will
                         // be the case for new resources detected by the fetchresourcelist plugins.
                         if (strlen($reference_event_digest_value) == 0) {
                             $outcome = 'success';
                             $num_successful_events++;
-                            if ($this->event_detail) {
+                            // if ($this->event_detail) {
                                 $this->event_detail->add('event_detail', 'Initial fixity check.');
-                            }
-                        // The resource's current last modified date is later than the timestamp in the
-                        // last fixity check event for this resource.
-                        } elseif ($current_digest_plugin_output['last_modified_timestamp'] > $reference_event_last_modified_timestamp) {
-                            $outcome = 'success';
-                            $num_successful_events++;
-                            if ($this->event_detail) {
-                                $this->event_detail->add('event_detail', "Resource modified since last fixity check.");
-                            }
+                            // }
                         } elseif ($reference_event_digest_value == $current_digest_value) {
                             $outcome = 'success';
-                            $num_successful_events++;                           
+                            $num_successful_events++;
+                        // The resource's current last modified date is later than the timestamp in the
+                        // reference fixity check event for this resource.
+                        } elseif ($current_digest_plugin_output['last_modified_timestamp'] > $reference_event_timestamp) {
+                            print "From within true loop for $resource_id:\n";
+                            print "Current digest plugin last modified timestamp: " . $current_digest_plugin_output['last_modified_timestamp'] . "\n";
+                            print "Reference event timestamp:" . $reference_event_timestamp . "\n";
+                            $outcome = 'success';
+                            $num_successful_events++;
+                            // if ($this->event_detail) {
+                                $this->event_detail->add(
+                                    'event_detail', 'Resource modified since last fixity check.'
+                                );
+                            // }
                         } else {
                             $num_failed_events++;
-                            if ($this->event_detail) {
-                                $this->event_detail->add('event_outcome_detail_note', 'Insufficient conditions for fixity check event.');
-                            }
+                            // if ($this->event_detail) {
+                                $this->event_detail->add(
+                                    'event_outcome_detail_note', 'Insufficient conditions for fixity check event.'
+                                );
+                            // }
                         }
                     } else {
                         $this->logger->error("Fetchdigest plugin ran.", array(
@@ -260,7 +269,8 @@ class CheckFixityCommand extends ContainerAwareCommand
                     $persist_fix_event_plugin_output = new BufferedOutput();
                     $persist_fix_event_plugin_return_code = $persist_fix_event_plugin_command->run(
                         $persist_fix_event_plugin_input,
-                        $persist_fix_event_plugin_output
+                        $persist_fix_event_plugin_output,
+                        $this->event_detail
                     );
                     // Currently not used.
                     // $persist_fix_event_plugin_output_string = $persist_fix_event_plugin_output->fetch();

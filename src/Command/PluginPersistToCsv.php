@@ -34,6 +34,7 @@ class PluginPersistToCsv extends ContainerAwareCommand
         // Set log output path in config/packages/{environment}/monolog.yaml
         $this->logger = $logger;
         $this->event_detail = $event_detail;
+        var_dump($this->event_detail->getDetails());
 
         parent::__construct();
     }
@@ -96,7 +97,7 @@ class PluginPersistToCsv extends ContainerAwareCommand
 
             $event_digest_value_and_timestamp_array = array(
                 'digest_value' => $last_record[5],
-                'last_modified_timestamp' => $last_record[3]
+                'timestamp' => $last_record[3]
             );
             $event_digest_value_and_timestamp = json_encode($event_digest_value_and_timestamp_array);
             $output->write($event_digest_value_and_timestamp);            
@@ -131,6 +132,7 @@ class PluginPersistToCsv extends ContainerAwareCommand
         if ($input->getOption('operation') == 'persist_fix_event') {
             $details = $this->event_detail->getDetails();
             $event_details = $this->event_detail->serialize($details);
+            // var_dump($event_details);
             $record = array(
                 $input->getOption('event_uuid'),
                 $this->event_type,

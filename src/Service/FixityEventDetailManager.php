@@ -14,7 +14,13 @@ class FixityEventDetailManager
     public function __construct(ParameterBagInterface $params = null)
     {
         $this->event_details = array('event_detail' => array(), 'event_outcome_detail_note' => array());
-        $this->serialize_delimiter = $params->get('app.service.detailmanager.delimiter');
+
+        $this->params = $params;
+        if ($this->params->has('app.service.detailmanager.delimiter')) {
+            $this->serialize_delimiter = $this->params->get('app.service.detailmanager.delimiter');
+        } else {
+            $this->serialize_delimiter = ';';
+        }
     }
 
     /**
@@ -31,6 +37,9 @@ class FixityEventDetailManager
      */
     public function add($key, $value)
     {
+        if (!strlen($value)) {
+            return $this->event_details;
+        }
         if ($key == 'event_detail') {
             // Do no duplicate values that already exist.
             if (!in_array($value, $this->event_details['event_detail'])) {
