@@ -160,33 +160,56 @@ class PluginFetchResourceListFromDrupal extends ContainerAwareCommand
                 if (count($media['field_media_use'])) {
                     foreach ($media['field_media_use'] as $term) {
                         if (in_array($term['url'], $this->media_tags)) {
+                            // Get the timestamp of the current revision.
+                            // Will be in ISO8601 format.
+                            $revised = $media['revision_created'][0]['value'];                  
                             if ($this->use_fedora_urls) {
                                 // @todo: getFedoraUrl() returns false on failure, so build in logic here to log that
                                 // the resource ID / URL cannot be found. (But, http responses are already logged in
                                 // getFedoraUrl() so maybe we don't need to log here?)
                                 if (isset($media['field_media_image'])) {
                                     $fedora_url = $this->getFedoraUrl($media['field_media_image'][0]['target_uuid']);
-                                    // This is a string containing one resource ID (URL) per line;
                                     if (strlen($fedora_url)) {
-                                        $output->writeln($fedora_url);
+                                        $media_data = array(
+                                            'resource_id' => $fedora_url,
+                                            'last_modified_timestamp' => $revised
+                                        );
+                                        $media_data = json_encode($media_data);
+                                        // This is a string containing one JSON object per line.
+                                        $output->writeln($media_data);
                                     }
                                 } else {
                                     $fedora_url = $this->getFedoraUrl($media['field_media_file'][0]['target_uuid']);
-                                    // This is a string containing one resource ID (URL) per line;
                                     if (strlen($fedora_url)) {
-                                        $output->writeln($fedora_url);
+                                        $media_data = array(
+                                            'resource_id' => $fedora_url,
+                                            'last_modified_timestamp' => $revised
+                                        );
+                                        $media_data = json_encode($media_data);
+                                        // This is a string containing one JSON object per line.                                     
+                                        $output->writeln($media_data);
                                     }                             
                                 }
                             } else {
                                 if (isset($media['field_media_image'])) {
-                                    // This is a string containing one resource ID (URL) per line;
                                     if (strlen($media['field_media_image'][0]['url'])) {
-                                        $output->writeln($media['field_media_image'][0]['url']);
+                                        $media_data = array(
+                                            'resource_id' => $media['field_media_image'][0]['url'],
+                                            'last_modified_timestamp' => $revised
+                                        );
+                                        $media_data = json_encode($media_data);
+                                        // This is a string containing one JSON object per line.                            
+                                        $output->writeln($media_data);
                                     }
                                 } else {
-                                    // This is a string containing one resource ID (URL) per line;
                                     if (strlen($media['field_media_file'][0]['url'])) {
-                                        $output->writeln($media['field_media_file'][0]['url']);
+                                        $media_data = array(
+                                            'resource_id' => $media['field_media_file'][0]['url'],
+                                            'last_modified_timestamp' => $revised
+                                        );
+                                        $media_data = json_encode($media_data);
+                                        // This is a string containing one JSON object per line.
+                                        $output->writeln($media_data);
                                     }
                                 }
                             }

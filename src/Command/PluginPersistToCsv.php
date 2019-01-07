@@ -77,7 +77,7 @@ class PluginPersistToCsv extends ContainerAwareCommand
             file_put_contents($this->fixity_peristence_csv, $header_row . "\n");
         }
 
-        // The operation writes out a JSON object containing the latest digest
+        // This operation writes out a JSON object containing the latest digest
         // value for the resource and the last modified timestamp of the resource.
         // This demo code does that, but makes a lot of assumptions about the file
         // at $this->fixity_peristence_csv.
@@ -91,11 +91,12 @@ class PluginPersistToCsv extends ContainerAwareCommand
                     $event_records[] = $fields;
                 }
             }
-            // Get the most recent recore.
-            $last_record = array_pop($event_records);
+            // Get the most recent record.
+            $last_record = end($event_records);
+
             $event_digest_value_and_timestamp_array = array(
-                'digest_value' => $fields[5],
-                'last_modified_timestamp' => $fields[3]
+                'digest_value' => $last_record[5],
+                'last_modified_timestamp' => $last_record[3]
             );
             $event_digest_value_and_timestamp = json_encode($event_digest_value_and_timestamp_array);
             $output->write($event_digest_value_and_timestamp);            

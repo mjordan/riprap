@@ -145,7 +145,6 @@ class CheckFixityCommand extends ContainerAwareCommand
                     );
                     $reference_event = json_decode($reference_event_plugin_output->fetch(), true);
                     var_dump($resource_id);
-                    var_dump("reference_event");
                     var_dump($reference_event);
                     // $reference_event contains to members, 1) the digest recorded in the last fixity
                     // event check for this resource, which we compare this value with the digest retrieved
@@ -206,10 +205,10 @@ class CheckFixityCommand extends ContainerAwareCommand
                     $outcome = 'fail';
                     if ($current_digest_plugin_output_ok) {
 
-                        var_dump("reference_event_digest_value");
-                        var_dump($reference_event_digest_value);
-                        var_dump("current_digest_value");
-                        var_dump($current_digest_value);
+                        // var_dump("reference_event_digest_value");
+                        // var_dump($reference_event_digest_value);
+                        // var_dump("current_digest_value");
+                        // var_dump($current_digest_value);
                         print "\n";
 
                         // Riprap has no entries in its db for this resource; this is OK, since this will
@@ -223,7 +222,6 @@ class CheckFixityCommand extends ContainerAwareCommand
                         // The resource's current last modified date is later than the timestamp in the
                         // last fixity check event for this resource.
                         } elseif ($current_digest_plugin_output['last_modified_timestamp'] > $reference_event_last_modified_timestamp) {
-                            var_dump("Hey...");
                             $outcome = 'success';
                             $num_successful_events++;
                             if ($this->event_detail) {

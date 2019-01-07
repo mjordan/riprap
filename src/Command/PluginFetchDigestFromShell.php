@@ -54,9 +54,9 @@ class PluginFetchDigestFromShell extends ContainerAwareCommand
         if ($return == 0) {
             list($digest, $path) = preg_split('/\s/', $external_digest_program_command_output[0]);
 
-            clearstatcache();
-            $stat = stat($file_path);
-            $mtime_iso8601 = date(\DateTime::ISO8601, $stat['mtime']);
+            $mtime = exec('stat -c %Y '. escapeshellarg($file_path));
+            $mtime_iso8601 = date(\DateTime::ISO8601, $mtime);
+            var_dump($mtime_iso8601);
 
             $event_digest_value_and_timestamp_array = array(
                 'digest_value' => trim($digest),
