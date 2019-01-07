@@ -105,7 +105,7 @@ class CheckFixityCommand extends ContainerAwareCommand
         $num_successful_events = 0;
         $num_failed_events = 0;
         foreach ($resource_ids as $resource_id) {
-            // If the resource ID is empty, don't continue.
+            // If the resource ID is empty, move on to the next one.
             if (!strlen($resource_id)) {
                 continue;
             }
@@ -120,15 +120,15 @@ class CheckFixityCommand extends ContainerAwareCommand
             // that digest with a new one.
             if (count($this->persistPlugins) > 0) {
                 foreach ($this->persistPlugins as $persist_plugin_name) {
-
-                    // !!! #26: Here, break out the JSON resource object and get the resource ID
-                    // to pass into the 'get_last_digest' operation !!!
+                    $json_object_array = json_decode($resource_id, true);
+                    $resource_id = $json_object_array['resource_id'];
+                    $last_modified_timestamp = $json_object_array['last_modified_timestamp'];
 
                     // 'get_last_digest' operation.
-                    $get_last_digest_plugin_command = $this->getApplication()->find($persist_plugin_name);
+                    $reference_event_plugin_command = $this->getApplication()->find($persist_plugin_name);
                     // Even though some of these options aren't used in the 'get_last_digest'
                     // query, we need to pass them into the plugin.
-                    $get_last_digest_plugin_input = new ArrayInput(array(
+                    $reference_event_plugin_input = new ArrayInput(array(
                         '--resource_id' => $resource_id,
                         '--timestamp' => $now_iso8601,
                         '--digest_algorithm' => $this->fixity_algorithm,
@@ -137,83 +137,106 @@ class CheckFixityCommand extends ContainerAwareCommand
                         '--outcome' => '',
                         '--operation' => 'get_last_digest',
                     ));
-                    $get_last_digest_plugin_output = new BufferedOutput();
-                    $get_last_digest_plugin_return_code = $get_last_digest_plugin_command->run(
-                        $get_last_digest_plugin_input,
-                        $get_last_digest_plugin_output
+                    // $reference_event is the previous fixity check event for this resource.
+                    $reference_event_plugin_output = new BufferedOutput();
+                    $reference_event_plugin_return_code = $reference_event_plugin_command->run(
+                        $reference_event_plugin_input,
+                        $reference_event_plugin_output
                     );
-                    // $last_digest_for_resource contains the last recorded digest for this resource.
-                    // We compare this value with the digest retrieved during the current fixity
-                    // check event.
+                    $reference_event = json_decode($reference_event_plugin_output->fetch(), true);
+                    var_dump($resource_id);
+                    var_dump("reference_event");
+                    var_dump($reference_event);
+                    // $reference_event contains to members, 1) the digest recorded in the last fixity
+                    // event check for this resource, which we compare this value with the digest retrieved
+                    // during the current fixity check, and 2) the timestamp from the last event, so we can
+                    // compare the current last modified timestamp of the resource to it. If the current last-
+                    // modified timestamp of the resource is later than the timestamp in the reference event,
+                    // we don't compare digests since the digest to be different (afer all, the resource
+                    // was modified); otherwise, we compare digests since the resource has not been modified
+                    // since the reference (i.e., previous) fixity check event.
 
                     // @todo: If we allow multiple persist plugins, the last one called determines
                     // the value of $last_digest_for_resource. Is that OK? Is there a real use case
                     // for persisting to multiple places? If so, can we persist to additional places
                     // using a postcheck plugin instead of multiple persist plugins?
 
-                    // !!! # 26: In addition to the $last_digest_for_resource, we need the timestamp
-                    // of the corresponding event so we can compare the lastmodified_timestamp
-                    // in the resource object to it. If the lastmodified_timestamp is later than
-                    // the event timestamp, it's OK for the digest to be different (the resource
-                    // was modified); if the lastmodified_timestamp is equal to or earlier than
-                    // the event timestamp, we have a mismatch. !!!
+                    $reference_event_digest_value = $reference_event['digest_value'];
+                    $reference_event_last_modified_timestamp = $reference_event['last_modified_timestamp'];
 
-                    $last_digest_for_resource = $get_last_digest_plugin_output->fetch();
                     $this->logger->info("Persist plugin ran.", array(
                         'plugin_name' => $persist_plugin_name,
-                        'return_code' => $get_last_digest_plugin_return_code
+                        'return_code' => $reference_event_plugin_return_code
                     ));
 
                     // Get the resource's digest and compare it to the last known value. Currently we
-                    // only allow one fetchdigest plugin pre resource_id.
-                    $get_current_digest_plugin_command = $this->getApplication()->find($this->fetchDigestPlugin);
-                    $get_current_digest_plugin_input = new ArrayInput(array(
+                    // only allow one fetchdigest plugin per resource_id.
+                    $current_digest_plugin_command = $this->getApplication()->find($this->fetchDigestPlugin);
+                    $current_digest_plugin_input = new ArrayInput(array(
                         '--resource_id' => $resource_id
                     ));
-                    $get_current_digest_plugin_output = new BufferedOutput();
-                    $get_current_digest_plugin_return_code = $get_current_digest_plugin_command->run(
-                        $get_current_digest_plugin_input,
-                        $get_current_digest_plugin_output
+                    $current_digest_plugin_output = new BufferedOutput();
+                    $current_digest_plugin_return_code = $current_digest_plugin_command->run(
+                        $current_digest_plugin_input,
+                        $current_digest_plugin_output
                     );
-                    $current_digest_plugin_return_value = trim($get_current_digest_plugin_output->fetch());
+                    $current_digest_plugin_return_value = trim($current_digest_plugin_output->fetch());
+
+                    // @todo: We shold only be logging $current_digest_plugin_return_value if it is not a digest value.
                     $this->logger->info("Fetchdigest plugin ran.", array(
                         'plugin_name' => $this->fetchDigestPlugin,
-                        'return_code' => $get_current_digest_plugin_return_code,
+                        'return_code' => $current_digest_plugin_return_code,
                         // Assumes that the plugin use http... but our filesystemexmaple one doesn't.
                         'http_response_code' => $current_digest_plugin_return_value,
                     ));
 
-                    // If there was a problem, the fetchdigest plugin will return an HTTP response code, so
-                    // we check the length of the plugin's output to see if its's longer than 3 charaters.
-                    $outcome = 'fail';
+                    // If there was a problem, the fetchdigest plugin will return an HTTP response code
+                    // or an executable's exit code (not a digest value/timestamp JSON object), so we
+                    // check the length of the plugin's output to see if it's longer than 3 characters,
+                    // which JSON objects are.
                     if (strlen($current_digest_plugin_return_value) > 3) {
-                        if ($last_digest_for_resource == $current_digest_plugin_return_value) {
-                            $outcome = 'success';
-                            $num_successful_events++;
-                            $current_digest_value = $current_digest_plugin_return_value;
+                        $current_digest_plugin_output_ok = $current_digest_plugin_return_value;
+                        $current_digest_plugin_output = json_decode($current_digest_plugin_return_value, true);
+                        $current_digest_value = $current_digest_plugin_output['digest_value'];
+                    } else {
+                        $current_digest_plugin_output_ok = false;
+                    }                 
+
+                    // Initialize $outcome to 'fail', change it to 'success' only if conditions are met.
+                    $outcome = 'fail';
+                    if ($current_digest_plugin_output_ok) {
+
+                        var_dump("reference_event_digest_value");
+                        var_dump($reference_event_digest_value);
+                        var_dump("current_digest_value");
+                        var_dump($current_digest_value);
+                        print "\n";
+
                         // Riprap has no entries in its db for this resource; this is OK, since this will
                         // be the case for new resources detected by the fetchresourcelist plugins.
-
-                        // !!! # 26: If the incoming resource object has an event_detail, persist it here.
-                        // If we have detected above that the resource has been modified since the
-                        // last fixity check event, add "Resource modified since last fixity check."
-                        // as the event detail. !!!
-
-                        // !!! #26: We do not need to modify any other plugins other than the persist plugins,
-                        // which now need to return both the digest value *and* the timestamp from the last
-                        // fixity event as part of their get_last_digest operation. See PluginPersistToDatabase.php
-                        // line 70 and PluginPersistToCsv.php line 89. !!!
-
-                        } elseif (strlen($last_digest_for_resource) == 0) {
+                        if (strlen($reference_event_digest_value) == 0) {
                             $outcome = 'success';
+                            $num_successful_events++;
                             if ($this->event_detail) {
                                 $this->event_detail->add('event_detail', 'Initial fixity check.');
                             }
+                        // The resource's current last modified date is later than the timestamp in the
+                        // last fixity check event for this resource.
+                        } elseif ($current_digest_plugin_output['last_modified_timestamp'] > $reference_event_last_modified_timestamp) {
+                            var_dump("Hey...");
+                            $outcome = 'success';
                             $num_successful_events++;
-                            $current_digest_value = $current_digest_plugin_return_value;
+                            if ($this->event_detail) {
+                                $this->event_detail->add('event_detail', "Resource modified since last fixity check.");
+                            }
+                        } elseif ($reference_event_digest_value == $current_digest_value) {
+                            $outcome = 'success';
+                            $num_successful_events++;                           
                         } else {
                             $num_failed_events++;
-                            $current_digest_value = $current_digest_plugin_return_value;
+                            if ($this->event_detail) {
+                                $this->event_detail->add('event_outcome_detail_note', 'Insufficient conditions for fixity check event.');
+                            }
                         }
                     } else {
                         $this->logger->error("Fetchdigest plugin ran.", array(
@@ -242,7 +265,7 @@ class CheckFixityCommand extends ContainerAwareCommand
                         $persist_fix_event_plugin_output
                     );
                     // Currently not used.
-                    $persist_fix_event_plugin_output_string = $persist_fix_event_plugin_output->fetch();
+                    // $persist_fix_event_plugin_output_string = $persist_fix_event_plugin_output->fetch();
                     $this->logger->info(
                         "Persist plugin ran.",
                         array(

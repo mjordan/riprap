@@ -48,12 +48,22 @@ class PluginFetchDigestFromShell extends ContainerAwareCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $file_path = $input->getOption('resource_id');
-        $external_program_command = $this->external_program . ' ' . $file_path;
-        $external_program_command = escapeshellcmd($external_program_command);
-        $command_output = exec($external_program_command, $external_program_command_output, $return);
+        $external_digest_program_command = $this->external_program . ' ' . $file_path;
+        $external_digest_program_command = escapeshellcmd($external_digest_program_command);
+        $external_digest_command_output = exec($external_digest_program_command, $external_digest_program_command_output, $return);
         if ($return == 0) {
-            list($digest, $path) = preg_split('/\s/', $external_program_command_output[0]);
-            $output->writeln(trim($digest));
+            list($digest, $path) = preg_split('/\s/', $external_digest_program_command_output[0]);
+
+            clearstatcache();
+            $stat = stat($file_path);
+            $mtime_iso8601 = date(\DateTime::ISO8601, $stat['mtime']);
+
+            $event_digest_value_and_timestamp_array = array(
+                'digest_value' => trim($digest),
+                'last_modified_timestamp' => $mtime_iso8601
+            );                
+            $event_digest_value_and_timestamp = json_encode($event_digest_value_and_timestamp_array);           
+            $output->writeln(trim($event_digest_value_and_timestamp));
         } else {
             $this->logger->warning("check_fixity cannot retrieve digest from repository.", array(
                 'resource_id' => $file_path,

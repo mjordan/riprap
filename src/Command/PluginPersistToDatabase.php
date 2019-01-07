@@ -66,8 +66,13 @@ class PluginPersistToDatabase extends ContainerAwareCommand
                 $input->getOption('digest_algorithm')
             );
             if (!is_null($event)) {
-                $output->write($event->getDigestValue());
-                // !!! #26: We also need to add $event->getTimestamp() to $output->write(), maybe as a JSON object? !!!
+                // !!! #26: Add $event->getTimestamp() to $output->write() in a JSON object? !!!
+                $event_digest_value_and_timestamp_array = array(
+                    'digest_value' => $event->getDigestValue(),
+                    'last_modified_timestamp' => $event->getTimestamp()
+                );    
+                $event_digest_value_and_timestamp = json_encode($event_digest_value_and_timestamp_array);
+                $output->write($event_digest_value_and_timestamp);
             }
         }
         // Returns a serialized representation of all fixity check events.

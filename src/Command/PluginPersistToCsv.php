@@ -77,22 +77,28 @@ class PluginPersistToCsv extends ContainerAwareCommand
             file_put_contents($this->fixity_peristence_csv, $header_row . "\n");
         }
 
+        // The operation writes out a JSON object containing the latest digest
+        // value for the resource and the last modified timestamp of the resource.
+        // This demo code does that, but makes a lot of assumptions about the file
+        // at $this->fixity_peristence_csv.
         if ($input->getOption('operation') == 'get_last_digest') {
-            // The operation must return the latest digest value for the resource. This sloppy
-            // demo code does that, but makes a lot of assumptions about the file at
-            // $this->fixity_peristence_csv.
             $rows = file($this->fixity_peristence_csv, FILE_IGNORE_NEW_LINES);
+            // Get all the rows that apply to the current resource ID.
             $event_records = array();
             foreach ($rows as $row) {
                 $fields = explode(',', $row);
-                $event_records[$fields[2]] = $fields[5];
-                // !!! #26: We also need to add $fields[3] to $output->write(), maybe as a JSON object? !!!
+                if ($fields[2] == $input->getOption('resource_id')) {
+                    $event_records[] = $fields;
+                }
             }
-            if (!array_key_exists($input->getOption('resource_id'), $event_records)) {
-                $output->write('');
-            } else {
-                $output->write($event_records[$input->getOption('resource_id')]);
-            }
+            // Get the most recent recore.
+            $last_record = array_pop($event_records);
+            $event_digest_value_and_timestamp_array = array(
+                'digest_value' => $fields[5],
+                'last_modified_timestamp' => $fields[3]
+            );
+            $event_digest_value_and_timestamp = json_encode($event_digest_value_and_timestamp_array);
+            $output->write($event_digest_value_and_timestamp);            
         }
 
         // Returns a serialized representation of all fixity check events.
