@@ -48,7 +48,7 @@ class PluginFetchDigestFromShell extends ContainerAwareCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $file_path = $input->getOption('resource_id');
-        var_dump("From plugin");
+        var_dump("From fetchdigest plugin");
         var_dump($file_path);        
         $external_digest_program_command = $this->external_program . ' ' . $file_path;
         $external_digest_program_command = escapeshellcmd($external_digest_program_command);

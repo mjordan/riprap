@@ -21,6 +21,7 @@ class FixityEventDetailManager
         } else {
             $this->serialize_delimiter = ';';
         }
+        var_dump("Hi from the event detail manager");
     }
 
     /**
@@ -35,7 +36,7 @@ class FixityEventDetailManager
      *    Associative array with 'event_detail' and 'event_outcome_detail_note'
      *    as keys whose values are an array of strings.
      */
-    public function add($key, $value)
+    public function add($key, $value = '')
     {
         if (!strlen($value)) {
             return $this->event_details;

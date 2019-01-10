@@ -34,6 +34,7 @@ class PluginPersistToCsv extends ContainerAwareCommand
         // Set log output path in config/packages/{environment}/monolog.yaml
         $this->logger = $logger;
         $this->event_detail = $event_detail;
+        var_dump("From persist plugin");
         var_dump($this->event_detail->getDetails());
 
         parent::__construct();

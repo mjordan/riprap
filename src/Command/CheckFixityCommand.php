@@ -117,11 +117,6 @@ class CheckFixityCommand extends ContainerAwareCommand
             // that digest with a new one.
             if (count($this->persistPlugins) > 0) {
                 foreach ($this->persistPlugins as $persist_plugin_name) {
-
-                    $this->event_detail = new FixityEventDetailManager($this->params);
-                    $this->event_detail->add('event_detail', 'wassup.');
-                    // var_dump($this->event_detail->getDetails());
-                    
                     $json_object_array = json_decode($resource_id, true);
                     $resource_id = $json_object_array['resource_id'];
                     $last_modified_timestamp = $json_object_array['last_modified_timestamp'];
@@ -202,11 +197,14 @@ class CheckFixityCommand extends ContainerAwareCommand
                         $current_digest_value = $current_digest_plugin_output['digest_value'];
                     } else {
                         $current_digest_plugin_output_ok = false;
-                    }                 
+                    }
 
-                    // Initialize $outcome to 'fail', change it to 'success' only if conditions are met.
-                    $outcome = 'fail';
                     if ($current_digest_plugin_output_ok) {
+                        // Initialize $outcome to 'fail', change it to 'success' only if conditions are met.
+                        $outcome = 'fail';
+                        print "Pre\n";
+                        $this->event_detail = new FixityEventDetailManager($this->params);
+                        print "Post\n";
 
                         // var_dump("reference_event_digest_value");
                         // var_dump($reference_event_digest_value);
@@ -246,7 +244,7 @@ class CheckFixityCommand extends ContainerAwareCommand
                             // }
                         }
                     } else {
-                        $this->logger->error("Fetchdigest plugin ran.", array(
+                        $this->logger->error("Fetchdigest plugin ran but could not fetch digest.", array(
                             'plugin_name' => $this->fetchDigestPlugin,
                             'return_code' => $get_current_digest_plugin_return_code,
                             'http_response_code' => $current_digest_plugin_return_value,
@@ -266,14 +264,17 @@ class CheckFixityCommand extends ContainerAwareCommand
                         '--outcome' => $outcome,
                         '--operation' => 'persist_fix_event',
                     ));
+
+                    // Aaarrrgggghhhh! $this->event_detail is getting squashed in the persist plugin.
+                    // var_dump($this->event_detail->getDetails());
+
                     $persist_fix_event_plugin_output = new BufferedOutput();
                     $persist_fix_event_plugin_return_code = $persist_fix_event_plugin_command->run(
                         $persist_fix_event_plugin_input,
                         $persist_fix_event_plugin_output,
                         $this->event_detail
                     );
-                    // Currently not used.
-                    // $persist_fix_event_plugin_output_string = $persist_fix_event_plugin_output->fetch();
+
                     $this->logger->info(
                         "Persist plugin ran.",
                         array(
