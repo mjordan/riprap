@@ -37,6 +37,7 @@ class CheckFixityCommand extends ContainerAwareCommand
         // Set log output path in config/packages/{environment}/monolog.yaml
         $this->logger = $logger;
 
+
         parent::__construct();
     }
 
@@ -52,6 +53,12 @@ class CheckFixityCommand extends ContainerAwareCommand
     {
         $stopwatch = new Stopwatch();
         $stopwatch->start('fixity_check');
+
+            $entityManager = $this->getContainer()->get('doctrine')->getEntityManager();
+            $this->entityManager = $entityManager;
+            $plugin_name = 'App\Plugin\TestPlugin';
+            $issue31_plugin = new $plugin_name($this->entityManager, $this->params, $this->logger);
+            $foo = $issue31_plugin->execute($stopwatch);
 
         // Execute plugins that get a list of resource IDs to check.
         $resource_ids = array();
