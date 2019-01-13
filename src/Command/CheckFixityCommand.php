@@ -7,8 +7,10 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\BufferedOutput;
 use Symfony\Component\Stopwatch\Stopwatch;
+use Symfony\Component\Yaml\Yaml;
 
 use Psr\Log\LoggerInterface;
 use Ramsey\Uuid\Uuid;
@@ -29,7 +31,7 @@ class CheckFixityCommand extends ContainerAwareCommand
         $this->params = $params;
         // $this->http_method = $this->params->get('app.fixity.fetchdigest.from.fedoraapi.method');
         $this->fixity_algorithm = $this->params->get('app.fixity_algorithm');
-        $this->fetchResourceListPlugins = $this->params->get('app.plugins.fetchresourcelist');
+        // $this->fetchResourceListPlugins = $this->params->get('app.plugins.fetchresourcelist');
         $this->fetchDigestPlugin = $this->params->get('app.plugins.fetchdigest');
         $this->persistPlugins = $this->params->get('app.plugins.persist');
         $this->postCheckPlugins = $this->params->get('app.plugins.postcheck');
@@ -46,7 +48,8 @@ class CheckFixityCommand extends ContainerAwareCommand
         $this
             ->setName('app:riprap:check_fixity')
             ->setDescription('Console tool for running batches of fixity check events against ' .
-                'a Fedora (or other) repository.');
+                'a Fedora (or other) repository.')  
+            ->addOption('settings', null, InputOption::VALUE_REQUIRED, 'Absolute path to YAML configuration settings file.');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -54,17 +57,28 @@ class CheckFixityCommand extends ContainerAwareCommand
         $stopwatch = new Stopwatch();
         $stopwatch->start('fixity_check');
 
+        $settings_path = $input->getOption('settings');
+        $this->settings = Yaml::parseFile($settings_path);
+        $this->fetchResourceListPlugins = $this->settings['plugins.fetchresourcelist'];
+
+            /*
             $entityManager = $this->getContainer()->get('doctrine')->getEntityManager();
             $this->entityManager = $entityManager;
             $plugin_name = 'App\Plugin\TestPlugin';
             $issue31_plugin = new $plugin_name($this->entityManager, $this->params, $this->logger);
             $foo = $issue31_plugin->execute($stopwatch);
+            */
 
         // Execute plugins that get a list of resource IDs to check.
         $resource_ids = array();
         $num_resource_ids = 0;
+        // $this->fetchResourceListPlugins = array('PluginFetchResourceListFromFileIssue26');
         if (count($this->fetchResourceListPlugins) > 0) {
             foreach ($this->fetchResourceListPlugins as $fetchresourcelist_plugin_name) {
+                $plugin_name = 'App\Plugin\\' . $fetchresourcelist_plugin_name;
+                $issue31_plugin = new $plugin_name($this->settings, $this->logger);
+                $resource_records = $issue31_plugin->execute();
+                /*
                 $fetchresourcelist_plugin_command = $this->getApplication()->find($fetchresourcelist_plugin_name);
                 // This class of plugin doesn't take any command-line options.
                 $fetchresourcelist_plugin_input = new ArrayInput(array());
@@ -82,21 +96,23 @@ class CheckFixityCommand extends ContainerAwareCommand
                         'return_code' => $fetchresourcelist_plugin_return_code
                     )
                 );
+                */
             }
 
             // Split $ids_from_plugin on newline to get an array of resource URIs.
             // Assumes that all fetchresourcelistPlugins will return a string,
             // which is probably the case since Symfony console commands output
             // strings, not arrays.
-            $ids_from_plugin = preg_split("/\r\n|\n|\r/", trim($ids_from_plugin));
+            // $ids_from_plugin = preg_split("/\r\n|\n|\r/", trim($ids_from_plugin));
+
             // Combine the output of all fetchPlugins.
-            $resource_ids = array_merge($resource_ids, $ids_from_plugin);
-            if (count($resource_ids) > 0 && strlen($resource_ids[0])) {
-                $num_resource_ids = count($resource_ids);
-            }
-            else {
-                $num_resource_ids = 0;
-            }
+            // $resource_records = array_merge($resource_ids, $ids_from_plugin);
+            // if (count($resource_records) > 0 && strlen($resource_records->)) {
+                // $num_resource_ids = count($resource_ids);
+            // }
+            // else {
+                // $num_resource_ids = 0;
+            // }
         }
 
         // Workaround for making tests pass.
@@ -109,9 +125,9 @@ class CheckFixityCommand extends ContainerAwareCommand
         // Loop through the list of resource IDs and perform a fixity check event on each of them.
         $num_successful_events = 0;
         $num_failed_events = 0;
-        foreach ($resource_ids as $resource_id) {
+        foreach ($resource_records as $resource_record) {
             // If the resource ID is empty, move on to the next one.
-            if (!strlen($resource_id)) {
+            if (!strlen($resource_record->resource_id)) {
                 continue;
             }
             print "\n";
@@ -124,16 +140,16 @@ class CheckFixityCommand extends ContainerAwareCommand
             // that digest with a new one.
             if (count($this->persistPlugins) > 0) {
                 foreach ($this->persistPlugins as $persist_plugin_name) {
-                    $json_object_array = json_decode($resource_id, true);
-                    $resource_id = $json_object_array['resource_id'];
-                    $last_modified_timestamp = $json_object_array['last_modified_timestamp'];
+                    // $json_object_array = json_decode($resource_id, true);
+                    // $resource_id = $json_object_array['resource_id'];
+                    // $last_modified_timestamp = $json_object_array['last_modified_timestamp'];               
 
                     // 'get_last_digest' operation.
                     $reference_event_plugin_command = $this->getApplication()->find($persist_plugin_name);
                     // Even though some of these options aren't used in the 'get_last_digest'
                     // query, we need to pass them into the plugin.
                     $reference_event_plugin_input = new ArrayInput(array(
-                        '--resource_id' => $resource_id,
+                        '--resource_id' => $resource_record->resource_id,
                         '--timestamp' => $now_iso8601,
                         '--digest_algorithm' => $this->fixity_algorithm,
                         '--event_uuid' => '',
@@ -177,7 +193,7 @@ class CheckFixityCommand extends ContainerAwareCommand
                     // only allow one fetchdigest plugin per resource_id.
                     $current_digest_plugin_command = $this->getApplication()->find($this->fetchDigestPlugin);
                     $current_digest_plugin_input = new ArrayInput(array(
-                        '--resource_id' => $resource_id
+                        '--resource_id' => $resource_record->resource_id
                     ));
                     $current_digest_plugin_output = new BufferedOutput();
                     $current_digest_plugin_return_code = $current_digest_plugin_command->run(
@@ -231,7 +247,8 @@ class CheckFixityCommand extends ContainerAwareCommand
                             $num_successful_events++;
                         // The resource's current last modified date is later than the timestamp in the
                         // reference fixity check event for this resource.
-                        } elseif ($current_digest_plugin_output['last_modified_timestamp'] > $reference_event_timestamp) {
+                        // } elseif ($current_digest_plugin_output['last_modified_timestamp'] > $reference_event_timestamp) {
+                        } elseif ($resource_record->last_modified_timestamp > $reference_event_timestamp) {
                             print "From within true loop for $resource_id:\n";
                             print "Current digest plugin last modified timestamp: " . $current_digest_plugin_output['last_modified_timestamp'] . "\n";
                             print "Reference event timestamp:" . $reference_event_timestamp . "\n";
@@ -263,7 +280,7 @@ class CheckFixityCommand extends ContainerAwareCommand
                     // 'persist_fix_event' operation.
                     $persist_fix_event_plugin_command = $this->getApplication()->find($persist_plugin_name);
                     $persist_fix_event_plugin_input = new ArrayInput(array(
-                        '--resource_id' => $resource_id,
+                        '--resource_id' => $resource_record->resource_id,
                         '--timestamp' => $now_iso8601,
                         '--digest_algorithm' => $this->fixity_algorithm,
                         '--event_uuid' => $event_uuid,
@@ -297,7 +314,7 @@ class CheckFixityCommand extends ContainerAwareCommand
                 foreach ($this->postCheckPlugins as $postcheck_plugin_name) {
                     $postcheck_plugin_command = $this->getApplication()->find($postcheck_plugin_name);
                     $postcheck_plugin_input = new ArrayInput(array(
-                        '--resource_id' => $resource_id,
+                        '--resource_id' => $resource_record->resource_id,
                         '--timestamp' => $now_iso8601,
                         '--digest_algorithm' => $this->fixity_algorithm,
                         '--event_uuid' => $event_uuid,

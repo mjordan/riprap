@@ -1,0 +1,2 @@
+plugins.fetchresourcelist: ['PluginFetchResourceListFromFileIssue26']
+resource_list_path: ['/home/mark/Documents/hacking/riprap/filelist_issue26test.txt']
