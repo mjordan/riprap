@@ -7,9 +7,7 @@ use App\Entity\FixityCheckEvent;
 class PluginPersistToCsv extends AbstractPersistEventPlugin
 {
     // Generate an object containing the latest digest value for the resource
-    // and the last modified timestamp of the resource. This demo code does that,
-    // but makes a lot of assumptions about the file
-    // at $this->settings['output_csv_path'].
+    // and the last modified timestamp of the resource.
     public function getReferenceEvent($resource_id) {
         if (!file_exists($this->settings['output_csv_path'])) {
             return false;

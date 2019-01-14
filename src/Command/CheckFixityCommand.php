@@ -32,9 +32,9 @@ class CheckFixityCommand extends ContainerAwareCommand
         // $this->http_method = $this->params->get('app.fixity.fetchdigest.from.fedoraapi.method');
         // $this->fixity_algorithm = $this->params->get('app.fixity_algorithm');
         // $this->fetchResourceListPlugins = $this->params->get('app.plugins.fetchresourcelist');
-        $this->fetchDigestPlugin = $this->params->get('app.plugins.fetchdigest');
+        // $this->fetchDigestPlugin = $this->params->get('app.plugins.fetchdigest');
         // $this->persistPlugins = $this->params->get('app.plugins.persist');
-        $this->postCheckPlugins = $this->params->get('app.plugins.postcheck');
+        // $this->postCheckPlugins = $this->params->get('app.plugins.postcheck');
 
         // Set log output path in config/packages/{environment}/monolog.yaml
         $this->logger = $logger;
@@ -67,47 +67,20 @@ class CheckFixityCommand extends ContainerAwareCommand
         // Execute plugins that get a list of resource IDs to check.
         $resource_ids = array();
         $num_resource_ids = 0;
-        // $this->fetchResourceListPlugins = array('PluginFetchResourceListFromFileIssue26');
         if (count($this->fetchResourceListPlugins) > 0) {
             foreach ($this->fetchResourceListPlugins as $fetchresourcelist_plugin_name) {
                 $plugin_name = 'App\Plugin\\' . $fetchresourcelist_plugin_name;
                 $fetchresourcelist_plugin = new $plugin_name($this->settings, $this->logger);
                 $resource_records = $fetchresourcelist_plugin->execute();
-                /*
-                $fetchresourcelist_plugin_command = $this->getApplication()->find($fetchresourcelist_plugin_name);
-                // This class of plugin doesn't take any command-line options.
-                $fetchresourcelist_plugin_input = new ArrayInput(array());
-                $fetchresourcelist_plugin_output = new BufferedOutput();
-                // @todo: Check $returnCode and log, continue if non-0.
-                $fetchresourcelist_plugin_return_code = $fetchresourcelist_plugin_command->run(
-                    $fetchresourcelist_plugin_input,
-                    $fetchresourcelist_plugin_output
-                );
-                $ids_from_plugin = $fetchresourcelist_plugin_output->fetch();
-                $this->logger->info(
-                    "Fetchresourcelist plugin ran.",
-                    array(
-                        'plugin_name' => $fetchresourcelist_plugin_name,
-                        'return_code' => $fetchresourcelist_plugin_return_code
-                    )
-                );
-                */
             }
-
-            // Split $ids_from_plugin on newline to get an array of resource URIs.
-            // Assumes that all fetchresourcelistPlugins will return a string,
-            // which is probably the case since Symfony console commands output
-            // strings, not arrays.
-            // $ids_from_plugin = preg_split("/\r\n|\n|\r/", trim($ids_from_plugin));
-
-            // Combine the output of all fetchPlugins.
-            // $resource_records = array_merge($resource_ids, $ids_from_plugin);
-            // if (count($resource_records) > 0 && strlen($resource_records->)) {
-                // $num_resource_ids = count($resource_ids);
-            // }
-            // else {
-                // $num_resource_ids = 0;
-            // }
+        }
+        else {
+            $this->logger->warning(
+                "Fetchresourcelist plugin ran but returned no resources.",
+                array(
+                    'plugin_name' => $fetchresourcelist_plugin_name,
+                )
+            );            
         }
 
         // Workaround for making tests pass.
@@ -125,92 +98,43 @@ class CheckFixityCommand extends ContainerAwareCommand
             if (!strlen($resource_record->resource_id)) {
                 continue;
             }
-            print "\n";
+
             $uuid4 = Uuid::uuid4();
             $event_uuid = $uuid4->toString();
             $now_iso8601 = date(\DateTime::ISO8601);
 
-            // Execute plugins that persist event data. We execute them twice and pass in an 'operation' option,
-            // once to get the last digest for the resource and again to persist the event resulting from comparing
-            // that digest with a new one.
+            // Execute plugins that persist event data. We execute them twice, once to get
+            // the "reference event" for the resource and again to persist the event resulting
+            // from comparing its digest with the current one.
             if (count($this->persistPlugins) > 0) {
                 $this->entityManager = $this->getContainer()->get('doctrine')->getManager();
                 foreach ($this->persistPlugins as $persist_plugin_name) {
-                    // $json_object_array = json_decode($resource_id, true);
-                    // $resource_id = $json_object_array['resource_id'];
-                    // $last_modified_timestamp = $json_object_array['last_modified_timestamp'];
                     $plugin_name = 'App\Plugin\\' . $persist_plugin_name;
                     $persist_plugin = new $plugin_name($this->settings, $this->logger, $this->entityManager);
                     $reference_event = $persist_plugin->getReferenceEvent($resource_record->resource_id);
-                    // var_dump($reference_event);         
 
-                    // 'get_last_digest' operation.
-                    // $reference_event_plugin_command = $this->getApplication()->find($persist_plugin_name);
-                    // Even though some of these options aren't used in the 'get_last_digest'
-                    // query, we need to pass them into the plugin.
-                    // $reference_event_plugin_input = new ArrayInput(array(
-                       // '--resource_id' => $resource_record->resource_id,
-                       // '--timestamp' => $now_iso8601,
-                       // '--digest_algorithm' => $this->fixity_algorithm,
-                       // '--event_uuid' => '',
-                       // '--digest_value' => '',
-                       // '--outcome' => '',
-                       // '--operation' => 'get_last_digest',
-                    //));
-                    // $reference_event is the previous fixity check event for this resource.
-                    //$reference_event_plugin_output = new BufferedOutput();
-                    //$reference_event_plugin_return_code = $reference_event_plugin_command->run(
-                       // $reference_event_plugin_input,
-                       // $reference_event_plugin_output
-                    //);
-                    // $reference_event = json_decode($reference_event_plugin_output->fetch(), true);
-                    // var_dump("From command");
-                    // var_dump($resource_id);
-                    // var_dump($reference_event);
-                    // $reference_event contains to members, 1) the digest recorded in the last fixity
-                    // event check for this resource, which we compare this value with the digest retrieved
-                    // during the current fixity check, and 2) the timestamp from the last event, so we can
-                    // compare the current last modified timestamp of the resource to it. If the current last-
-                    // modified timestamp of the resource is later than the timestamp in the reference event,
-                    // we don't compare digests since the digest to be different (afer all, the resource
-                    // was modified); otherwise, we compare digests since the resource has not been modified
-                    // since the reference (i.e., previous) fixity check event.
+                    // The $reference_event object contains two properties, 1) 'digest_value', the digest
+                    // recorded in the last fixity event check for this resource, which we compare with
+                    // the value with the digest retrieved during the current fixity check, and 2) 'timestamp',
+                    // the timestamp from the last event, so we can compare the current last modified
+                    // timestamp of the resource to it. If the current last-modified timestamp of the
+                    // resource is later than the timestamp in the reference event, we don't compare
+                    // digests since the digest to be different (because the resource was modified);
+                    // otherwise, we compare digests since the resource has not been modified since the
+                    // reference (i.e., previous) fixity check event.
 
                     // @todo: If we allow multiple persist plugins, the last one called determines
                     // the value of $last_digest_for_resource. Is that OK? Is there a real use case
                     // for persisting to multiple places? If so, can we persist to additional places
                     // using a postcheck plugin instead of multiple persist plugins?
 
-                    // $reference_event_digest_value = $reference_event['digest_value'];
-                    // $reference_event_timestamp = $reference_event['timestamp'];
-
-                    // $this->logger->info("Persist plugin ran.", array(
-                        // 'plugin_name' => $persist_plugin_name,
-                        // 'return_code' => $reference_event_plugin_return_code
-                    // ));
-
-                    // Get the resource's digest and compare it to the last known value. Currently we
-                    // only allow one fetchdigest plugin per resource_id.
-                    /*
-                    $current_digest_plugin_command = $this->getApplication()->find($this->fetchDigestPlugin);
-                    $current_digest_plugin_input = new ArrayInput(array(
-                        '--resource_id' => $resource_record->resource_id
-                    ));
-                    $current_digest_plugin_output = new BufferedOutput();
-                    $current_digest_plugin_return_code = $current_digest_plugin_command->run(
-                        $current_digest_plugin_input,
-                        $current_digest_plugin_output
-                    );
-                    $current_digest_plugin_return_value = trim($current_digest_plugin_output->fetch());
-
                     // @todo: We shold only be logging $current_digest_plugin_return_value if it is not a digest value.
-                    $this->logger->info("Fetchdigest plugin ran.", array(
-                        'plugin_name' => $this->fetchDigestPlugin,
-                        'return_code' => $current_digest_plugin_return_code,
+                    // $this->logger->info("Fetchdigest plugin ran.", array(
+                        // 'plugin_name' => $this->fetchDigestPlugin,
+                        // 'return_code' => $current_digest_plugin_return_code,
                         // Assumes that the plugin use http... but our filesystemexmaple one doesn't.
-                        'http_response_code' => $current_digest_plugin_return_value,
-                    ));
-                    */
+                        // 'http_response_code' => $current_digest_plugin_return_value,
+                    // ));
 
                     $fetch_digest_plugin_name = 'App\Plugin\\' . $this->fetchDigestPlugin;
                     $fetch_digest_plugin = new $fetch_digest_plugin_name($this->settings, $this->logger);
@@ -218,11 +142,11 @@ class CheckFixityCommand extends ContainerAwareCommand
 
                     // If there was a problem, the fetchdigest plugin will return an HTTP response code
                     // or an executable's exit code (not a digest object).
-                    if (is_numeric($fetch_digest_plugin_output)) {
-                        $fetch_digest_plugin_output_ok = false;
-                    } else {
+                    if (strlen($fetch_digest_plugin_output) >= 3) {
                         $fetch_digest_plugin_output_ok = true;
-                        $current_digest_value = $fetch_digest_plugin_output->digest_value;                        
+                        $current_digest_value = $fetch_digest_plugin_output;
+                    } else {
+                        $fetch_digest_plugin_output_ok = false;                     
                     }
 
                     if ($fetch_digest_plugin_output_ok) {
@@ -230,80 +154,44 @@ class CheckFixityCommand extends ContainerAwareCommand
                         $outcome = 'fail';
                         $this->event_detail = new FixityEventDetailManager($this->params);
 
-                        // Riprap has no entries in its db for this resource; this is OK, since this will
-                        // be the case for new resources detected by the fetchresourcelist plugins.
                         if (!$reference_event || strlen($reference_event->digest_value) == 0) {
+                            // Riprap has no entries in its db for this resource; this is OK, since this will
+                            // be the case for new resources detected by the fetchresourcelist plugins.                            
                             $outcome = 'success';
                             $num_successful_events++;
-                            // if ($this->event_detail) {
-                                $this->event_detail->add('event_detail', 'Initial fixity check.');
-                            // }
+                            $this->event_detail->add('event_detail', 'Initial fixity check.');
                         } elseif ($reference_event->digest_value == $current_digest_value) {
                             $outcome = 'success';
                             $num_successful_events++;
-                        // The resource's current last modified date is later than the timestamp in the
-                        // reference fixity check event for this resource.
-                        // } elseif ($current_digest_plugin_output['last_modified_timestamp'] > $reference_event_timestamp) {
                         } elseif ($resource_record->last_modified_timestamp > $reference_event->timestamp) {
-                            print "From within true loop for $resource_id:\n";
-                            print "Current digest plugin last modified timestamp: " . $current_digest_plugin_output['last_modified_timestamp'] . "\n";
-                            print "Reference event timestamp:" . $reference_event->timestamp . "\n";
+                            // The resource's current last modified date is later than the timestamp in the
+                            // reference fixity check event for this resource.
+                            print "debug: From within true loop for $resource_id:\n";
+                            print "debug: Current digest plugin last modified timestamp: " . $current_digest_plugin_output['last_modified_timestamp'] . "\n";
+                            print "debug: Reference event timestamp:" . $reference_event->timestamp . "\n";
                             $outcome = 'success';
                             $num_successful_events++;
-                            // if ($this->event_detail) {
-                                $this->event_detail->add(
-                                    'event_detail', 'Resource modified since last fixity check.'
-                                );
-                            // }
+                            $this->event_detail->add(
+                                'event_detail', 'Resource modified since last fixity check.'
+                            );
                         } else {
                             $num_failed_events++;
-                            // if ($this->event_detail) {
-                                $this->event_detail->add(
-                                    'event_outcome_detail_note', 'Insufficient conditions for fixity check event.'
-                                );
-                            // }
+                            $this->event_detail->add(
+                                'event_outcome_detail_note', 'Insufficient conditions for fixity check event.'
+                            );
                         }
                     } else {
                         $this->logger->error("Fetchdigest plugin ran but could not fetch digest.", array(
                             'plugin_name' => $this->fetchDigestPlugin,
-                            'return_code' => $get_current_digest_plugin_return_code,
-                            'http_response_code' => $current_digest_plugin_return_value,
+                            'return_code' => $fetch_digest_plugin_output,
+                            // 'http_response_code' => $current_digest_plugin_return_value,
                         ));
                         $num_failed_events++;
                         continue;
                     }
 
-                    /*
-                    // 'persist_fix_event' operation.
-                    $persist_fix_event_plugin_command = $this->getApplication()->find($persist_plugin_name);
-                    $persist_fix_event_plugin_input = new ArrayInput(array(
-                        '--resource_id' => $resource_record->resource_id,
-                        '--timestamp' => $now_iso8601,
-                        '--digest_algorithm' => $this->fixity_algorithm,
-                        '--event_uuid' => $event_uuid,
-                        '--digest_value' => $current_digest_value,
-                        '--outcome' => $outcome,
-                        '--operation' => 'persist_fix_event',
-                    ));
-
-                    // Aaarrrgggghhhh! $this->event_detail is getting squashed in the persist plugin.
-                    // var_dump($this->event_detail->getDetails());
-
-                    $persist_fix_event_plugin_output = new BufferedOutput();
-                    $persist_fix_event_plugin_return_code = $persist_fix_event_plugin_command->run(
-                        $persist_fix_event_plugin_input,
-                        $persist_fix_event_plugin_output,
-                        $this->event_detail
-                    );
-
-                    $this->logger->info(
-                        "Persist plugin ran.",
-                        array(
-                            'plugin_name' => $persist_plugin_name,
-                            'return_code' => $persist_fix_event_plugin_return_code
-                        )
-                    );
-                    */
+                    // @todo: implode arrays of event detail and event outcome detail notes here
+                    // and set default value to '' if there are none. The delete the FixityEventDetailManager service.
 
                     $event = new FixityCheckEvent();
                     $event->setEventUuid($event_uuid);
@@ -323,37 +211,11 @@ class CheckFixityCommand extends ContainerAwareCommand
             }
 
             // Execute post-check plugins that react to a fixity check event (email admin, etc.).
-            if (count($this->postCheckPlugins) > 0) {
+            if (isset($event) && count($this->postCheckPlugins) > 0) {
                 foreach ($this->postCheckPlugins as $postcheck_plugin_name) {
                     $post_check_plugin_name = 'App\Plugin\\' . $postcheck_plugin_name;
                     $post_check_plugin = new $post_check_plugin_name($this->settings, $this->logger, $this->entityManager);
                     $post_check_plugin->execute($event);
-
-                    /*
-                    $postcheck_plugin_command = $this->getApplication()->find($postcheck_plugin_name);
-                    $postcheck_plugin_input = new ArrayInput(array(
-                        '--resource_id' => $resource_record->resource_id,
-                        '--timestamp' => $now_iso8601,
-                        '--digest_algorithm' => $this->fixity_algorithm,
-                        '--event_uuid' => $event_uuid,
-                        '--digest_value' => $current_digest_plugin_return_value,
-                        '--outcome' => $outcome,
-                    ));
-                    $postcheck_plugin_output = new BufferedOutput();
-                    $postcheck_plugin_return_code = $postcheck_plugin_command->run(
-                        $postcheck_plugin_input,
-                        $postcheck_plugin_output
-                    );
-                    // Currently not used.
-                    $postcheck_plugin_output_string = $postcheck_plugin_output->fetch();
-                    $this->logger->info(
-                        "Post check plugin ran.",
-                        array(
-                            'plugin_name' => $postcheck_plugin_name,
-                            'return_code' => $postcheck_plugin_return_code
-                        )
-                    );
-                    */
                 }
             }
 

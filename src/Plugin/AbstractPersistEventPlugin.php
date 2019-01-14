@@ -32,8 +32,6 @@ abstract class AbstractPersistEventPlugin
     /**
      * Gets the reference event from the database.
      *
-     * All plugins must implement this method.
-     *
      * @param string $resource_id
      *    The resource's ID.
      *
@@ -48,8 +46,6 @@ abstract class AbstractPersistEventPlugin
     /**
      * Persists the fixity event object.
      *
-     * All plugins must implement this method.
-     *
      * @param FixityCheckEvent $event
      *    The Event object.
      *
@@ -58,10 +54,8 @@ abstract class AbstractPersistEventPlugin
      */
     abstract public function persistEvent($event);
 
-/**
+    /**
      * Retrieves events from the database.
-     *
-     * All plugins must implement this method.
      *
      * @return array
      *    A list of FixityCheckEvents.

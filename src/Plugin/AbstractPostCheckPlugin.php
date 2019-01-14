@@ -36,9 +36,6 @@ abstract class AbstractPostCheckPlugin
      *
      * @param FixityCheckEvent $event
      *    The Event object.
-     *
-     * @return FixityCheckEvent
-     *    The persisted Event object.
      */
     abstract public function execute($event);
 }

@@ -29,8 +29,6 @@ abstract class AbstractFetchResourceListPlugin
     /**
      * Gets a list of resource records.
      *
-     * All plugins must implement this method.
-     *
      * @return An array of resource records, each of which is
      *   simple object with two properties, 'resource_id'
      *   and 'last_modified_timestamp'.

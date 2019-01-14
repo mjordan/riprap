@@ -8,7 +8,7 @@
 namespace App\Plugin;
 
 /**
- * Abstract class for Riprap plugins.
+ * Abstract class for Riprap fetchdigest plugins.
  */
 abstract class AbstractFetchDigestPlugin
 {
@@ -29,13 +29,11 @@ abstract class AbstractFetchDigestPlugin
     /**
      * Gets the resource's digest from some external source.
      *
-     * All plugins must implement this method.
+     * @param string $resource_id
+     *   The resource's ID.
      *
-     * @param FixityCheckEvent $event
-     *   The fixity check event object.
-     *
-     * @return FixityCheckEvent $event
-     *   The modified fixity check event object.
+     * @return string
+     *   The digest value.
      */
     abstract public function execute($resource_id);
 }
