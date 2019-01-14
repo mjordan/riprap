@@ -29,9 +29,11 @@ abstract class AbstractFetchResourceListPlugin
     /**
      * Gets a list of resource records.
      *
-     * @return An array of resource records, each of which is
+     * @return array|bool
+     *   An array of resource records, each of which is
      *   simple object with two properties, 'resource_id'
-     *   and 'last_modified_timestamp'.
+     *   and 'last_modified_timestamp'. Could be an empty
+     *   array. Return false if there was an error.
      */
     abstract public function execute();
 }

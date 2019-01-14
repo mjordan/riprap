@@ -8,7 +8,7 @@ class PluginPersistToCsv extends AbstractPersistEventPlugin
 {
     public function getReferenceEvent($resource_id) {
         if (!file_exists($this->settings['output_csv_path'])) {
-            return false;
+            return null;
         }
 
         $rows = file($this->settings['output_csv_path'], FILE_IGNORE_NEW_LINES);
@@ -20,6 +20,11 @@ class PluginPersistToCsv extends AbstractPersistEventPlugin
                 $event_records[] = $fields;
             }
         }
+
+        if (count($event_records) == 0) {
+            return null;
+        }
+
         // Get the most recent record.
         $last_record = end($event_records);
 
@@ -59,7 +64,19 @@ class PluginPersistToCsv extends AbstractPersistEventPlugin
             $event->getEventOutcomeDetailNote()
         );
         $record = implode(',', $record);
-        file_put_contents($this->settings['output_csv_path'], $record . "\n", FILE_APPEND);        
+        if (@file_put_contents($this->settings['output_csv_path'], $record . "\n", FILE_APPEND)) {
+            return true;
+        } else {
+            $this->logger->error(
+                "Persist plugin ran but encountered an error.",
+                array(
+                    'plugin_name' => 'PluginPersistToCsv',
+                    'resource_id' => $event->getResourceId(),
+                    'error' => $this->settings['output_csv_path'] . " could not be written to."
+                )
+            );            
+            return false;
+        }
     }
 
     public function getEvents()

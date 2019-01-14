@@ -37,9 +37,9 @@ abstract class AbstractPersistEventPlugin
      *
      * @return object|bool
      *    The reference Event object, which has the two properties
-     *    'digest_value' and 'timestamp'. Returns false if there
+     *    'digest_value' and 'timestamp'. Returns null if there
      *    is no reference event (i.e., it is the first time Riprap
-     *    knows about the resource.
+     *    knows about the resource) or there false if there is an error.
      */
     abstract public function getReferenceEvent($resource_id);
 
@@ -49,8 +49,8 @@ abstract class AbstractPersistEventPlugin
      * @param FixityCheckEvent $event
      *    The Event object.
      *
-     * @return FixityCheckEvent
-     *    The persisted Event object.
+     * @return bool
+     *    True if the event was persisted or false if there is an error.
      */
     abstract public function persistEvent($event);
 
@@ -58,7 +58,8 @@ abstract class AbstractPersistEventPlugin
      * Retrieves events from the database.
      *
      * @return array
-     *    A list of FixityCheckEvents.
+     *    A list of FixityCheckEvents (could be empty) or
+     *    false if there is an error.
      */
     abstract public function getEvents();
 }
