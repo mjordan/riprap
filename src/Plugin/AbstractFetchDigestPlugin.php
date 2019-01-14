@@ -32,8 +32,8 @@ abstract class AbstractFetchDigestPlugin
      * @param string $resource_id
      *   The resource's ID.
      *
-     * @return string
-     *   The digest value.
+     * @return string|bool
+     *   The digest value, false on error.
      */
     abstract public function execute($resource_id);
 }
