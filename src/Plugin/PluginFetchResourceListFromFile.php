@@ -1,11 +1,9 @@
 <?php
-// src/Plugin/PluginFetchResourceListFromFileIssue26.php
+// src/Plugin/PluginFetchResourceListFromFile.php
 
 namespace App\Plugin;
 
-use Psr\Log\LoggerInterface;
-
-class PluginFetchResourceListFromFileIssue26 extends AbstractFetchResourceListPlugin
+class PluginFetchResourceListFromFile extends AbstractFetchResourceListPlugin
 {
     public function execute()
     {
@@ -26,7 +24,7 @@ class PluginFetchResourceListFromFileIssue26 extends AbstractFetchResourceListPl
 
         // $this->logger is null while testing.
         if ($this->logger) {
-            $this->logger->info("PluginPersistToDatabase executed");
+            $this->logger->info("PluginFetchResourceListFromFile executed");
         }
 
         return $output_resource_records;

@@ -18,11 +18,11 @@ parameters:
     app.plugins.fetchdigest: 'app:riprap:plugin:fetchdigest:from:shell'
     app.fixity_algorithm: 'SHA-1'
     app.plugins.fetchdigrest.from.shell.command: '/usr/bin/sha1sum'
-    app.plugins.persist: ['app:riprap:plugin:persist:to:csv']
-    app.plugins.persist.to.csv.output_path: '%kernel.project_dir%/var/issue26_events.csv'
+    # app.plugins.persist: ['app:riprap:plugin:persist:to:csv']
+    # app.plugins.persist.to.csv.output_path: '%kernel.project_dir%/var/issue26_events.csv'
 
     # To not register any postcheck plugins, use app.plugins.postcheck []
-    app.plugins.postcheck: ['app:riprap:plugin:postcheck:mailfailures']
+    app.plugins.postcheck: []
     app.plugins.postcheck.mailfailures.from: 'from@example.com'
     app.plugins.postcheck.mailfailures.to: 'to@example.com'
 

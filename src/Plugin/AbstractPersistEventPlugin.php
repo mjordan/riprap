@@ -15,18 +15,18 @@ abstract class AbstractPersistEventPlugin
     /**
      * Constructor.
      *
-     * @param object $entityManager
-     *    The Doctrine Entity Manager from the Console command.
      * @param array $settings
      *    The configuration data from the settings file.
      * @param object $logger
      *    The Monolog logger from the main Console command.
+     * @param object $entityManager
+     *    The Doctrine Entity Manager from the Console command.     
      */
-    public function __construct($entityManager, $settings, $logger)
+    public function __construct($settings, $logger, $entityManager)
     {
-        $this->entityManager = $entityManager;
         $this->settings = $settings;
         $this->logger = $logger;
+        $this->entityManager = $entityManager;        
     }
 
     /**
@@ -34,13 +34,16 @@ abstract class AbstractPersistEventPlugin
      *
      * All plugins must implement this method.
      *
-     * @param FixityCheckEvent $event
-     *    The Event object.
+     * @param string $resource_id
+     *    The resource's ID.
      *
-     * @return FixityCheckEvent
-     *    The reference Event object.
+     * @return object|bool
+     *    The reference Event object, which has the two properties
+     *    'digest_value' and 'timestamp'. Returns false if there
+     *    is no reference event (i.e., it is the first time Riprap
+     *    knows about the resource.
      */
-    abstract public function getReferenceEvent($event);
+    abstract public function getReferenceEvent($resource_id);
 
     /**
      * Persists the fixity event object.
@@ -53,5 +56,15 @@ abstract class AbstractPersistEventPlugin
      * @return FixityCheckEvent
      *    The persisted Event object.
      */
-    abstract public function execute($event);
+    abstract public function persistEvent($event);
+
+/**
+     * Retrieves events from the database.
+     *
+     * All plugins must implement this method.
+     *
+     * @return array
+     *    A list of FixityCheckEvents.
+     */
+    abstract public function getEvents();
 }

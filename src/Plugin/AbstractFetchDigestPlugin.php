@@ -37,5 +37,5 @@ abstract class AbstractFetchDigestPlugin
      * @return FixityCheckEvent $event
      *   The modified fixity check event object.
      */
-    abstract public function execute($event);
+    abstract public function execute($resource_id);
 }

@@ -1,0 +1,21 @@
+####################
+# General settings #
+####################
+
+fixity_algorithm: SHA-1
+
+###########
+# Plugins #
+###########
+
+plugins.fetchresourcelist: ['PluginFetchResourceListFromFile']
+resource_list_path: ['/home/mark/Documents/hacking/riprap/filelist_issue26test.txt']
+
+plugins.fetchdigest: PluginFetchDigestFromShell
+digest_command: '/usr/bin/sha1sum'
+
+plugins.persist: ['PluginPersistToCsv']
+# Relative to the Riprap application directory.
+output_csv_path: 'var/issue26_events.csv'
+
+plugins.postcheck: ['PluginPostCheckSayHello']
