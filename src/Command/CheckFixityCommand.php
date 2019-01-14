@@ -5,10 +5,7 @@ namespace App\Command;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\BufferedOutput;
 use Symfony\Component\Stopwatch\Stopwatch;
 use Symfony\Component\Yaml\Yaml;
 
@@ -17,25 +14,10 @@ use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\Exception\UnsatisfiedDependencyException;
 
 use App\Entity\FixityCheckEvent;
-use App\Service\FixityEventDetailManager;
 
 class CheckFixityCommand extends ContainerAwareCommand
 {
-    private $params;
-
-    public function __construct(
-        ParameterBagInterface $params = null,
-        LoggerInterface $logger = null
-    ) {
-        // Set in the parameters section of config/services.yaml.
-        $this->params = $params;
-        // $this->http_method = $this->params->get('app.fixity.fetchdigest.from.fedoraapi.method');
-        // $this->fixity_algorithm = $this->params->get('app.fixity_algorithm');
-        // $this->fetchResourceListPlugins = $this->params->get('app.plugins.fetchresourcelist');
-        // $this->fetchDigestPlugin = $this->params->get('app.plugins.fetchdigest');
-        // $this->persistPlugins = $this->params->get('app.plugins.persist');
-        // $this->postCheckPlugins = $this->params->get('app.plugins.postcheck');
-
+    public function __construct(LoggerInterface $logger = null) {
         // Set log output path in config/packages/{environment}/monolog.yaml
         $this->logger = $logger;
 
@@ -63,6 +45,11 @@ class CheckFixityCommand extends ContainerAwareCommand
         $this->fetchDigestPlugin = $this->settings['plugins.fetchdigest'];
         $this->persistPlugins = $this->settings['plugins.persist'];
         $this->postCheckPlugins = $this->settings['plugins.postcheck'];
+        if (array_key_exists('note_delimiter', $this->settings)) {
+            $this->note_delimiter = $this->settings['note_delimiter'];
+        } else {
+            $this->note_delimiter = '|';
+        }
 
         // Execute plugins that get a list of resource IDs to check.
         $resource_ids = array();
@@ -152,14 +139,15 @@ class CheckFixityCommand extends ContainerAwareCommand
                     if ($fetch_digest_plugin_output_ok) {
                         // Initialize $outcome to 'fail', change it to 'success' only if conditions are met.
                         $outcome = 'fail';
-                        $this->event_detail = new FixityEventDetailManager($this->params);
+                        $event_detail = array();
+                        $event_outcome_detail_note = array();
 
                         if (!$reference_event || strlen($reference_event->digest_value) == 0) {
                             // Riprap has no entries in its db for this resource; this is OK, since this will
                             // be the case for new resources detected by the fetchresourcelist plugins.                            
                             $outcome = 'success';
                             $num_successful_events++;
-                            $this->event_detail->add('event_detail', 'Initial fixity check.');
+                            $event_detail[] = 'Initial fixity check.';
                         } elseif ($reference_event->digest_value == $current_digest_value) {
                             $outcome = 'success';
                             $num_successful_events++;
@@ -171,14 +159,10 @@ class CheckFixityCommand extends ContainerAwareCommand
                             print "debug: Reference event timestamp:" . $reference_event->timestamp . "\n";
                             $outcome = 'success';
                             $num_successful_events++;
-                            $this->event_detail->add(
-                                'event_detail', 'Resource modified since last fixity check.'
-                            );
+                            $event_detail[] = 'Resource modified since last fixity check.';
                         } else {
                             $num_failed_events++;
-                            $this->event_detail->add(
-                                'event_outcome_detail_note', 'Insufficient conditions for fixity check event.'
-                            );
+                            $event_outcome_detail_note[] = 'Insufficient conditions for fixity check event.';
                         }
                     } else {
                         $this->logger->error("Fetchdigest plugin ran but could not fetch digest.", array(
@@ -190,8 +174,8 @@ class CheckFixityCommand extends ContainerAwareCommand
                         continue;
                     }
 
-                    // @todo: implode arrays of event detail and event outcome detail notes here
-                    // and set default value to '' if there are none. The delete the FixityEventDetailManager service.
+                    $event_detail_string = implode($this->note_delimiter, $event_detail);
+                    $event_outcome_detail_note_string = implode($this->note_delimiter, $event_outcome_detail_note);                    
 
                     $event = new FixityCheckEvent();
                     $event->setEventUuid($event_uuid);
@@ -200,11 +184,9 @@ class CheckFixityCommand extends ContainerAwareCommand
                     $event->setTimestamp($now_iso8601);
                     $event->setDigestAlgorithm($this->fixity_algorithm);
                     $event->setDigestValue($current_digest_value);
-                    $details = $this->event_detail->getDetails();
-                    $event_details = $this->event_detail->serialize($details);
-                    $event->setEventDetail($event_details['event_detail']);
+                    $event->setEventDetail($event_detail_string);
                     $event->setEventOutcome($outcome);
-                    $event->setEventOutcomeDetailNote($event_details['event_outcome_detail_note']);
+                    $event->setEventOutcomeDetailNote($event_outcome_detail_note_string);
 
                     $persist_plugin->persistEvent($event);
                 }
