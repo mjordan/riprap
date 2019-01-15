@@ -10,7 +10,8 @@ class PluginPersistToDatabase extends AbstractPersistEventPlugin
     {
         try {
             $repository = $this->entityManager->getRepository(FixityCheckEvent::class);
-            $reference_event = $repository->findLastFixityCheckEvent(
+            // Note that the reference event has an outcome of 'success'.
+            $reference_event = $repository->findReferenceFixityCheckEvent(
                 $resource_id,
                 $this->settings['fixity_algorithm']
             );
@@ -44,6 +45,9 @@ class PluginPersistToDatabase extends AbstractPersistEventPlugin
 
     public function getEvents()
     {
-        // See PluginPersistToCsv.
+        $repository = $this->entityManager->getRepository(FixityCheckEvent::class);
+        // @todo: We'll need to figure out how to pass in all the possible options
+        // from FixityController.php. Maybe just a long list of arguements like
+        // getEvents($resource_id, $outcome, $timestamp_start, $timestamp_end, $limit, $offset, $sort)?
     }
 }

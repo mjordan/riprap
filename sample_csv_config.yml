@@ -11,13 +11,16 @@ fixity_algorithm: SHA-1
 # plugins.fetchresourcelist: ['PluginFetchResourceListFromFile']
 # resource_list_path: ['/home/mark/Documents/hacking/riprap/filelist_issue26test.txt']
 plugins.fetchresourcelist: ['PluginFetchResourceListFromGlob']
+# Relative to the Riprap application directory.
 resource_dir_paths: ['resources/filesystemexample/resourcefiles']
 
 plugins.fetchdigest: PluginFetchDigestFromShell
 digest_command: '/usr/bin/sha1sum'
 
-plugins.persist: ['PluginPersistToCsv']
+# plugins.persist: PluginPersistToDatabase
+plugins.persist: PluginPersistToCsv
 # Relative to the Riprap application directory.
-output_csv_path: 'var/issue26_events.csv'
+output_csv_path: 'var/riprap_events.csv'
 
-plugins.postcheck: ['PluginPostCheckSayHello']
+plugins.postcheck: ['PluginPostCheckSayHello', 'PluginPostCheckCopyFailures']
+failures_log_path: '/tmp/riprap_failed_events.log'

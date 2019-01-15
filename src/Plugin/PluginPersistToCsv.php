@@ -7,20 +7,28 @@ use App\Entity\FixityCheckEvent;
 class PluginPersistToCsv extends AbstractPersistEventPlugin
 {
     public function getReferenceEvent($resource_id) {
+        // This is the first time we've tried to get the reference event,
+        // so there is no CSV file yet.
         if (!file_exists($this->settings['output_csv_path'])) {
             return null;
         }
 
         $rows = file($this->settings['output_csv_path'], FILE_IGNORE_NEW_LINES);
-        // Get all the rows that apply to the current resource ID.
+        // Accumulate all the rows that apply to the current resource ID that have
+        // the same fixity algorithm and that have an outcome of 'success'.
         $event_records = array();
         foreach ($rows as $row) {
             $fields = explode(',', $row);
-            if ($fields[2] == $resource_id) {
+            if (
+                $fields[2] == $resource_id &&
+                $fields[4] == $this->settings['fixity_algorithm'] &&
+                $fields[7] == 'success'
+            ) {
                 $event_records[] = $fields;
             }
         }
 
+        // Riprap hasn't seen this resource before.
         if (count($event_records) == 0) {
             return null;
         }

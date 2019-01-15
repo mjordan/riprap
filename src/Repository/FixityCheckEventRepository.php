@@ -24,10 +24,7 @@ class FixityCheckEventRepository extends ServiceEntityRepository
 //     */
 
     /**
-     * Finds the most recent entry in the 'event' table for the current resource.
-     *
-     * @todo: Is this query sufficient? Do we care if the last event had an outcome
-     * of 'failure'? We probably should specify a digest algorithm as well.
+     * Finds the most recent successful entry in the 'event' table for the current resource.
      *
      * @param string $resource_id
      *   The URL of the resource.
@@ -37,13 +34,15 @@ class FixityCheckEventRepository extends ServiceEntityRepository
      * @return object
      *   A single FixityCheckEvent object, or null.
      */
-    public function findLastFixityCheckEvent($resource_id, $digest_algorithm)
+    public function findReferenceFixityCheckEvent($resource_id, $digest_algorithm)
     {
         $qb = $this->createQueryBuilder('event')
             ->andWhere('event.resource_id = :resource_id')
             ->andWhere('event.digest_algorithm = :digest_algorithm')
+            ->andWhere('event.event_outcome = :event_outcome')
             ->setParameter('resource_id', $resource_id)
             ->setParameter('digest_algorithm', $digest_algorithm)
+            ->setParameter('event_outcome', 'success')
             ->orderBy('event.timestamp', 'DESC')
             ->getQuery();
 
