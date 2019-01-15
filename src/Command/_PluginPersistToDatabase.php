@@ -13,7 +13,7 @@ use Psr\Log\LoggerInterface;
 use App\Entity\FixityCheckEvent;
 use App\Service\FixityEventDetailManager;
 
-class PluginPersistToDatabase extends ContainerAwareCommand
+class _PluginPersistToDatabase extends ContainerAwareCommand
 {
     private $params;
 

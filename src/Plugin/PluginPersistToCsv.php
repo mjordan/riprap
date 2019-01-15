@@ -74,7 +74,7 @@ class PluginPersistToCsv extends AbstractPersistEventPlugin
                     'resource_id' => $event->getResourceId(),
                     'error' => $this->settings['output_csv_path'] . " could not be written to."
                 )
-            );            
+            );     
             return false;
         }
     }
