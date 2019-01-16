@@ -6,12 +6,6 @@ class PluginPostCheckCopyFailures extends AbstractPostCheckPlugin
 {
     public function execute($event)
     {
-        
-        // Debug: this plugin is not firing when used with db persist plugin,
-        // but it is when the CSV persist plugin is used.
-        $this->logger->error("PluginPostCheckCopyFailures ran.");
-
-
         if ($event->getEventOutcome() == 'fail') {
             if (!file_exists($this->settings['failures_log_path'])) {
                 $csv_headers = array(

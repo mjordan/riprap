@@ -1,4 +1,4 @@
-# Sample Riprap config file for using filesystem/CSV plugins.
+# Sample Riprap config file for using filesystem/database plugins.
 
 ####################
 # General settings #
@@ -6,9 +6,9 @@
 
 fixity_algorithm: SHA-1
 
-##############################
-# Plugins and their settings #
-##############################
+###########
+# Plugins #
+###########
 
 plugins.fetchresourcelist: ['PluginFetchResourceListFromGlob']
 # Absolute or relative to the Riprap application directory.
@@ -17,10 +17,8 @@ resource_dir_paths: ['resources/filesystemexample/resourcefiles']
 plugins.fetchdigest: PluginFetchDigestFromShell
 digest_command: '/usr/bin/sha1sum'
 
-plugins.persist: PluginPersistToCsv
-# Absolute or relative to the Riprap application directory.
-output_csv_path: 'var/riprap_events.csv'
+plugins.persist: PluginPersistToDatabase
 
 plugins.postcheck: ['PluginPostCheckCopyFailures']
 # Absolute or relative to the Riprap application directory.
-failures_log_path: 'var/riprap_failed_events.log'
+failures_log_path: '/tmp/riprap_failed_events.log'

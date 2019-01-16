@@ -39,8 +39,21 @@ class PluginPersistToDatabase extends AbstractPersistEventPlugin
 
     public function persistEvent($event)
     {
-        $this->entityManager->persist($event);
-        $this->entityManager->flush();
+        try {
+            $this->entityManager->persist($event);
+            $this->entityManager->flush();
+            return true;
+        } catch (Exception $e) {
+            $this->logger->error(
+                "Persist plugin ran but encountered an error.",
+                array(
+                    'plugin_name' => 'PluginPersistToDatabase',
+                    'resource_id' => $resource_id,
+                    'error' => $e->getMessage()
+                )
+            );
+            return false;
+        }
     }
 
     public function getEvents()
