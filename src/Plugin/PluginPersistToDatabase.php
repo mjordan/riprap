@@ -67,7 +67,7 @@ class PluginPersistToDatabase extends AbstractPersistEventPlugin
             !is_null($outcome) ||
             !is_null($sort) ||
             !is_null($offset) ||
-            !is_null($limit) {
+            !is_null($limit)) {
             $events = $repository->findFixityCheckEventsWithParams(
                 $resource_id,
                 $timestamp_start,

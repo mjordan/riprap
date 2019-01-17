@@ -87,39 +87,9 @@ class PluginPersistToCsv extends AbstractPersistEventPlugin
         }
     }
 
-    public function getEvents()
+    public function getEvents($resource_id, $outcome, $timestamp_start, $timestamp_end, $limit, $offset, $sort)
     {
-        /*
-
-        Code below is copied from old console command version of this plugin.
-        
-        // Returns a serialized representation of all fixity check events.
-        // @todo: Add  offset and limit parameters.
-        if ($input->getOption('operation') == 'get_events') {
-            $repository = $this->getContainer()->get('doctrine')->getRepository(FixityCheckEvent::class);
-            $events = $repository->findFixityCheckEvents(
-                $input->getOption('resource_id')
-            );
-            if (count($events)) {
-                $event_entries = array();
-                foreach ($events as $event) {
-                    $event_array = array();
-                    $event_array['event_uuid'] = $event->getEventUuid();
-                    $event_array['resource_id'] = $event->getResourceId();
-                    $event_array['event_type'] = $event->getEventType();
-                    $event_array['timestamp'] = $event->getTimestamp();
-                    $event_array['digest_algorithm'] = $event->getDigestAlgorithm();
-                    $event_array['digest_value'] = $event->getDigestValue();
-                    $event_array['event_detail'] = $event->getEventDetail();
-                    $event_array['event_outcome'] = $event->getEventOutcome();
-                    $event_array['event_outcome_detail_note'] = $event->getEventOutcomeDetailNote();
-                    $event_entries[] = $event_array;
-                }
-            }
-            // $output requires a string.
-            $output->write(serialize($event_entries));
-        }
-        */        
-
+        // For now, only PluginPersisttoDatabase supports this method.
+        return array();
     }
 }

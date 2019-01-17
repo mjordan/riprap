@@ -179,7 +179,9 @@ Within the Drupal user interface, the [Islandora Riprap](https://github.com/mjor
 
 ## Riprap's REST API
 
-Riprap provides a simple HTTP REST API (completely separate from the mock Fedora API), which will allow external applications like Drupal to retrieve fixity check data on specific Fedora resources and to add new and updated fixity check data. For example, a `GET` request to:
+> Note: Currently, Riprap's REST API can only be used with the `PluginPersistToDatabase` plugin.
+
+Riprap provides an HTTP REST API (completely separate from the mock Fedora API), which will allow external applications like Drupal to retrieve fixity check data on specific Fedora resources and to add new and updated fixity check data. For example, a `GET` request to:
 
 `curl -v -H "Resource-ID:http://example.com/repository/resource/12345" http://localhost:8000/api/fixity`
 

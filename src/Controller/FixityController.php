@@ -8,8 +8,8 @@ use Symfony\Component\HttpFoundation\Request;
 // Note that $logger here is independent from the logger that the console command uses.
 use Psr\Log\LoggerInterface;
 
-// Until we figure out how to define which persist plugin to use in this controller via a
-// single configuration shared between it and the console command, we are limited to using
+// Note: Until we figure out how to define which persist plugin to use in this controller via
+// a single configuration shared between it and the console command, we are limited to using
 // the PluginPersistToDatabase plugin. We could revert to using services.yaml, at least to
 // register persist plugins for this controller, but then we'd have two places to register
 // configuration info.
@@ -29,12 +29,6 @@ class FixityController extends AbstractController
         // This typecasting makes the default value of $limit and $offset to be 0.
         $limit = (int) $request->query->get('limit');
         $offset = (int) $request->query->get('offset');
-
-        // phpcs:disable
-        // If you run
-        // curl -v -H 'Resource-ID:http://localhost:8000/mockrepository/rest/10' http://localhost:8000/api/fixity
-        // your request will return the fixity event entries in the database for resource 10.
-        // phpcs:enable
 
         $entityManager = $this->getDoctrine()->getManager();
         // See comment above about hard-coded persist plugin.

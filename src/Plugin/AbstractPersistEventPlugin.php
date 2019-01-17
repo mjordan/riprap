@@ -57,9 +57,24 @@ abstract class AbstractPersistEventPlugin
     /**
      * Retrieves events from the database.
      *
+     * @param string $resource_id
+     *   The resource's ID.
+     * @param string $outcome
+     *   Either 'success' or 'fail'.
+     * @param string $timestamp_start
+     *   ISO8601 (full or partial) date indicating start of date range.
+     * @param string $timestamp_start
+     *   ISO8601 (full or partial) date indicating end of date range.
+     * @param string limit
+     *   Number of items in the result set to return, starting at the
+     *   value of $offset.
+     * @param string $sort
+     *   Sort events on timestamp. Either "desc" or "asc"
+     *   (default is "asc").
+     *
      * @return array
      *    A list of FixityCheckEvents (could be empty) or
      *    false if there is an error.
      */
-    abstract public function getEvents();
+    abstract public function getEvents($resource_id, $outcome, $timestamp_start, $timestamp_end, $limit, $offset, $sort);
 }
