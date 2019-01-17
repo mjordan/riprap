@@ -1,70 +1,47 @@
 <?php
-// src/Command/PersistPluginDatabase.php
-namespace App\Command;
 
-use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+/**
+ * @file
+ * Defines the class for the Riprap PluginFetchDigestFromFedoraAPI plugin.
+ */
 
-use Psr\Log\LoggerInterface;
+namespace App\Plugin;
+
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 
-use App\Entity\Event;
-use App\Service\FixityEventDetailManager;
-
-class PluginFetchDigestFromFedoraAPI extends ContainerAwareCommand
+/**
+ * Class for the Riprap PluginFetchDigestFromShell plugin.
+ */
+class PluginFetchDigestFromFedoraAPI extends AbstractFetchDigestPlugin
 {
-    private $params;
-
-    public function __construct(
-        ParameterBagInterface $params = null,
-        LoggerInterface $logger = null,
-        FixityEventDetailManager $event_detail = null
-    ) {
-        $this->params = $params;
-        if ($this->params->has('app.fixity.fetchdigest.from.fedoraapi.method')) {
-            $this->http_method = $this->params->get('app.fixity.fetchdigest.from.fedoraapi.method');
+    /**
+     * Gets the resource's digest from some external source.
+     *
+     * @param string $resource_id
+     *    The resource's ID.
+     *
+     * @return string $digest
+     *   The digest value.
+     */
+    public function execute($resource_id)
+    {
+        if (isset($this->settings['fedoraapi_method'])) {
+            $this->http_method = $this->settings['fedoraapi_method']
         } else {
             $this->http_method = 'HEAD';
         }
-        if ($this->params->has('app.fixity_algorithm')) {
-            $this->fixity_algorithm = $this->params->get('app.fixity_algorithm');
+        if (isset($this->settings['fixity_algorithm'])) {
+            $this->fixity_algorithm = $this->settings['fixity_algorithm'];
         } else {
             $this->fixity_algorithm = 'sha256';
         }
-        if ($this->params->has('app.fixity.fetchdigest.from.fedoraapi.digest_header.leader_pattern')) {
-            $this->hash_leader_pattern = $this->params->get('app.fixity.fetchdigest.from.fedoraapi.digest_header.leader_pattern');
+        if (isset($this->settings['fedoraapi_digest_header_leader_pattern'])) {
+            $this->hash_leader_pattern = $this->settings['fedoraapi_digest_header_leader_pattern'];
         } else {
             $this->hash_leader_pattern = "^.+=";
-        }
-        
-        $this->logger = $logger;
-        $this->event_detail = $event_detail;
+        }        
 
-        parent::__construct();
-    }
-
-    protected function configure()
-    {
-        $this
-            ->setName('app:riprap:plugin:fetchdigest:from:fedoraapi')
-            ->setDescription('A Riprap plugin for querying a Fedora API Specification compliant ' .
-                'repository for a resource\'s digest.');
-
-        $this
-            ->addOption(
-                'resource_id',
-                null,
-                InputOption::VALUE_REQUIRED,
-                'Fully qualifid URL of the resource to validate.'
-            );
-    }
-
-    protected function execute(InputInterface $input, OutputInterface $output)
-    {
         $client = new \GuzzleHttp\Client();
         // @todo: Wrap in try/catch.
         $url = $input->getOption('resource_id');
@@ -104,6 +81,6 @@ class PluginFetchDigestFromFedoraAPI extends ContainerAwareCommand
         // $this->logger is null while testing.
         if ($this->logger) {
             $this->logger->info("PluginFetchDigestFromFedoraAPI executed");
-        }
+        }        
     }
 }

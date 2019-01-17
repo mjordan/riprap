@@ -1,28 +1,13 @@
 <?php
-// src/Command/PluginFetchResourceListFromDrupal.php
-namespace App\Command;
+// src/Plugin/PluginFetchResourceListFromDrupal.php
 
-use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+namespace App\Plugin;
 
-use Psr\Log\LoggerInterface;
-use GuzzleHttp\Client;
-use GuzzleHttp\Exception\RequestException;
-use App\Entity\Event;
-use App\Service\FixityEventDetailManager;
-
-class PluginFetchResourceListFromDrupal extends ContainerAwareCommand
+class PluginFetchResourceListFromDrupal extends AbstractFetchResourceListPlugin
 {
-    private $params;
-
-    public function __construct(
-        ParameterBagInterface $params = null,
-        LoggerInterface $logger = null,
-        FixityEventDetailManager $event_detail = null
-    ) {
+    public function execute()
+    {
+        /*
         $this->params = $params;
         if ($this->params->has('app.plugins.fetchresourcelist.from.drupal.baseurl')) {
             $this->drupal_base_url = $this->params->get('app.plugins.fetchresourcelist.from.drupal.baseurl');
@@ -77,21 +62,98 @@ class PluginFetchResourceListFromDrupal extends ContainerAwareCommand
             $this->page_data_file = '';
         }
 
-        $this->logger = $logger;
-        $this->event_detail = $event_detail;
+        $output_resource_records = array();
+        if (count($this->settings['resource_list_path']) > 0) {
+            foreach ($this->settings['resource_list_path'] as $input_file) {
+                $input_resource_records = file($input_file, FILE_IGNORE_NEW_LINES);
+                foreach ($input_resource_records as $resource_record) {
+                    if (count($input_resource_records) > 0) {
+                        if (strlen($resource_record)) {
+                            list($uri, $last_modified_timestamp) = explode(',', $resource_record);
+                            // This is an array of objects with the properties 'resource_id' and 'last_modified_timestamp'.
+                            $resource_record_object = new \stdClass;
+                            $resource_record_object->resource_id = $uri;
+                            $resource_record_object->last_modified_timestamp = $last_modified_timestamp;
+                            $output_resource_records[] = $resource_record_object;
+                        }
+                    } else {
+                        $this->logger->warning(
+                            "Fetchresourcelist plugin ran but returned no resources.",
+                            array(
+                                'plugin_name' => 'PluginFetchResourceListFromFile',
+                                'number_of_input_records' => count($input_resource_records)
+                            )
+                        );
+                    }
+                }
+            }
+        } else {
+            $this->logger->warning(
+                "Fetchresourcelist plugin ran but returned no resources.",
+                array(
+                    'plugin_name' => 'PluginFetchResourceListFromFile',
+                    'number_of_input_directories' => count($this->settings['resource_dir_paths'])
+                )
+            );
+            return false;
+        }
 
-        parent::__construct();
-    }
+        return $output_resource_records;
+        */
 
-    protected function configure()
-    {
-        $this
-            ->setName('app:riprap:plugin:fetchresourcelist:from:drupal')
-            ->setDescription("A Riprap plugin for reading a list of resource URLs from Drupal's JSON:API. To use this plugin, that contrib module (https://www.drupal.org/project/jsonapi) needs to be installed on the source Drupal instance.");
-    }
-
-    protected function execute(InputInterface $input, OutputInterface $output)
-    {
+        if (isset($this->settings['drupal_baseurl'])) {
+            $this->drupal_base_url = $this->settings['drupal_baseurl'];
+        } else {
+            $this->drupal_base_url = 'http://localhost:8000';
+        }
+        // An array, we need to loop through and add to guzzle request.
+        if (isset($this->settings['jsonapi_authorization_headers')) {
+            $this->jsonapi_authorization_headers = $this->settings['jsonapi_authorization_headers'];
+        } else {
+            $this->jsonapi_authorization_headers = array();
+        }
+        if (isset($this->settings['drupal_media_auth'])) {
+            $this->media_auth = $this->settings['drupal_media_auth'];
+        } else {
+            $this->media_auth = '';
+        }
+        // For now we only use the first one, not sure how to handle multiple content types.
+        if (isset($this->settings['drupal_content_types'])) {
+            $this->drupal_content_types = $this->settings['drupal_content_types'];
+        } else {
+            $this->drupal_content_types = array();
+        }
+        if (isset($this->settings['drupal_media_tags'])) {
+            $this->media_tags = $this->settings['drupal_media_tags'];
+        } else {
+            $this->media_tags = array();
+        }
+        if (isset($this->settings['use_fedora_urls'])) {
+            $this->use_fedora_urls = $this->settings['use_fedora_urls'];
+        } else {
+            $this->use_fedora_urls = true;
+        }
+        if (isset($this->settings['gemini_endpoint'])) {
+            $this->gemini_endpoint = $this->settings['gemini_endpoint'];
+        } else {
+            $this->gemini_endpoint = '';
+        }
+        if (isset($this->settings['gemini_auth_header'])) {
+            $this->gemini_auth_header = $this->settings['gemini_auth_header'];
+        } else {
+            $this->gemini_auth_header = '';
+        }
+        if (isset($this->settings['jsonapi_page_size'])) {
+            $this->page_size = $this->settings['jsonapi_page_size'];
+        } else {
+            // The maximum Drupal's JSON:API allows.
+            $this->page_size = 50;
+        }
+        if (isset($this->settings['jsonapi_pager_data_file_path'])) {
+            $this->page_data_file = $this->settings['jsonapi_pager_data_file_path'];
+        } else {
+            $this->page_data_file = '';
+        }        
 
         if (file_exists($this->page_data_file)) {
             $page_offset = (int) trim(file_get_contents($this->page_data_file));
@@ -222,7 +284,7 @@ class PluginFetchResourceListFromDrupal extends ContainerAwareCommand
         // $this->logger is null while testing.
         if ($this->logger) {
             $this->logger->info("PluginFetchResourceListFromDrupal executed");
-        }
+        }        
     }
 
    /**
@@ -317,4 +379,5 @@ class PluginFetchResourceListFromDrupal extends ContainerAwareCommand
             }
         }
     }
+
 }
