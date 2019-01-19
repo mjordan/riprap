@@ -27,7 +27,7 @@ class PluginFetchDigestFromFedoraAPI extends AbstractFetchDigestPlugin
     public function execute($resource_id)
     {
         if (isset($this->settings['fedoraapi_method'])) {
-            $this->http_method = $this->settings['fedoraapi_method']
+            $this->http_method = $this->settings['fedoraapi_method'];
         } else {
             $this->http_method = 'HEAD';
         }
@@ -44,7 +44,7 @@ class PluginFetchDigestFromFedoraAPI extends AbstractFetchDigestPlugin
 
         $client = new \GuzzleHttp\Client();
         // @todo: Wrap in try/catch.
-        $url = $input->getOption('resource_id');
+        $url = $resource_id;
         if (!strlen($url)) {
             if ($this->logger) {
                 $this->logger->info("PluginFetchDigestFromFedoraAPI exited due to empty resource ID.");
@@ -64,14 +64,14 @@ class PluginFetchDigestFromFedoraAPI extends AbstractFetchDigestPlugin
             // so we need to remove the 'sha-256=' leader.
             $digest_header_value = preg_replace('/' . $this->hash_leader_pattern . '/', '', $digest_header_values[0]);
             // Assumes there is only one 'digest' header - is this always the case?
-            $output->writeln($digest_header_value);
+            return $digest_header_value;
         } else {
             // If the HTTP status code is not in the allowed list, log it.
             $this->logger->warning("check_fixity cannot retrieve digest from repository.", array(
                 'resource_id' => $url,
                 'status_code' => $status_code,
             ));
-            $output->writeln($status_code);
+            return $status_code;
         }
 
         if ($this->event_detail) {

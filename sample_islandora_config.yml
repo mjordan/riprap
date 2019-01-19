@@ -1,0 +1,35 @@
+# Sample Riprap config file for using Islandora/database plugins.
+
+####################
+# General settings #
+####################
+
+fixity_algorithm: sha256
+
+###########
+# Plugins #
+###########
+
+plugins.fetchresourcelist: ['PluginFetchResourceListFromDrupal']
+drupal_baseurl: 'http://localhost:8000'
+# adim/islandora
+jsonapi_authorization_headers: ['Authorization: Basic YWRtaW46aXNsYW5kb3Jh']
+drupal_media_auth: ['admin', 'islandora']
+drupal_content_types: ['islandora_object']
+drupal_media_tags: ['/taxonomy/term/15']
+use_fedora_urls: true
+gemini_endpoint: 'http://localhost:8000/gemini'
+gemini_auth_header: 'Bearer islandora' 
+jsonapi_page_size: 50
+# Absolute or relative to the Riprap application directory.
+jsonapi_pager_data_file_path: 'var/fetchresourcelist.from.drupal.pager.txt'
+
+plugins.fetchdigest: PluginFetchDigestFromFedoraAPI
+fedoraapi_method: HEAD
+fedoraapi_digest_header_leader_pattern: "^.+="
+
+plugins.persist: PluginPersistToDatabase
+
+plugins.postcheck: ['PluginPostCheckCopyFailures']
+# Absolute or relative to the Riprap application directory.
+failures_log_path: '/tmp/riprap_failed_events.log'

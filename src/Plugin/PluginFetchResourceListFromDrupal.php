@@ -7,107 +7,13 @@ class PluginFetchResourceListFromDrupal extends AbstractFetchResourceListPlugin
 {
     public function execute()
     {
-        /*
-        $this->params = $params;
-        if ($this->params->has('app.plugins.fetchresourcelist.from.drupal.baseurl')) {
-            $this->drupal_base_url = $this->params->get('app.plugins.fetchresourcelist.from.drupal.baseurl');
-        } else {
-            $this->drupal_base_url = 'http://localhost:8000';
-        }
-        // An array, we need to loop through and add to guzzle request.
-        if ($this->params->has('app.plugins.fetchresourcelist.from.drupal.json_authorization_headers')) {
-            $this->jsonapi_authorization_headers = $this->params->get('app.plugins.fetchresourcelist.from.drupal.json_authorization_headers');
-        } else {
-            $this->jsonapi_authorization_headers = array();
-        }
-        if ($this->params->has('app.plugins.fetchresourcelist.from.drupal.media_auth')) {
-            $this->media_auth = $this->params->get('app.plugins.fetchresourcelist.from.drupal.media_auth');
-        } else {
-            $this->media_auth = '';
-        }
-        // For now we only use the first one, not sure how to handle multiple content types.
-        if ($this->params->has('app.plugins.fetchresourcelist.from.drupal.content_types')) {
-            $this->drupal_content_types = $this->params->get('app.plugins.fetchresourcelist.from.drupal.content_types');
-        } else {
-            $this->drupal_content_types = array();
-        }
-        if ($this->params->has('app.plugins.fetchresourcelist.from.drupal.media_tags')) {
-            $this->media_tags = $this->params->get('app.plugins.fetchresourcelist.from.drupal.media_tags');
-        } else {
-            $this->media_tags = array();
-        }
-        if ($this->params->has('app.plugins.fetchresourcelist.from.drupal.use_fedora_urls')) {
-            $this->use_fedora_urls = $this->params->get('app.plugins.fetchresourcelist.from.drupal.use_fedora_urls');
-        } else {
-            $this->use_fedora_urls = true;
-        }
-        if ($this->params->has('app.plugins.fetchresourcelist.from.drupal.gemini_endpoint')) {
-            $this->gemini_endpoint = $this->params->get('app.plugins.fetchresourcelist.from.drupal.gemini_endpoint');
-        } else {
-            $this->gemini_endpoint = '';
-        }
-        if ($this->params->has('app.plugins.fetchresourcelist.from.drupal.gemini_auth_header')) {
-            $this->gemini_auth_header = $this->params->get('app.plugins.fetchresourcelist.from.drupal.gemini_auth_header');
-        } else {
-            $this->gemini_auth_header = '';
-        }
-        if ($this->params->has('app.plugins.fetchresourcelist.from.drupal.page_size')) {
-            $this->page_size = $this->params->get('app.plugins.fetchresourcelist.from.drupal.page_size');
-        } else {
-            $this->page_size = 50;
-        }
-        if ($this->params->has('app.plugins.fetchresourcelist.from.drupal.pager_data')) {
-            $this->page_data_file = $this->params->get('app.plugins.fetchresourcelist.from.drupal.pager_data');
-        } else {
-            $this->page_data_file = '';
-        }
-
-        $output_resource_records = array();
-        if (count($this->settings['resource_list_path']) > 0) {
-            foreach ($this->settings['resource_list_path'] as $input_file) {
-                $input_resource_records = file($input_file, FILE_IGNORE_NEW_LINES);
-                foreach ($input_resource_records as $resource_record) {
-                    if (count($input_resource_records) > 0) {
-                        if (strlen($resource_record)) {
-                            list($uri, $last_modified_timestamp) = explode(',', $resource_record);
-                            // This is an array of objects with the properties 'resource_id' and 'last_modified_timestamp'.
-                            $resource_record_object = new \stdClass;
-                            $resource_record_object->resource_id = $uri;
-                            $resource_record_object->last_modified_timestamp = $last_modified_timestamp;
-                            $output_resource_records[] = $resource_record_object;
-                        }
-                    } else {
-                        $this->logger->warning(
-                            "Fetchresourcelist plugin ran but returned no resources.",
-                            array(
-                                'plugin_name' => 'PluginFetchResourceListFromFile',
-                                'number_of_input_records' => count($input_resource_records)
-                            )
-                        );
-                    }
-                }
-            }
-        } else {
-            $this->logger->warning(
-                "Fetchresourcelist plugin ran but returned no resources.",
-                array(
-                    'plugin_name' => 'PluginFetchResourceListFromFile',
-                    'number_of_input_directories' => count($this->settings['resource_dir_paths'])
-                )
-            );
-            return false;
-        }
-
-        return $output_resource_records;
-        */
-
         if (isset($this->settings['drupal_baseurl'])) {
             $this->drupal_base_url = $this->settings['drupal_baseurl'];
         } else {
             $this->drupal_base_url = 'http://localhost:8000';
         }
         // An array, we need to loop through and add to guzzle request.
-        if (isset($this->settings['jsonapi_authorization_headers')) {
+        if (isset($this->settings['jsonapi_authorization_headers'])) {
             $this->jsonapi_authorization_headers = $this->settings['jsonapi_authorization_headers'];
         } else {
             $this->jsonapi_authorization_headers = array();
@@ -192,6 +98,7 @@ class PluginFetchResourceListFromDrupal extends AbstractFetchResourceListPlugin
             }
         }
 
+        $output_resource_records = array();
         foreach ($node_list_array['data'] as $node) {
             $nid = $node['attributes']['nid'];
             // Get the media associated with this node using the Islandora-supplied Manage Media View.
@@ -232,46 +139,34 @@ class PluginFetchResourceListFromDrupal extends AbstractFetchResourceListPlugin
                                 if (isset($media['field_media_image'])) {
                                     $fedora_url = $this->getFedoraUrl($media['field_media_image'][0]['target_uuid']);
                                     if (strlen($fedora_url)) {
-                                        $media_data = array(
-                                            'resource_id' => $fedora_url,
-                                            'last_modified_timestamp' => $revised
-                                        );
-                                        $media_data = json_encode($media_data);
-                                        // This is a string containing one JSON object per line.
-                                        $output->writeln($media_data);
+                                        $resource_record_object = new \stdClass;
+                                        $resource_record_object->resource_id = $fedora_url;
+                                        $resource_record_object->last_modified_timestamp = $revised;
+                                        $output_resource_records[] = $resource_record_object;
                                     }
                                 } else {
                                     $fedora_url = $this->getFedoraUrl($media['field_media_file'][0]['target_uuid']);
                                     if (strlen($fedora_url)) {
-                                        $media_data = array(
-                                            'resource_id' => $fedora_url,
-                                            'last_modified_timestamp' => $revised
-                                        );
-                                        $media_data = json_encode($media_data);
-                                        // This is a string containing one JSON object per line.                                     
-                                        $output->writeln($media_data);
+                                        $resource_record_object = new \stdClass;
+                                        $resource_record_object->resource_id = $fedora_url;
+                                        $resource_record_object->last_modified_timestamp = $revised;
+                                        $output_resource_records[] = $resource_record_object;
                                     }                             
                                 }
                             } else {
                                 if (isset($media['field_media_image'])) {
                                     if (strlen($media['field_media_image'][0]['url'])) {
-                                        $media_data = array(
-                                            'resource_id' => $media['field_media_image'][0]['url'],
-                                            'last_modified_timestamp' => $revised
-                                        );
-                                        $media_data = json_encode($media_data);
-                                        // This is a string containing one JSON object per line.                            
-                                        $output->writeln($media_data);
+                                        $resource_record_object = new \stdClass;
+                                        $resource_record_object->resource_id = $media['field_media_image'][0]['url'];
+                                        $resource_record_object->last_modified_timestamp = $revised;
+                                        $output_resource_records[] = $resource_record_object;
                                     }
                                 } else {
                                     if (strlen($media['field_media_file'][0]['url'])) {
-                                        $media_data = array(
-                                            'resource_id' => $media['field_media_file'][0]['url'],
-                                            'last_modified_timestamp' => $revised
-                                        );
-                                        $media_data = json_encode($media_data);
-                                        // This is a string containing one JSON object per line.
-                                        $output->writeln($media_data);
+                                        $resource_record_object = new \stdClass;
+                                        $resource_record_object->resource_id = $media['field_media_file'][0]['url'];
+                                        $resource_record_object->last_modified_timestamp = $revised;
+                                        $output_resource_records[] = $resource_record_object;
                                     }
                                 }
                             }
@@ -284,7 +179,9 @@ class PluginFetchResourceListFromDrupal extends AbstractFetchResourceListPlugin
         // $this->logger is null while testing.
         if ($this->logger) {
             $this->logger->info("PluginFetchResourceListFromDrupal executed");
-        }        
+        }  
+ 
+        return $output_resource_records;      
     }
 
    /**
