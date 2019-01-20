@@ -13,10 +13,3 @@ app_riprap_fixity_events_update:
     path: /api/fixity
     controller: App\Controller\FixityController::update
     methods: [PATCH]
-
-# Route used in development and testing that returns the response
-# described in the Fedora API Specification secion 7.2.
-app_riprap_mock_repository_read:
-    path: /mockrepository/rest/{id}
-    controller: App\Controller\MockRepositoryEndpoint::read
-    methods: [GET, HEAD]

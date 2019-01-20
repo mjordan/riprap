@@ -10,9 +10,9 @@ fixity_algorithm: SHA-1
 # Plugins and their settings #
 ##############################
 
-plugins.fetchresourcelist: ['PluginFetchResourceListFromGlob']
+plugins.fetchresourcelist: ['PluginFetchResourceListFromFile']
 # Absolute or relative to the Riprap application directory.
-resource_dir_paths: ['resources/filesystemexample/resourcefiles']
+resource_list_path: ['resources/csv_file_list.csv']
 
 plugins.fetchdigest: PluginFetchDigestFromShell
 digest_command: '/usr/bin/sha1sum'
