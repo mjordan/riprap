@@ -53,11 +53,11 @@ Riprap comes with three sample configuration files:
 
 * `sample_csv_config.yml`: This configuration checks the fixity of the files listed in a CSV file, and persists fixity check events to another CSV file.
 * `sample_db_config.yml`: This configuration checks the fixity of the files in a specific directory, and persists fixity check events to a relational database.
-* `sample_islandora_config.yml`: This configuration is used in conjuction with an Islandora 8.x-1.x instance, such as the one provided by the [CLAW Vagrant Playbook](https://github.com/Islandora-Devops/claw-playbook). It audits the fixity of resources in a real (not mock) Fedora 5 repository and persists the resulting fixity check events to a relational database.
+* `sample_islandora_config.yml`: This configuration is used in conjuction with an Islandora 8.x-1.x instance, such as the one provided by the [CLAW Vagrant Playbook](https://github.com/Islandora-Devops/claw-playbook). It audits the fixity of resources in a Fedora 5 repository and persists the resulting fixity check events to a relational database.
 
 ### The sample CSV configuration
 
-Whereas the other two sample configurations audit the fixity of resources in a Fedora API-compliant repository (either a mocked up one or a real one) and perist fixity events to a relational database, the "filesystemexample" configuration audits a set of files in a filesystem directory and perists events to a CSV file. While you could use this configuration in production, its real purpose is to illustrate how Riprap plugins work together to provide all the functionality required to audit fixity over time.
+This configuration audits a set of files listed in an input CSV file and perists events to an output CSV file. While you could use this configuration in production, its real purpose is to illustrate how Riprap plugins work together to provide all the functionality required to audit fixity over time.
 
 Let's look at the `sample_csv_config.yml` configuration file to see what the plugins are doing:
 
@@ -94,17 +94,17 @@ The CSV file that lists files from is indicated in the `resource_list_path` opti
 
 Whereas the "fetchresourcelist" plugin provides a list of resources (files) whose fixity we want to audit, the "fetchdigest" plugin generates the digest that we use in the audit. In this case, that plugin is `PluginFetchDigestFromShell`, which corresponds to the class file at `src/Plugin/PluginFetchDigestFromShell.php`. If you look at that class's `execute()` function, you will see that if runs the external command identified in the `digest_command` configuration option on each of the files listed by the "fetchresourcelist" plugin. All configurations must register the digest algorithm they are using in the `fixity_algorithm` option.
 
-There is a third plugin that Riprap requires to do its job: a plugin that persists the outcome of the fixity check event somewhere. This class of plugin is registered in the `plugins.persist` option. In this case, that plugin corresponds to the PHP file at `src/Plugin/PluginPersistToCsv.php`. The path to the CSV file is identified in the `output_csv_path` option. Each of the CSV records in this output file corrsponds to a fixity check event on a specific file listed in the input file; each time the `check_fixity` command runs, Riprap uses the last event in the output file for the current resource to confirm that the digest (SHA-1, for example) it generates during execution is identical to the digest listed in that last record. If it is, the event is successful; if it is not, the event is flagged as a failre.
+There is a third plugin that Riprap requires to do its job: a plugin that persists the outcome of the fixity check event somewhere. This class of plugin is registered in the `plugins.persist` option. In this configuration, that plugin corresponds to the PHP file at `src/Plugin/PluginPersistToCsv.php`. The path to the CSV file is identified in the `output_csv_path` option. Each of the CSV records in this output file corrsponds to a fixity check event on a specific file listed in the input file; each time the `check_fixity` command runs, Riprap uses the last event in the output file for the current resource to confirm that the digest (SHA-1, for example) it generates during execution is identical to the digest listed in that last record. If it is, the event is successful; if it is not, the event is flagged as a failre.
 
 If you run :
 
 `php bin/console app:riprap:check_fixity --settings=sample_csv_config.yml`
 
-you will see the persisted events in the CSV output file at `var/riprap_events.csv`, one per file listed in `resources/csv_file_list.csv`. If you rerun Riprap, you will see three more events in the output file file.
+you will see the persisted events in the CSV output file at `var/riprap_events.csv`, one per file listed in `resources/csv_file_list.csv`. If you rerun Riprap, you will see three more events in the output file file. In production, you would run Riprap on a scheduled job using Linux `cron` (for example) so that it would perform fixity checks on all of the resources identified by your "fetchresourcelist" plugins.
 
 This walkthrough of the `sample_csv_config.yml` configuration illustrates Riprap's basic functionality: it takes a list of resources (a.k.a. files) whose fixity we are auditing, and for each of those resources, gets the digest using a particular digest algorithm. Riprap then checks the current digest against the digest of the same algorithm in the most recent fixity check event for the resource, and finally saves the outcome of the current fixity check event for use in the next execution cycle.
 
-If you look at the `sample_db_config.yml` configuration file, you will see that it differs from the `sample_csv_config.yml` file in two ways: it gets the list of files to audit from a plugin that scans a specfic directory (`resources/filesystemexample/resourcefiles`), and it persists the outcome of fixity check events not to a file but to a relational database via the `PluginPersistToDatabase` plugin.
+If you look at the `sample_db_config.yml` configuration file, you will see that it differs from the `sample_csv_config.yml` file in two ways: it gets the list of files to audit from a plugin that scans a specfic directory (`resources/filesystemexample/resourcefiles`), and it persists the outcome of fixity check events not to a CSV file but to a relational database via the `PluginPersistToDatabase` plugin.
 
 ### The Islandora configuration
 
