@@ -128,61 +128,62 @@ Riprap provides an HTTP REST API, which will allow external applications like Dr
 
 would return a list of all fixity events for the Fedora resource `http://example.com/repository/resource/12345`.
 
-To see the API in action,
+Assuming you have run Riprap with the "sample_db_config.yml" configuration file, you can see the API in action by running:
 
-1. run `php bin/console server:start`
-1. run `curl -v -H 'Resource-ID:http://example.com/resource/10' http://localhost:8000/api/fixity`
+1. `php bin/console server:start`
+1. `curl -v -H 'Resource-ID: resources/filesystemexample/resourcefiles/file3.bin' http://localhost:8001/api/fixity' http://localhost:8000/api/fixity`
 
 You should get a response like this:
 
 ```
 *   Trying 127.0.0.1...
 * TCP_NODELAY set
-* Connected to localhost (127.0.0.1) port 8000 (#0)
+* Connected to localhost (127.0.0.1) port 8001 (#0)
 > GET /api/fixity HTTP/1.1
-> Host: localhost:8000
+> Host: localhost:8001
 > User-Agent: curl/7.58.0
 > Accept: */*
-> Resource-ID:http://example.com/resources/rest/10
->
+> Resource-ID: resources/filesystemexample/resourcefiles/file3.bin
+> 
 < HTTP/1.1 200 OK
-< Host: localhost:8000
-< Date: Sun, 30 Sep 2018 10:13:49 -0700
+< Host: localhost:8001
+< Date: Mon, 21 Jan 2019 07:07:18 -0800
 < Connection: close
 < X-Powered-By: PHP/7.2.10-0ubuntu0.18.04.1
 < Cache-Control: no-cache, private
-< Date: Sun, 30 Sep 2018 17:13:49 GMT
+< Date: Mon, 21 Jan 2019 15:07:18 GMT
 < Content-Type: application/json
-<
+< 
+* Closing connection 0
+
 ```
 
-The returned JSON looks like this:
+The returned JSON looks like this (one event per execution of Riprap):
 
 ```javascript
 [
    {
-      "event_uuid":"4cd2edc9-f292-49a1-9b05-d025684de559",
-      "resource_id":"http:\/\/example.com\/resource\/10",
+      "event_uuid":"5ce1b784-0d37-4370-8b03-ea620cd0efc3",
+      "resource_id":"resources\/filesystemexample\/resourcefiles\/file3.bin",
       "event_type":"fix",
-      "timestamp":"2018-10-03T07:23:40-07:00",
-      "hash_algorithm":"SHA-1",
-      "hash_value":"c28097ad29ab61bfec58d9b4de53bcdec687872e",
+      "timestamp":"2019-01-20T10:33:47-0800",
+      "digest_algorithm":"SHA-1",
+      "digest_value":"7bb2e6023344e35e72150af91c8c1a8896f4af4d",
       "event_detail":"Initial fixity check.",
-      "event_outcome":"suc",
+      "event_outcome":"success",
       "event_outcome_detail_note":""
    },
    {
-      "event_uuid":"fb73a36a-df64-4ba8-a437-ea277b65ebb7",
-      "resource_id":"http:\/\/example.com\/resource\/10",
+      "event_uuid":"7d3f392f-099e-4735-b718-1dfbc5f63436",
+      "resource_id":"resources\/filesystemexample\/resourcefiles\/file3.bin",
       "event_type":"fix",
-      "timestamp":"2018-12-03T07:26:39-07:00",
-      "hash_algorithm":"SHA-1",
-      "hash_value":"c28097ad29ab61bfec58d9b4de53bcdec687872e",
+      "timestamp":"2019-01-21T07:07:14-0800",
+      "digest_algorithm":"SHA-1",
+      "digest_value":"7bb2e6023344e35e72150af91c8c1a8896f4af4d",
       "event_detail":"",
-      "event_outcome":"suc",
+      "event_outcome":"success",
       "event_outcome_detail_note":""
    }
-   [...]
 ]
 ```
 Note that if the resource identified by `Resource-ID` does not have any events in Riprap, the REST API will return a `200` response and an empty body, e.g.,
@@ -245,6 +246,8 @@ One of Riprap's principle design requirements is flexibility. To meet this goal,
 Riprap supports a fourth class of plugin, which we didn't see in our sample configurations:
 
 * "postcheck" plugins execute after performing a fixity check on each resource. Multiple postcheck plugins can be configured to run at the same time. Preliminary versions of two plugins of this type currently exist (but neither one is complete yet): a plugin that sends an email on failure, `app:riprap:plugin:postcheck:mailfailures`, and a plugin that migrates fixity events from Fedora 3.x AUDIT data.
+
+More information on plugins is [available](docs/plugins.md).
 
 ### Message queue listener
 
