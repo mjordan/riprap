@@ -40,7 +40,7 @@ class PluginFetchDigestFromFedoraAPI extends AbstractFetchDigestPlugin
             $this->hash_leader_pattern = $this->settings['fedoraapi_digest_header_leader_pattern'];
         } else {
             $this->hash_leader_pattern = "^.+=";
-        }        
+        }
 
         $client = new \GuzzleHttp\Client();
         // @todo: Wrap in try/catch.
@@ -60,7 +60,8 @@ class PluginFetchDigestFromFedoraAPI extends AbstractFetchDigestPlugin
         $allowed_codes = array(200);
         if (in_array($status_code, $allowed_codes)) {
             $digest_header_values = $response->getHeader('digest');
-            // Digest header looks like Digest: sha-256=cef971b6697fa92c7125a329437b69f9161c2472cce873a229a329d1424a4ff1,
+            // Digest header looks like
+            // Digest: sha-256=cef971b6697fa92c7125a329437b69f9161c2472cce873a229a329d1424a4ff1,
             // so we need to remove the 'sha-256=' leader.
             $digest_header_value = preg_replace('/' . $this->hash_leader_pattern . '/', '', $digest_header_values[0]);
             // Assumes there is only one 'digest' header - is this always the case?
@@ -81,6 +82,6 @@ class PluginFetchDigestFromFedoraAPI extends AbstractFetchDigestPlugin
         // $this->logger is null while testing.
         if ($this->logger) {
             $this->logger->info("PluginFetchDigestFromFedoraAPI executed");
-        }        
+        }
     }
 }

@@ -20,13 +20,13 @@ abstract class AbstractPersistEventPlugin
      * @param object $logger
      *    The Monolog logger from the main Console command.
      * @param object $entityManager
-     *    The Doctrine Entity Manager from the Console command.     
+     *    The Doctrine Entity Manager from the Console command.
      */
     public function __construct($settings, $logger, $entityManager)
     {
         $this->settings = $settings;
         $this->logger = $logger;
-        $this->entityManager = $entityManager;        
+        $this->entityManager = $entityManager;
     }
 
     /**
@@ -76,5 +76,13 @@ abstract class AbstractPersistEventPlugin
      *    A list of FixityCheckEvents (could be empty) or
      *    false if there is an error.
      */
-    abstract public function getEvents($resource_id, $outcome, $timestamp_start, $timestamp_end, $limit, $offset, $sort);
+    abstract public function getEvents(
+        $resource_id,
+        $outcome,
+        $timestamp_start,
+        $timestamp_end,
+        $limit,
+        $offset,
+        $sort
+    );
 }

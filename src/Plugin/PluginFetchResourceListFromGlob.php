@@ -23,7 +23,7 @@ class PluginFetchResourceListFromGlob extends AbstractFetchResourceListPlugin
                                 "Fetchresourcelist plugin ran but encountered an error.",
                                 array(
                                     'plugin_name' => 'PluginFetchResourceListFromGlob',
-                                    'error' => $e->getMessage()  
+                                    'error' => $e->getMessage()
                                 )
                             );
                             return false;
@@ -36,7 +36,7 @@ class PluginFetchResourceListFromGlob extends AbstractFetchResourceListPlugin
                         "Fetchresourcelist plugin ran but encountered an error.",
                         array(
                             'plugin_name' => 'PluginFetchResourceListFromGlob',
-                            'error' => "Input path $dir_path doesn't exist."  
+                            'error' => "Input path $dir_path doesn't exist."
                         )
                     );
                     return false;

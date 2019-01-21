@@ -59,12 +59,11 @@ class PluginFetchResourceListFromDrupal extends AbstractFetchResourceListPlugin
             $this->page_data_file = $this->settings['jsonapi_pager_data_file_path'];
         } else {
             $this->page_data_file = '';
-        }        
+        }
 
         if (file_exists($this->page_data_file)) {
             $page_offset = (int) trim(file_get_contents($this->page_data_file));
-        }
-        else {
+        } else {
             $page_offset = 0;
             file_put_contents($this->page_data_file, $page_offset);
         }
@@ -90,7 +89,8 @@ class PluginFetchResourceListFromDrupal extends AbstractFetchResourceListPlugin
 
         if (count($node_list_array['data']) == 0) {
             if ($this->logger) {
-                $this->logger->info("PluginFetchResourceListFromDrupal retrieved an empty node list from Drupal",
+                $this->logger->info(
+                    "PluginFetchResourceListFromDrupal retrieved an empty node list from Drupal",
                     array(
                         'HTTP response code' => $status_code
                     )
@@ -106,7 +106,7 @@ class PluginFetchResourceListFromDrupal extends AbstractFetchResourceListPlugin
             $media_url = $this->drupal_base_url . '/node/' . $nid . '/media';
             $media_response = $media_client->request('GET', $media_url, [
                 'http_errors' => false,
-                'auth' => $this->media_auth, 
+                'auth' => $this->media_auth,
                 'query' => ['_format' => 'json']
             ]);
             $media_status_code = $media_response->getStatusCode();
@@ -115,7 +115,8 @@ class PluginFetchResourceListFromDrupal extends AbstractFetchResourceListPlugin
 
             if (count($media_list) === 0) {
                 if ($this->logger) {
-                    $this->logger->info("PluginFetchResourceListFromDrupal is skipping node with an empty media list.",
+                    $this->logger->info(
+                        "PluginFetchResourceListFromDrupal is skipping node with an empty media list.",
                         array(
                             'Node ID' => $nid
                         )
@@ -131,7 +132,7 @@ class PluginFetchResourceListFromDrupal extends AbstractFetchResourceListPlugin
                         if (in_array($term['url'], $this->media_tags)) {
                             // Get the timestamp of the current revision.
                             // Will be in ISO8601 format.
-                            $revised = $media['revision_created'][0]['value'];                  
+                            $revised = $media['revision_created'][0]['value'];
                             if ($this->use_fedora_urls) {
                                 // @todo: getFedoraUrl() returns false on failure, so build in logic here to log that
                                 // the resource ID / URL cannot be found. (But, http responses are already logged in
@@ -151,7 +152,7 @@ class PluginFetchResourceListFromDrupal extends AbstractFetchResourceListPlugin
                                         $resource_record_object->resource_id = $fedora_url;
                                         $resource_record_object->last_modified_timestamp = $revised;
                                         $output_resource_records[] = $resource_record_object;
-                                    }                             
+                                    }
                                 }
                             } else {
                                 if (isset($media['field_media_image'])) {
@@ -179,9 +180,9 @@ class PluginFetchResourceListFromDrupal extends AbstractFetchResourceListPlugin
         // $this->logger is null while testing.
         if ($this->logger) {
             $this->logger->info("PluginFetchResourceListFromDrupal executed");
-        }  
+        }
  
-        return $output_resource_records;      
+        return $output_resource_records;
     }
 
    /**
@@ -208,13 +209,12 @@ class PluginFetchResourceListFromDrupal extends AbstractFetchResourceListPlugin
                 $body = $response->getBody()->getContents();
                 $body_array = json_decode($body, true);
                 return $body_array['fedora'];
-            }
-            elseif ($code == 404) {
+            } elseif ($code == 404) {
                 return false;
-            }
-            else {
+            } else {
                 if ($this->logger) {
-                    $this->logger->error("PluginFetchResourceListFromDrupal could not get Fedora URL from Gemini",
+                    $this->logger->error(
+                        "PluginFetchResourceListFromDrupal could not get Fedora URL from Gemini",
                         array(
                             'HTTP response code' => $code
                         )
@@ -222,10 +222,10 @@ class PluginFetchResourceListFromDrupal extends AbstractFetchResourceListPlugin
                 }
                 return false;
             }
-        }
-        catch (Exception $e) {
+        } catch (Exception $e) {
             if ($this->logger) {
-                $this->logger->error("PluginFetchResourceListFromDrupal could not get Fedora URL from Gemini",
+                $this->logger->error(
+                    "PluginFetchResourceListFromDrupal could not get Fedora URL from Gemini",
                     array(
                         'HTTP response code' => $code,
                         'Exception message' => $e->getMessage()
@@ -255,10 +255,9 @@ class PluginFetchResourceListFromDrupal extends AbstractFetchResourceListPlugin
             parse_str($query_string, $query_array);
             $next_offset = $query_array['page']['offset'];
             file_put_contents($this->page_data_file, trim($next_offset));
-        }
-        // We are on the last page, so reset the offset value to start the
-        // verification cycle from the beginning.
-        else {
+        } else {
+            // We are on the last page, so reset the offset value to start the
+            // verification cycle from the beginning.
             if (array_key_exists('first', $links)) {
                 $first_url = $links['first'];
                 $query_string = parse_url(urldecode($first_url), PHP_URL_QUERY);
@@ -267,14 +266,14 @@ class PluginFetchResourceListFromDrupal extends AbstractFetchResourceListPlugin
                 file_put_contents($this->page_data_file, trim($first_offset));
 
                 if ($this->logger) {
-                    $this->logger->info("PluginFetchResourceListFromDrupal has reset Drupal's JSON:API page offset to the first page.",
+                    $this->logger->info(
+                        "PluginFetchResourceListFromDrupal has reset Drupal's JSON:API page offset to the first page.",
                         array(
                             'Pager self URL' => $links['self']
                         )
                     );
-                }                
+                }
             }
         }
     }
-
 }

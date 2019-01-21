@@ -33,7 +33,7 @@ class PluginPersistToDatabase extends AbstractPersistEventPlugin
             $ret = new \stdClass;
             $ret->digest_value = $reference_event->getDigestValue();
             $ret->timestamp = $reference_event->getTimestamp();
-            return $ret;            
+            return $ret;
         }
     }
 

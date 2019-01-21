@@ -41,7 +41,7 @@ class FixityController extends AbstractController
             $limit,
             $offset,
             $sort
-        );        
+        );
 
         if (getenv('APP_ENV') == 'test') {
             $response = new JsonResponse(array());

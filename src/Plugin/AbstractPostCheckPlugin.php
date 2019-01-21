@@ -20,13 +20,13 @@ abstract class AbstractPostCheckPlugin
      * @param object $logger
      *    The Monolog logger from the main Console command.
      * @param object $entityManager
-     *    The Doctrine Entity Manager from the Console command.     
+     *    The Doctrine Entity Manager from the Console command.
      */
     public function __construct($settings, $logger, $entityManager)
     {
         $this->settings = $settings;
         $this->logger = $logger;
-        $this->entityManager = $entityManager;        
+        $this->entityManager = $entityManager;
     }
 
     /**

@@ -17,7 +17,8 @@ use App\Entity\FixityCheckEvent;
 
 class CheckFixityCommand extends ContainerAwareCommand
 {
-    public function __construct(LoggerInterface $logger = null) {
+    public function __construct(LoggerInterface $logger = null)
+    {
         // Set log output path in config/packages/{environment}/monolog.yaml
         $this->logger = $logger;
 
@@ -29,8 +30,13 @@ class CheckFixityCommand extends ContainerAwareCommand
         $this
             ->setName('app:riprap:check_fixity')
             ->setDescription('Console tool for running batches of fixity check events against ' .
-                'a Fedora (or other) repository.')  
-            ->addOption('settings', null, InputOption::VALUE_REQUIRED, 'Absolute or relative path to YAML configuration settings file.');
+                'a Fedora (or other) repository.')
+            ->addOption(
+                'settings',
+                null,
+                InputOption::VALUE_REQUIRED,
+                'Absolute or relative path to YAML configuration settings file.'
+            );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -121,7 +127,7 @@ class CheckFixityCommand extends ContainerAwareCommand
             } else {
                 $fetch_digest_plugin_output_ok = false;
                 // Move on to the next fetchdigest plugin for this resource.
-                continue;                
+                continue;
             }
 
             if ($fetch_digest_plugin_output_ok) {
@@ -135,7 +141,7 @@ class CheckFixityCommand extends ContainerAwareCommand
 
                 if (is_null($reference_event) || strlen($reference_event->digest_value) == 0) {
                     // Riprap has no entries in its db for this resource; this is OK, since this will
-                    // be the case for new resources detected by the fetchresourcelist plugins.                            
+                    // be the case for new resources detected by the fetchresourcelist plugins.
                     $outcome = 'success';
                     $num_successful_events++;
                     $event_detail[] = 'Initial fixity check.';
@@ -165,7 +171,7 @@ class CheckFixityCommand extends ContainerAwareCommand
             }
 
             $event_detail_string = implode($this->note_delimiter, $event_detail);
-            $event_outcome_detail_note_string = implode($this->note_delimiter, $event_outcome_detail_note);                    
+            $event_outcome_detail_note_string = implode($this->note_delimiter, $event_outcome_detail_note);
 
             $event = new FixityCheckEvent();
             $event->setEventUuid($event_uuid);
@@ -185,7 +191,11 @@ class CheckFixityCommand extends ContainerAwareCommand
             if (isset($event) && $persisted && count($this->postCheckPlugins) > 0) {
                 foreach ($this->postCheckPlugins as $postcheck_plugin_name) {
                     $post_check_plugin_name = 'App\Plugin\\' . $postcheck_plugin_name;
-                    $post_check_plugin = new $post_check_plugin_name($this->settings, $this->logger, $this->entityManager);
+                    $post_check_plugin = new $post_check_plugin_name(
+                        $this->settings,
+                        $this->logger,
+                        $this->entityManager
+                    );
                     $post_check_plugin->execute($event);
                 }
             }

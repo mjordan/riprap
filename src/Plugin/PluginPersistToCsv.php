@@ -6,7 +6,8 @@ use App\Entity\FixityCheckEvent;
 
 class PluginPersistToCsv extends AbstractPersistEventPlugin
 {
-    public function getReferenceEvent($resource_id) {
+    public function getReferenceEvent($resource_id)
+    {
         // This is the first time we've tried to get the reference event,
         // so there is no CSV file yet.
         if (!file_exists($this->settings['output_csv_path'])) {
@@ -19,8 +20,7 @@ class PluginPersistToCsv extends AbstractPersistEventPlugin
         $event_records = array();
         foreach ($rows as $row) {
             $fields = explode(',', $row);
-            if (
-                $fields[2] == $resource_id &&
+            if ($fields[2] == $resource_id &&
                 $fields[4] == $this->settings['fixity_algorithm'] &&
                 $fields[7] == 'success'
             ) {
@@ -82,7 +82,7 @@ class PluginPersistToCsv extends AbstractPersistEventPlugin
                     'resource_id' => $event->getResourceId(),
                     'error' => $this->settings['output_csv_path'] . " could not be written to."
                 )
-            );     
+            );
             return false;
         }
     }

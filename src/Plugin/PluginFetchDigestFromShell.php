@@ -38,7 +38,11 @@ class PluginFetchDigestFromShell extends AbstractFetchDigestPlugin
         $external_digest_program_command = $this->settings['digest_command'] . ' ' . $file_path;
         try {
             $external_digest_program_command = escapeshellcmd($external_digest_program_command);
-            $external_digest_command_output = exec($external_digest_program_command, $external_digest_program_command_output, $return);
+            $external_digest_command_output = exec(
+                $external_digest_program_command,
+                $external_digest_program_command_output,
+                $return
+            );
         } catch (Exception $e) {
             $this->logger->warning("Fetchdigest plugin ran but encountered an error.", array(
                 'plugin_name' => 'PluginFetchDigestFromShell',
@@ -57,6 +61,6 @@ class PluginFetchDigestFromShell extends AbstractFetchDigestPlugin
                 'status_code' => $return,
             ));
             return false;
-        }        
+        }
     }
 }

@@ -15,7 +15,8 @@ class PluginFetchResourceListFromFile extends AbstractFetchResourceListPlugin
                     if (count($input_resource_records) > 0) {
                         if (strlen($resource_record)) {
                             list($uri, $last_modified_timestamp) = explode(',', $resource_record);
-                            // This is an array of objects with the properties 'resource_id' and 'last_modified_timestamp'.
+                            // This is an array of objects with the properties 'resource_id' and
+                            // 'last_modified_timestamp'.
                             $resource_record_object = new \stdClass;
                             $resource_record_object->resource_id = $uri;
                             $resource_record_object->last_modified_timestamp = $last_modified_timestamp;

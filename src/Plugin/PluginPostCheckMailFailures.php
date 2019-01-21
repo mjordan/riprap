@@ -2,7 +2,6 @@
 // src/Plugin/PluginPostCheckMailFailures.php
 namespace App\Plugin;
 
-
 class PluginPostCheckMailFailures extends AbstractPostCheckPlugin
 {
     public function execute($event)
