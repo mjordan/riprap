@@ -4,8 +4,6 @@
 [![Contribution Guidelines](http://img.shields.io/badge/CONTRIBUTING-Guidelines-blue.svg)](./docs/CONTRIBUTING.md)
 [![LICENSE](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](./LICENSE)
 
-> Note: During January and February 2019, Riprap is undergoing a major refactoring because of work on https://github.com/mjordan/riprap/issues/26 and https://github.com/mjordan/riprap/issues/31.
-
 A PREMIS-compliant fixity checking microservice. Developed as a successor to Islandora 7.x's [Checksum Checker](https://github.com/Islandora/islandora_checksum_checker) module (see [this Github issue](https://github.com/Islandora-CLAW/CLAW/issues/847) for background), it is intended primarily to be used with repositories compliant with the [Fedora API Specification](https://fedora.info/spec/), but can be used to provide fixity validation for other repositories as well (e.g., an [OCFL](https://ocfl.io/) repository). In fact, Riprap ships with a sample configuration that allows it to monitor the fixity of files on a standard attached filesystem and call `sha1sum` to get their current digests.
 
 Riprap periodcally requests fixity digests for resources from a repository and compares the digest with a previously request digest. It then persists the outcome of that comparison so the process can be repeated again. Riprap also provides a REST interface so that external applications (in Islandora's case, Drupal) can retrieve fixity checking event data for use in reports, etc.
