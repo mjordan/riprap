@@ -15,123 +15,24 @@ These four classes of plugins are executed, in that order, within the main `app:
 
 ## Registering plugins to work together
 
-One or more of each of these types of plugins are registered in Riprap's configuration file located at `config/services.yaml`, in the following options, e.g.:
+One or more of each of these types of plugins are registered in a Riprap configuration file, the locatin of which is passed to the `check_fixity` command in its `--settings` option.. Specifically, a configuration may contain more than one "fetchresourcelist" and more than one "postcheck" plugin; in contrast, only one "fetchdigest" and one "persist" plugin can be registered. Multiple plugins are registered in a YAML list value (e.g., `['foo', 'bar']`) and single plugins are registered in a YAML string value (`baz`).
 
-```
-app.plugins.fetchresourcelist: ['app:riprap:plugin:fetchresourcelist:from:file']
-app.plugins.fetchdigest: 'app:riprap:plugin:fetchdigest:from:fedoraapi'
-app.plugins.persist: ['app:riprap:plugin:persist:to:database']
-app.plugins.postcheck: ['app:riprap:plugin:postcheck:mailfailures', 'app:riprap:plugin:postcheck:migratefedora3auditlog']
-```
+Additional configuration parameters that apply to registered plugins, and general configuration options, are also registered in a configuration file, as described below. Refer to the walkthrough in "The sample CSV configuration" section of Riprap's README file for more information on how configuration files work.
 
-Additional configuration parameters that apply to registered plugins, and general configuration options, are also registered in `config/services.yaml`, as described below.
+## Plugins API
 
-## Types of plugin input and output
+The abstract classes in `src/Plugin` document the base classes for each of the four types of plugins. This is a summary of that documentation.
 
-### Configuration parameters
+All plugins have access, through their parent class's constructors, to `$this->settings`, which is a flat associative array of all the  values from the configuration file passed to the `check_fixity` command, and to `$this->logger`, which is the Monolog logger object instantiated in the `check_fixity` command. "persist" and "postcheck" plugins also have access to `$this->entityManager`, the Doctrine entity manager instantiated in `check_fixity`.
 
-All plugins can take configuration parameters. These are stored in `config/services.yaml` in sections named after each of the plugins. For example, if the plugin '' is registered in the `app.plugins.fetchresourcelist` configuration parameter:
+### Required methods
 
-```
-app.plugins.fetchresourcelist: ['app:riprap:plugin:fetchresourcelist:from:drupal']
-```
-parameters it uses can use the same base name:
+Plugins are called from several places within the `check_fixity` console command, and are loaded dynamically based on their presence in the configuration file. Each plugin class file must contain an `execute()` method, but the parameters this method takes vary from plugin to plugin. The only plugin type that does not require an `execute()` method is the "persist" plugins, which contain three different methods, `getReferenceEvent()`, `persistEvent()`, and `getEvents()`.
 
-```
-app.plugins.fetchresourcelist.from.drupal.baseurl: 'http://localhost:8000'
-app.plugins.fetchresourcelist.from.drupal.json_authorization_headers: ['Authorization: Basic YWRtaW46aXNsYW5kb3Jh'] # admin:islandora
-app.plugins.fetchresourcelist.from.drupal.use_fedora_urls: true
-app.plugins.fetchresourcelist.from.drupal.media_auth: ['admin', 'islandora']
-app.plugins.fetchresourcelist.from.drupal.content_types: ['islandora_object']
-app.plugins.fetchresourcelist.from.drupal.media_tags: ['/taxonomy/term/15']
-app.plugins.fetchresourcelist.from.drupal.gemini_endpoint: 'http://localhost:8000/gemini'
-```
-### InputInterface options
+### Return values
 
-Since Riprap plugins are Symfony console commands, their `execute()` methods take instances of Symfony's `Symfony\Component\Console\Input\InputInterface` (along with instances of `Symfony\Component\Console\Output\OutputInterface`):
+Return values for each of the required methods are documented in the abstract classes. Plugins should return FALSE if they encountered an error or exception, and logging of those errors should happen prior to returning false. 
 
-```php
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
+## Writing your own plugins
 
-protected function execute(InputInterface $input, OutputInterface $output)
-    {
-      // code
-    }
-```
-
-Specific input options are defined in each plugin's `configure()` method, e.g.:
-
-```php
-$this
-  ->addOption('timestamp', null, InputOption::VALUE_REQUIRED, 'ISO 8601 date when the fixity check event occured.')
-  ->addOption('timestamp_start', null, InputOption::VALUE_OPTIONAL, 'ISO8601 date indicating start of date range in queries.', null)
-```
-
-### Output
-
-As illustrated in the code example above, plugins pass values to other plugins, or to controllers, via Symfony's `Symfony\Component\Console\Output\OutputInterface`. Plugins can also write to files or to a database (for example, persist plugins do both, depending on what operation they are performing).
-
-Output is writen from within a plugin's `execute()` method like this:
-
-```php
- $output->writeln($string);
- ```
-
- Plugins can only output strings using `writeln()`.
-
-## Input options and output variables used within app:riprap:check_fixity
-
- Within the main `app:riprap:check_fixity` command, the following input options and output variables are used.
-
-### fetchresource plugins
-* input
-  * none
-* output
-  * a resource ID
-
-### fetchdigest plugins
-* input
-  * '--resource_id' => $resource_id
-* output
-    * a digest (string) or an HTTP response code or a shell exit code (both are integers)
-
-### persist plugins
-* input
-    * '--operation'
-      * "get_last_digest" operation
-        * '--resource_id'
-        * '--digest_algorithm'
-      * "persist_fix_event" operation
-        * '--resource_id'
-        * '--digest_algorithm'
-        * '--event_uuid'
-        * '--digest_value'
-        * '--outcome'
-      * "get_events" operation
-        * '--resource_id'
-        * '--timestamp_start'
-        * '--timestamp_end'           
-        * '--offset'
-        * '--limit'
-        * '--sort'
-        * '--outcome'
-* output
-    * "get_last_digest" operation
-      * a digest (string)
-    * "get_events" operation
-      * a serialized array of events, with keys (string)
-    * "persist_fix_event" operation
-      * no output other than to file, database
-
-### postcheck plugins
-* input
-      '--resource_id'
-      '--digest_algorithm'
-      '--event_uuid'
-      '--digest_value'
-      '--outcome'
-* output
-  * none
-
- Note that plugins may take optional input parameters, but if they do so, they must use preemptive checks to determine whether those options are populated. For example, persist plugins may take optional `--timestamp` or `--timestamp_start`/`--timestamp_end` parameters.
+To create your own plugin, all you need to do is extend the relevant abstract class in your own class file. Putting the file in the `src/Plugin` directory will place it within the `App\Plugin` namespace. To register your plugin in the configuration file, simply add it to the relevant `plugins.` option. If your plugin requires static configuration settings, you can call its settings whatever you want, as long as you don't reuse an existing YAML key as the setting name.

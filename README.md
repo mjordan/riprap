@@ -108,13 +108,13 @@ This walkthrough of the `sample_csv_config.yml` configuration illustrates Riprap
 
 If you look at the `sample_db_config.yml` configuration file, you will see that it differs from the `sample_csv_config.yml` file in two ways: it gets the list of files to audit from a plugin that scans a specfic directory (`resources/filesystemexample/resourcefiles`), and it persists the outcome of fixity check events not to a CSV file but to a relational database via the `PluginPersistToDatabase` plugin.
 
-It's important to note that there are no dependencies between which "fetchresourcelist" plugin we choose and which "persist" plugin we choose. In the sample database configuration, we could have used the same "fetchresourcelist" plugin as we did in the sample CSV configuration, or we could even have registered both plugins in the same configuration. In fact, all plugins within each of the four types (see the "Plugins" section below) are interchangeable.
+This is a good opportunity to point out that there are no dependencies between which "fetchresourcelist" plugin we choose and which "persist" plugin we choose (or between the other types of plugins). In fact, all plugins within each of the four types (see the "Plugins" section below) are interchangeable. In the sample database configuration, we could have used the same "fetchresourcelist" plugin as we did in the sample CSV configuration, or we could even have registered both plugins in the same configuration.
 
-### The Islandora configuration
+### The sample Islandora configuration
 
 > If you are running Islandora in a CLAW Playbook Vagrant guest virtual machine and Riprap on the Vagrant host machine, start the Riprap web server by running `php bin/console server:start *:8001` in the Riprap directory. See the [Islandora Riprap](https://github.com/mjordan/islandora_riprap) README file for more information. Otherwise, the Symfony web server will have a port conflict with the Apache web server mapped to port `8000` on the host machine.
 
-The "islandora" configuration works like the other two sample configurations, but it queries Drupal's [JSON:API](https://www.drupal.org/project/jsonapi) (not included in the default CLAW installation) for the list of resources to audit (using the descriptively named `PluginFetchResourceListFromDrupal` plugin), and it queries the REST API of the Fedora repository that accompanies Drupal in the Islandora stack for the digests of those files (using the `PluginFetchDigestFromFedoraAPI` plugin). Both of those plugins require more configuration options the the other plugins we have seen so far.
+The "islandora" configuration works like the other two sample configurations, but it queries Drupal's [JSON:API](https://www.drupal.org/project/jsonapi) (not included in the default CLAW installation) for the list of resources to audit (using the descriptively named `PluginFetchResourceListFromDrupal` plugin), and it queries the REST API of the Fedora repository that accompanies Drupal in the Islandora stack for the digests of those files (using the `PluginFetchDigestFromFedoraAPI` plugin). Both of those plugins require more configuration options the the other plugins we have seen so far. Any static data a plugin needs can be included in a configuration file.
 
 Within the Drupal user interface, the [Islandora Riprap](https://github.com/mjordan/islandora_riprap) module provides reports on whether Riprap has recorded any failed fixity check events (i.e., digest mismatches for the same resource) over time. The module gets this information via the Riprap REST API, described in the next section.
 
@@ -124,14 +124,14 @@ Within the Drupal user interface, the [Islandora Riprap](https://github.com/mjor
 
 Riprap provides an HTTP REST API, which will allow external applications like Drupal to retrieve fixity check data on specific Fedora resources and to add new and updated fixity check data. For example, a `GET` request to:
 
-`curl -v -H "Resource-ID:http://example.com/repository/resource/12345" http://localhost:8000/api/fixity`
+`curl -v -H "Resource-ID:http://example.com/resource/12345" http://localhost:8000/api/fixity`
 
 would return a list of all fixity events for the Fedora resource `http://example.com/repository/resource/12345`.
 
 To see the API in action,
 
 1. run `php bin/console server:start`
-1. run `curl -v -H 'Resource-ID:http://localhost:8000/mockrepository/rest/10' http://localhost:8000/api/fixity`
+1. run `curl -v -H 'Resource-ID:http://example.com/resource/10' http://localhost:8000/api/fixity`
 
 You should get a response like this:
 
@@ -143,7 +143,7 @@ You should get a response like this:
 > Host: localhost:8000
 > User-Agent: curl/7.58.0
 > Accept: */*
-> Resource-ID:http://localhost:8000/mockrepository/rest/10
+> Resource-ID:http://example.com/resources/rest/10
 >
 < HTTP/1.1 200 OK
 < Host: localhost:8000
@@ -162,7 +162,7 @@ The returned JSON looks like this:
 [
    {
       "event_uuid":"4cd2edc9-f292-49a1-9b05-d025684de559",
-      "resource_id":"http:\/\/localhost:8000\/mockrepository\/rest\/10",
+      "resource_id":"http:\/\/example.com\/resource\/10",
       "event_type":"fix",
       "timestamp":"2018-10-03T07:23:40-07:00",
       "hash_algorithm":"SHA-1",
@@ -173,7 +173,7 @@ The returned JSON looks like this:
    },
    {
       "event_uuid":"fb73a36a-df64-4ba8-a437-ea277b65ebb7",
-      "resource_id":"http:\/\/localhost:8000\/mockrepository\/rest\/10",
+      "resource_id":"http:\/\/example.com\/resource\/10",
       "event_type":"fix",
       "timestamp":"2018-12-03T07:26:39-07:00",
       "hash_algorithm":"SHA-1",
@@ -196,7 +196,7 @@ This means that consumers of this API will need to not only check for the HTTP r
 HTTP `POST` and `PATCH` will also be supported, e.g.:
 
 ```
-curl -v -X POST -H "Resource-ID:http://localhost:8080/mockrepository/rest/17" http://localhost:8000/api/fixity
+curl -v -X POST -H "Resource-ID:http://example.com/resource/17" http://localhost:8000/api/fixity
 *   Trying 127.0.0.1...
 * TCP_NODELAY set
 * Connected to localhost (127.0.0.1) port 8000 (#0)
@@ -204,7 +204,7 @@ curl -v -X POST -H "Resource-ID:http://localhost:8080/mockrepository/rest/17" ht
 > Host: localhost:8000
 > User-Agent: curl/7.58.0
 > Accept: */*
-> Resource-ID:http://localhost:8080/mockrepository/rest/17
+> Resource-ID:http://example.com/resource/17
 >
 < HTTP/1.1 200 OK
 < Host: localhost:8000
@@ -216,7 +216,7 @@ curl -v -X POST -H "Resource-ID:http://localhost:8080/mockrepository/rest/17" ht
 < Content-Type: application/json
 <
 * Closing connection 0
-["new fixity event for resource http:\/\/localhost:8080\/mockrepository\/rest\/17"]
+["new fixity event for resource http:\/\/example.com\/resource\/17"]
 ```
 
 `GET` requests can optionally take the following URL parameters:
@@ -228,7 +228,7 @@ curl -v -X POST -H "Resource-ID:http://localhost:8080/mockrepository/rest/17" ht
 * `limit`: Number of items in the result set to return, starting at the value of `offset`.
 * `sort`: Sort events on timestamp. Specify "desc" or "asc" (if not present, will sort "asc").
 
-For example, `curl -v -H 'Resource-ID:http://localhost:8000/mockrepository/rest/10' http://localhost:8000/api/fixity?timestamp_start=2018-12-03` would return only the events for `http://localhost:8000/mockrepository/rest/10` that have a timestamp equal to or later than `2018-12-03`.
+For example, `curl -v -H 'Resource-ID:http://example.com/resources/rest/10' http://localhost:8000/api/fixity?timestamp_start=2018-12-03` would return only the events for `http://example.com/resources/rest/10` that have a timestamp equal to or later than `2018-12-03`.
 
 If you want to `GET` fixity events that are not specific to a resource, for example all failed events, do not include the `Resource-ID` header, e.g., `curl http://localhost:8000/api/fixity?outcome=fail`.
 
