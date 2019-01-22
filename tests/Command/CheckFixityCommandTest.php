@@ -13,35 +13,61 @@ class CheckFixityCommandTest extends KernelTestCase
 {
     public function testExecute()
     {
-        // I expected parameters defined in config/services_test.yaml and
-        // config/packages/test/services.yaml to be available in Command tests,
-        // but they are not (in both cases, $this->params in the CheckFixity
-        // object is null). To work around this, we need to define configuration
-        // parameters locally within the test.
-        $params = new ParameterBag(
-            array(
-            'app.fixity.fetchdigest.from.fedoraapi.method' => 'HEAD',
-            'app.fixity.fetchdigest.from.fedoraapi.algorithm' => 'SHA-1',
-            'app.plugins.fetchresourcelist' => array(),
-            'app.plugins.fetchdigest' => array(),
-            'app.plugins.persist' => array(),
-            'app.plugins.postcheck' => array())
-        );
-
         $kernel = self::bootKernel();
         $application = new Application($kernel);
 
-        $application->add(new CheckFixityCommand($params));
+        $application->add(new CheckFixityCommand());
 
         $command = $application->find('app:riprap:check_fixity');
 
         $commandTester = new CommandTester($command);
         $commandTester->execute(array(
             'command'  => $command->getName(),
+            '--settings' => 'resources/sample_csv_config.yml'
         ));
 
         // The output of the command in the console.
         $output = $commandTester->getDisplay();
         $this->assertContains('Riprap checked', $output);
+
+        // Riprap has no entries in its db for this resource; this is OK, since this will
+        // be the case for new resources detected by the fetchresourcelist plugins.
+        $resource_record = new \stdClass;
+        $result = $command->checkFixity(null, $resource_record, '');
+        $this->assertTrue($result, "Fixity check event was not successful.");
+
+        // Digest value from reference event is a zero-lenght string.
+        $reference_event = new \stdClass;
+        $reference_event->digest_value = '';
+        $resource_record = new \stdClass;
+        $result = $command->checkFixity($reference_event, $resource_record, '85e9d4014da20770b685e9c980b4db64147f1f6c');
+        $this->assertTrue($result, "Fixity check event was not successful.");
+
+        // Digest value from reference event and from current fixity check are the same.
+        $reference_event = new \stdClass;
+        $reference_event->digest_value = '7bb2e6023344e35e72150af91c8c1a8896f4af4d';
+        $resource_record = new \stdClass;
+        $resource_record->resource_id = '/foo/bar/baz';
+        $result = $command->checkFixity($reference_event, $resource_record, '7bb2e6023344e35e72150af91c8c1a8896f4af4d');
+        $this->assertTrue($result, "Fixity check event was not successful.");
+
+        // The resource's current last modified date is later than the timestamp in the
+        // reference fixity check event for this resource.
+        $reference_event = new \stdClass;
+        $reference_event->digest_value = '';
+        $reference_event->timestamp = '2019-01-21T19:32:38-0800';
+        $resource_record = new \stdClass;
+        $resource_record->last_modified_timestamp = '2019-02-21T19:32:38-0800';
+        $result = $command->checkFixity($reference_event, $resource_record, '');
+        $this->assertTrue($result, "Fixity check event was not successful.");
+
+        // Digest mismatch.
+        $reference_event = new \stdClass;
+        $reference_event->digest_value = '12345';
+        $reference_event->timestamp = '2019-01-21T19:32:38-0800';
+        $resource_record = new \stdClass;
+        $resource_record->last_modified_timestamp = '2019-01-21T19:32:38-0800';
+        $result = $command->checkFixity($reference_event, $resource_record, '67890');
+        $this->assertFalse($result, "Fixity check event was not successful.");
     }
 }

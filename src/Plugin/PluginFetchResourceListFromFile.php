@@ -38,7 +38,7 @@ class PluginFetchResourceListFromFile extends AbstractFetchResourceListPlugin
                 "Fetchresourcelist plugin ran but returned no resources.",
                 array(
                     'plugin_name' => 'PluginFetchResourceListFromFile',
-                    'number_of_input_directories' => count($this->settings['resource_dir_paths'])
+                    'number_of_input_directories' => count($this->settings['resource_dir_path'])
                 )
             );
             return false;

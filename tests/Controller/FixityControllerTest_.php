@@ -4,7 +4,7 @@ namespace App\Tests\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-class FixityControllerTest extends WebTestCase
+class FixityControllerTest_ extends WebTestCase
 {
     public function testGetResponseCode()
     {

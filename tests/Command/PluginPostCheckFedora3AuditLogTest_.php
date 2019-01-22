@@ -9,7 +9,7 @@ use Symfony\Component\Console\Tester\CommandTester;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 
-class PluginPostCheckMigrateFedora3AuditLogTest extends KernelTestCase
+class PluginPostCheckMigrateFedora3AuditLogTest_ extends KernelTestCase
 {
     public $params;
 

@@ -11,7 +11,6 @@ use Symfony\Component\Yaml\Yaml;
 
 use Psr\Log\LoggerInterface;
 use Ramsey\Uuid\Uuid;
-use Ramsey\Uuid\Exception\UnsatisfiedDependencyException;
 
 use App\Entity\FixityCheckEvent;
 
@@ -51,11 +50,6 @@ class CheckFixityCommand extends ContainerAwareCommand
         $this->fetchDigestPlugin = $this->settings['plugins.fetchdigest'];
         $this->persistPlugin = $this->settings['plugins.persist'];
         $this->postCheckPlugins = $this->settings['plugins.postcheck'];
-        if (array_key_exists('note_delimiter', $this->settings)) {
-            $this->note_delimiter = $this->settings['note_delimiter'];
-        } else {
-            $this->note_delimiter = '|';
-        }
 
         // Execute plugins that get a list of resource IDs to check. There can be more
         // than one.
@@ -130,36 +124,23 @@ class CheckFixityCommand extends ContainerAwareCommand
                 continue;
             }
 
+            // Initialize $outcome to 'fail', change it to 'success' only if required
+            // conditions are met.
+            $outcome = 'fail';
+            $event_detail = '';
+            $event_outcome_detail_note = '';
             if ($fetch_digest_plugin_output_ok) {
-                // Initialize $outcome to 'fail', change it to 'success' only if required
-                // conditions are met.
-                $outcome = 'fail';
-
-                // We'll populate these arrays below and then serialize them prior to persisting.
-                $event_detail = array();
-                $event_outcome_detail_note = array();
-
-                if (is_null($reference_event) || strlen($reference_event->digest_value) == 0) {
-                    // Riprap has no entries in its db for this resource; this is OK, since this will
-                    // be the case for new resources detected by the fetchresourcelist plugins.
+                if ($this->checkFixity(
+                    $reference_event,
+                    $resource_record,
+                    $current_digest_value,
+                    $event_detail,
+                    $event_outcome_detail_note
+                )) {
                     $outcome = 'success';
                     $num_successful_events++;
-                    $event_detail[] = 'Initial fixity check.';
-                } elseif ($reference_event->digest_value == $current_digest_value) {
-                    $outcome = 'success';
-                    $num_successful_events++;
-                } elseif ($resource_record->last_modified_timestamp > $reference_event->timestamp) {
-                    // The resource's current last modified date is later than the timestamp in the
-                    // reference fixity check event for this resource.
-                    $outcome = 'success';
-                    $num_successful_events++;
-                    $event_detail[] = 'Resource modified since last fixity check.';
-                } elseif ($reference_event->digest_value != $current_digest_value) {
-                    // Simple digest mismatch.
-                    $num_failed_events++;
                 } else {
                     $num_failed_events++;
-                    $event_outcome_detail_note[] = 'Insufficient conditions for fixity check event.';
                 }
             } else {
                 $this->logger->error("Fetchdigest plugin ran but could not fetch digest.", array(
@@ -170,9 +151,6 @@ class CheckFixityCommand extends ContainerAwareCommand
                 continue;
             }
 
-            $event_detail_string = implode($this->note_delimiter, $event_detail);
-            $event_outcome_detail_note_string = implode($this->note_delimiter, $event_outcome_detail_note);
-
             $event = new FixityCheckEvent();
             $event->setEventUuid($event_uuid);
             $event->setEventType('fix');
@@ -180,9 +158,9 @@ class CheckFixityCommand extends ContainerAwareCommand
             $event->setTimestamp($now_iso8601);
             $event->setDigestAlgorithm($this->fixity_algorithm);
             $event->setDigestValue($current_digest_value);
-            $event->setEventDetail($event_detail_string);
+            $event->setEventDetail($event_detail);
             $event->setEventOutcome($outcome);
-            $event->setEventOutcomeDetailNote($event_outcome_detail_note_string);
+            $event->setEventOutcomeDetailNote($event_outcome_detail_note);
 
             $persisted = $persist_plugin->persistEvent($event);
 
@@ -200,8 +178,9 @@ class CheckFixityCommand extends ContainerAwareCommand
                 }
             }
 
-            // Log that this command ran.
-            $this->logger->info("check_fixity ran.", array('event_uuid' => $event_uuid));
+            if ($env =! 'test') {
+                $this->logger->info("check_fixity ran.", array('event_uuid' => $event_uuid));
+            }
         }
 
         $fixity_check = $stopwatch->stop('fixity_check');
@@ -210,5 +189,51 @@ class CheckFixityCommand extends ContainerAwareCommand
 
         $output->writeln("Riprap checked $num_resource_records resources ($num_successful_events successful events, " .
             "$num_failed_events failed events) in $duration seconds.");
+    }
+
+    /**
+     * Compares the current digest value with that in the reference event.
+     *
+     * @param object $reference_event
+     *    The reference fixity event.
+     * @param object $resource_record
+     *    The current resource's record from the fetchresourcelist plugin.
+     * @param string $current_digest_value
+     *    The current digest value.
+     * @param array $event_detail
+     *    The event detail message, passed by reference.
+     * @param array $event_outcome_detail_note
+     *    The event outcome detail note message, passed by reference.
+     *
+     * @return bool
+     *    True if the even was successful, false if not.
+     */
+    public function checkFixity(
+        $reference_event,
+        $resource_record,
+        $current_digest_value,
+        &$event_detail = '',
+        &$event_outcome_detail_note = ''
+    ) {
+        if (is_null($reference_event) || strlen($reference_event->digest_value) == 0) {
+            // Riprap has no entries in its db for this resource; this is OK, since this will
+            // be the case for new resources detected by the fetchresourcelist plugins.
+            $event_detail = 'Initial fixity check.';
+            return true;
+        } elseif ($reference_event->digest_value == $current_digest_value) {
+            return true;
+        } elseif ($resource_record->last_modified_timestamp > $reference_event->timestamp) {
+            // The resource's current last modified date is later than the timestamp in the
+            // reference fixity check event for this resource.
+            $event_detail = 'Resource modified since last fixity check.';
+            return true;
+        } elseif ($reference_event->digest_value != $current_digest_value) {
+            // Simple digest mismatch.
+            return false;
+        } else {
+            $num_failed_events++;
+            $event_outcome_detail_note = 'Insufficient conditions for fixity check event.';
+            return false;
+        }
     }
 }

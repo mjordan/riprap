@@ -1,39 +1,16 @@
 <?php
 
-namespace App\Tests\Command;
+namespace App\Plugin;
 
-use App\Command\PluginFetchResourceListFromFile;
-use Symfony\Bundle\FrameworkBundle\Console\Application;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-use Symfony\Component\Console\Tester\CommandTester;
+use PHPUnit\Framework\TestCase;
 
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
-
-class PluginFetchResourceListFromFileTest extends KernelTestCase
+class PluginFetchResourceListFromFileTest extends TestCase
 {
-    public $params;
-
-    public function testExecute()
+    public function testPluginFetchResourceListFromFile()
     {
-        $params = new ParameterBag(array(
-            'app.plugins.fetchresourcelist.from.file.paths' => array('resources/riprap_resource_ids.txt')
-        ));
-        $this->params = $params;
-
-        $kernel = self::bootKernel();
-        $application = new Application($kernel);
-
-        $application->add(new PluginFetchResourceListFromFile($params));
-
-        $command = $application->find('app:riprap:plugin:fetch:from:file');
-
-        $commandTester = new CommandTester($command);
-        $commandTester->execute(array(
-            'command'  => $command->getName(),
-        ));
-
-        $output = $commandTester->getDisplay();
-        $output_array = preg_split("/\r\n|\n|\r/", trim($output));
-        $this->assertCount(5, $output_array);
+        $settings = array('resource_list_path' => array('resources/csv_file_list.csv'));
+        $plugin = new PluginFetchResourceListFromFile($settings, null);
+        $records = $plugin->execute();
+        $this->assertCount(3, $records);
     }
 }
