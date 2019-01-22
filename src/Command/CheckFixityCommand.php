@@ -143,10 +143,12 @@ class CheckFixityCommand extends ContainerAwareCommand
                     $num_failed_events++;
                 }
             } else {
-                $this->logger->error("Fetchdigest plugin ran but could not fetch digest.", array(
-                    'plugin_name' => $this->fetchDigestPlugin,
-                    'plugin output' => $fetch_digest_plugin_output
-                ));
+                if ($env =! 'test') {
+                    $this->logger->error("Fetchdigest plugin ran but could not fetch digest.", array(
+                        'plugin_name' => $this->fetchDigestPlugin,
+                        'plugin output' => $fetch_digest_plugin_output
+                    ));
+                }
                 $num_failed_events++;
                 continue;
             }
@@ -215,24 +217,35 @@ class CheckFixityCommand extends ContainerAwareCommand
         &$event_detail = '',
         &$event_outcome_detail_note = ''
     ) {
-        if (is_null($reference_event) || strlen($reference_event->digest_value) == 0) {
-            // Riprap has no entries in its db for this resource; this is OK, since this will
-            // be the case for new resources detected by the fetchresourcelist plugins.
-            $event_detail = 'Initial fixity check.';
-            return true;
-        } elseif ($reference_event->digest_value == $current_digest_value) {
-            return true;
-        } elseif ($resource_record->last_modified_timestamp > $reference_event->timestamp) {
-            // The resource's current last modified date is later than the timestamp in the
-            // reference fixity check event for this resource.
-            $event_detail = 'Resource modified since last fixity check.';
-            return true;
-        } elseif ($reference_event->digest_value != $current_digest_value) {
-            // Simple digest mismatch.
-            return false;
-        } else {
+        try {
+            if (is_null($reference_event) || strlen($reference_event->digest_value) == 0) {
+                // Riprap has no entries in its db for this resource; this is OK, since this will
+                // be the case for new resources detected by the fetchresourcelist plugins.
+                $event_detail = 'Initial fixity check.';
+                return true;
+            } elseif ($reference_event->digest_value == $current_digest_value) {
+                return true;
+            } elseif ($resource_record->last_modified_timestamp > $reference_event->timestamp) {
+                // The resource's current last modified date is later than the timestamp in the
+                // reference fixity check event for this resource.
+                $event_detail = 'Resource modified since last fixity check.';
+                return true;
+            } elseif ($reference_event->digest_value != $current_digest_value) {
+                // Simple digest mismatch.
+                return false;
+            } else {
+                $num_failed_events++;
+                $event_outcome_detail_note = 'Insufficient conditions for fixity check event.';
+                return false;
+            }
+        } catch (Exception $e) {
             $num_failed_events++;
             $event_outcome_detail_note = 'Insufficient conditions for fixity check event.';
+            if ($env =! 'test') {
+                $this->logger->error('checkFixity function encountered an error.', array(
+                    'message' => $e->getMessage(),
+                ));
+            }
             return false;
         }
     }
