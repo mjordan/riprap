@@ -1,34 +1,16 @@
 <?php
 
-namespace App\Tests\Command;
+namespace App\Plugin;
 
-use App\Command\PluginPostCheckMigrateFedora3AuditLog;
-use Symfony\Bundle\FrameworkBundle\Console\Application;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-use Symfony\Component\Console\Tester\CommandTester;
+use PHPUnit\Framework\TestCase;
 
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
-
-class PluginPostCheckMigrateFedora3AuditLogTest_ extends KernelTestCase
+class PluginPostCheckMigrateFedora3AuditLogTest extends TestCase
 {
-    public $params;
-
-    public function testExecute()
+    public function testPluginPostCheckMigrateFedora3AuditLog()
     {
-        $params = new ParameterBag(array());
-        $this->params = $params;
-
-        $kernel = self::bootKernel();
-        $application = new Application($kernel);
-
-        $application->add(new PluginPostCheckMigrateFedora3AuditLog());
-
-        $command = $application->find('app:riprap:plugin:postcheck:migratefedora3auditlog');
-
-        $commandTester = new CommandTester($command);
-        $commandTester->execute(array(
-            'command'  => $command->getName(),
-        ));
+        // This test doesn't test the plugin code, only the code below, which we will
+        // use in the plugin.
+        // $plugin = new PluginFetchResourceListFromFile(array(), null);
 
         // Note that in production, we would be using only the AUDIT datastream,
         // not the entire FOXML. See https://github.com/Islandora-CLAW/CLAW/issues/917.
