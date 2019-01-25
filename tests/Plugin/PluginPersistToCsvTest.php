@@ -9,8 +9,7 @@ class PluginPersistToCsvTest extends TestCase
 {
     protected function setUp()
     {
-        // $this->output_csv_path = dirname(__FILE__) . DIRECTORY_SEPARATOR . 'var/unit_tests_output.csv';
-        $this->output_csv_path = 'var/unit_tests_output.csv';
+        $this->output_csv_path = 'var/PluginPersistToCsv.output.csv';
         if (file_exists($this->output_csv_path)) {
             unlink($this->output_csv_path);
         }
@@ -31,13 +30,7 @@ class PluginPersistToCsvTest extends TestCase
 
         $settings = array(
             'fixity_algorithm' => 'SHA-1',
-            'plugins.fetchresourcelist' => array('PluginFetchResourceListFromFile'),
-            'resource_list_path' => array('resources/csv_file_list.csv'),
-            'plugins.fetchdigest' => 'PluginFetchDigestFromShell',
-            'digest_command' => '/usr/bin/sha1sum',
-            'plugins.persist' => 'PluginPersistToCsv',
             'output_csv_path' => $this->output_csv_path,
-            'plugins.postcheck' => array()
         );
 
         $plugin = new PluginPersistToCsv($settings, null, null);
