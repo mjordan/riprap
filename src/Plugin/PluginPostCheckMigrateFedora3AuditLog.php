@@ -16,9 +16,30 @@ class PluginPostCheckMigrateFedora3AuditLog extends AbstractPostCheckPlugin
 {
     public function execute($event)
     {
-        // phpcs:disable
+        // How do we know which AUDIT binary resource we want to parse? If the resource ID
+        // contains the pattern "_AUDIT_", parse the resource ID to get the object's PID.
+        // Knowing this, 
 
-        # See PluginPostCheckMigrateFedora3AuditLogTest.php for code that implements the following logic.
+        // Note that in production, we would be using only the AUDIT datastream,
+        // not the entire FOXML. See https://github.com/Islandora-CLAW/CLAW/issues/917.
+        $xml = simplexml_load_file('resources/foxml.xml');
+        $xml->registerXPathNamespace('audit', 'info:fedora/fedora-system:def/audit#');
+        $records = $xml->xpath('//audit:record');
+
+        $fixity_events = array();
+        foreach ($records as $record) {
+            $timestamp = $record->xpath('./audit:date')[0];
+            $details = $record->xpath('./audit:justification')[0];
+            if (strlen($details)) {
+                $event_parts = explode(';', $details);
+                if (isset($event_parts[1]) &&
+                    isset($event_parts[2]) &&
+                    trim($event_parts[1]) == 'PREMIS:eventType=fixity check') {
+                    $timestamp = (string) $timestamp;
+                    $fixity_events[$timestamp] = array(trim($event_parts[0]), trim($event_parts[2]));
+                }
+            }
+        }      
 
         # For the current resource, retrieve the binary resource containing its Fedora 3.x AUDIT datastream.
         # Parse out the audit records (XPath $audit_xml->xpath('//audit:record').
