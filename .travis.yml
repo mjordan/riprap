@@ -6,8 +6,8 @@ php:
 
 before_install:
   - cd $TRAVIS_BUILD_DIR
-  - composer install
 
 script:
-  - composer test
+  - composer install
+  #- composer test
 
