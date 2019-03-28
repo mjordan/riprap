@@ -243,7 +243,7 @@ One of Riprap's principle design requirements is flexibility. To meet this goal,
 * "fetchdigest" plugins query an external utility or service to get the digest of the current resource. Only one fetchdigest plugin can be configured.
 * "persist" plugins persist data after performing a fixity check on each resource (e.g. to a RDBMS, back into the Fedora repository that manages the resources, etc.). Only one persist plugin can be configured to run.
 
-Riprap supports a fourth class of plugin, which we didn't see in our sample configurations:
+Riprap supports a fourth class of plugin:
 
 * "postcheck" plugins execute after performing a fixity check on each resource. Multiple postcheck plugins can be configured to run at the same time. A plugin that logs failed events to a CSV file (`PluginPostCheckCopyFailures`) is included, as are preliminary versions of two other plugins of this type currently exist (but neither one is complete yet): a plugin that sends an email on failure, and a plugin that migrates fixity events from Fedora 3.x AUDIT data.
 
