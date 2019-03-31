@@ -14,8 +14,8 @@ doctrine:
         # default_table_options:
             # charset: utf8mb4
             # collate: utf8mb4_unicode_ci
-        driver: 'pdo_pgsql'
-        charset: utf8
+        # driver: 'pdo_pgsql'
+        # charset: utf8
 
         url: '%env(resolve:DATABASE_URL)%'
     orm:

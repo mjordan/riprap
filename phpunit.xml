@@ -31,6 +31,8 @@
     <testsuites>
         <testsuite name="Project Test Suite">
             <directory>tests/</directory>
+            <!-- Exclude until https://github.com/mjordan/riprap/issues/40 is resolved. -->
+            <exclude>./tests/Controller/FixityControllerTest.php</exclude>
         </testsuite>
     </testsuites>
 
