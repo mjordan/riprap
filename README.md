@@ -273,7 +273,12 @@ See [CONTRIBUTING.md](docs/CONTRIBUTING.md). Functional and unit tests, and addi
 
 ### Running tests
 
-From within the `riprap` directory, run:
+Riprap uses the PHPUnit Bridge component, which, while [recommended practice](https://symfony.com/doc/current/testing.html), is overly complex. To get this to install properly, you need to use Composer to first remove the PHPUnit Bridge component, and then reinstall it:
+
+`composer remove symfony/phpunit-bridge`
+`composer require symfony/phpunit-bridge`
+
+Reinstalling it installs PHPUnit and all of its dependencies. Once that is complete, from within the `riprap` directory, run:
 
 `./bin/phpunit`
 
