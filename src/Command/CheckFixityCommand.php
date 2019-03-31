@@ -2,7 +2,8 @@
 // src/Command/CheckFixity.php
 namespace App\Command;
 
-use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
+use Symfony\Component\Console\Command\Command;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -14,12 +15,13 @@ use Ramsey\Uuid\Uuid;
 
 use App\Entity\FixityCheckEvent;
 
-class CheckFixityCommand extends ContainerAwareCommand
+class CheckFixityCommand extends Command
 {
-    public function __construct(LoggerInterface $logger = null)
+    public function __construct(EntityManagerInterface $entityManager =  null, LoggerInterface $logger = null)
     {
         // Set log output path in config/packages/{environment}/monolog.yaml
         $this->logger = $logger;
+        $this->entityManager = $entityManager;
 
         parent::__construct();
     }
@@ -93,7 +95,6 @@ class CheckFixityCommand extends ContainerAwareCommand
             // We execute the persist plugin twice, once to get the "reference event" for the
             // resource and again to persist the event resulting from comparing the reference
             // event's digest value with the current one.
-            $this->entityManager = $this->getContainer()->get('doctrine')->getManager();
             $plugin_name = 'App\Plugin\\' . $this->persistPlugin;
             $persist_plugin = new $plugin_name($this->settings, $this->logger, $this->entityManager);
             $reference_event = $persist_plugin->getReferenceEvent($resource_record->resource_id);
