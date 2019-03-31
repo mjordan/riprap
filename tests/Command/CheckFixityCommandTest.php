@@ -23,7 +23,7 @@ class CheckFixityCommandTest extends KernelTestCase
         $commandTester = new CommandTester($command);
         $commandTester->execute(array(
             'command'  => $command->getName(),
-            '--settings' => 'resources/sample_csv_config.yml'
+            '--settings' => 'sample_csv_config.yml'
         ));
 
         // The output of the command in the console.
