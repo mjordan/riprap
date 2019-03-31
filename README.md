@@ -1,7 +1,7 @@
 ![RipRap](https://user-images.githubusercontent.com/2371345/48165629-86513c80-e2bc-11e8-9577-dc0525c74184.png)
 # Riprap
 
-[![Build status](https://travis-ci.org/mjordan/riprap.svg?branch=master)
+[![Build Status](https://travis-ci.org/mjordan/riprap.svg?branch=master)](https://travis-ci.org/mjordan/riprap)
 [![Contribution Guidelines](http://img.shields.io/badge/CONTRIBUTING-Guidelines-blue.svg)](./docs/CONTRIBUTING.md)
 [![LICENSE](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](./LICENSE)
 
