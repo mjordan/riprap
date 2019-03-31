@@ -9,5 +9,5 @@ before_install:
 
 script:
   - composer install
-  #- composer test
+  - composer test
 
