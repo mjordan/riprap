@@ -1,5 +1,5 @@
 {
-    "name": "riprap",
+    "name": "mjordan/riprap",
     "type": "project",
     "description": "A PREMIS-compliant fixity checking microservice.",
     "license": "MIT",
