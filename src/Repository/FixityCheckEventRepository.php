@@ -40,6 +40,7 @@ class FixityCheckEventRepository extends ServiceEntityRepository
             ->andWhere('event.resource_id = :resource_id')
             ->andWhere('event.digest_algorithm = :digest_algorithm')
             ->andWhere('event.event_outcome = :event_outcome')
+            ->andWhere('event.digest_value != ""')
             ->setParameter('resource_id', $resource_id)
             ->setParameter('digest_algorithm', $digest_algorithm)
             ->setParameter('event_outcome', 'success')

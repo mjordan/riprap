@@ -22,7 +22,8 @@ class PluginPersistToCsv extends AbstractPersistEventPlugin
             $fields = explode(',', $row);
             if ($fields[2] == $resource_id &&
                 $fields[4] == $this->settings['fixity_algorithm'] &&
-                $fields[7] == 'success'
+                $fields[7] == 'success' &&
+                strlen($fields[5])
             ) {
                 $event_records[] = $fields;
             }
