@@ -1,0 +1,13 @@
+language: php
+
+php:
+  - 7.1
+  - 7.2
+
+before_install:
+  - cd $TRAVIS_BUILD_DIR
+
+script:
+  - composer install
+  #- composer test
+

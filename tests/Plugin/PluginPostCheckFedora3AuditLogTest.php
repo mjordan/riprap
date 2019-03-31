@@ -34,9 +34,11 @@ class PluginPostCheckMigrateFedora3AuditLogTest extends TestCase
         }
         $fixity_events_string = json_encode($fixity_events);
 
-        // phpcs:disable 
-        $expected = '{"2018-09-15T14:29:03.684Z":["PREMIS:file=islandora:3+OBJ+OBJ.0","PREMIS:eventOutcome=SHA-1 checksum validated."],"2018-09-18T03:05:41.148Z":["PREMIS:file=islandora:3+OBJ+OBJ.0","PREMIS:eventOutcome=SHA-1 checksum validated."],"2018-09-19T01:38:02.136Z":["PREMIS:file=islandora:3+OBJ+OBJ.0","PREMIS:eventOutcome=SHA-1 checksum validated."],"2018-09-27T12:09:21.033Z":["PREMIS:file=islandora:3+OBJ+OBJ.0","PREMIS:eventOutcome=SHA-1 checksum validated."]}';
-        // phpcs:enable
+        $expected = '{"2018-09-15T14:29:03.684Z":["PREMIS:file=islandora:3+OBJ+OBJ.0","PREMIS:eventOutcome=SHA-1 ' .
+          'checksum validated."],"2018-09-18T03:05:41.148Z":["PREMIS:file=islandora:3+OBJ+OBJ.0",' .
+          '"PREMIS:eventOutcome=SHA-1 checksum validated."],"2018-09-19T01:38:02.136Z":["PREMIS:' .
+          'file=islandora:3+OBJ+OBJ.0","PREMIS:eventOutcome=SHA-1 checksum validated."],"2018-09-27T12:09:21.033Z"' .
+          ':["PREMIS:file=islandora:3+OBJ+OBJ.0","PREMIS:eventOutcome=SHA-1 checksum validated."]}';
 
         $this->assertJsonStringEqualsJsonString($expected, $fixity_events_string);
     }

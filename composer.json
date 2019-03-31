@@ -16,7 +16,7 @@
         "ext-ctype": "*",
         "ext-iconv": "*",
         "symfony/yaml": "*",
-        "symfony/maker-bundle": "*", 
+        "symfony/maker-bundle": "*",
         "symfony/console": "*",
         "symfony/flex": "^1.1",
         "symfony/framework-bundle": "*",
@@ -69,6 +69,11 @@
         ],
         "post-update-cmd": [
             "@auto-scripts"
+        ],
+        "check": "vendor/bin/phpcs --standard=PSR2 src tests",
+        "test": [
+            "@check",
+            "vendor/bin/simple-phpunit"
         ]
     },
     "conflict": {
