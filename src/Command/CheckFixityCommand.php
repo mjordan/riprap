@@ -17,7 +17,7 @@ use App\Entity\FixityCheckEvent;
 
 class CheckFixityCommand extends Command
 {
-    public function __construct(EntityManagerInterface $entityManager =  null, LoggerInterface $logger = null)
+    public function __construct(EntityManagerInterface $entityManager = null, LoggerInterface $logger = null)
     {
         // Set log output path in config/packages/{environment}/monolog.yaml
         $this->logger = $logger;
