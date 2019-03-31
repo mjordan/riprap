@@ -278,6 +278,8 @@ Riprap uses the PHPUnit Bridge component, which, while [recommended practice](ht
 1. `composer remove symfony/phpunit-bridge`
 1. `composer require --dev symfony/phpunit-bridge`
 
+Then, run PHPUnit:
+
 `./bin/phpunit`
 
 Running this command after reinstalling PHPUnit Bridge installs PHPUnit and all of its dependencies, and then runs the Riprap tests.
