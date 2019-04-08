@@ -100,7 +100,7 @@ class PluginFetchResourceListFromDrupal extends AbstractFetchResourceListPlugin
 
         $output_resource_records = array();
         foreach ($node_list_array['data'] as $node) {
-            $nid = $node['attributes']['nid'];
+            $nid = $node['attributes']['drupal_internal__nid'];
             // Get the media associated with this node using the Islandora-supplied Manage Media View.
             $media_client = new \GuzzleHttp\Client();
             $media_url = $this->drupal_base_url . '/node/' . $nid . '/media';
