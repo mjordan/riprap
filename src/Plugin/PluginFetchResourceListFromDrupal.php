@@ -181,7 +181,7 @@ class PluginFetchResourceListFromDrupal extends AbstractFetchResourceListPlugin
         if ($this->logger) {
             $this->logger->info("PluginFetchResourceListFromDrupal executed");
         }
- 
+
         return $output_resource_records;
     }
 
@@ -249,8 +249,9 @@ class PluginFetchResourceListFromDrupal extends AbstractFetchResourceListPlugin
         // We are not on the last page, so increment the page offset counter.
         // See https://www.drupal.org/docs/8/modules/jsonapi/pagination for
         // info on the JSON API paging logic.
+        // As of 8.x-2.x links are link objects. E.g. `$links['next']['href']`.
         if (array_key_exists('next', $links)) {
-            $next_url = $links['next'];
+            $next_url = $links['next']['href'];
             $query_string = parse_url(urldecode($next_url), PHP_URL_QUERY);
             parse_str($query_string, $query_array);
             $next_offset = $query_array['page']['offset'];
@@ -259,7 +260,7 @@ class PluginFetchResourceListFromDrupal extends AbstractFetchResourceListPlugin
             // We are on the last page, so reset the offset value to start the
             // verification cycle from the beginning.
             if (array_key_exists('first', $links)) {
-                $first_url = $links['first'];
+                $first_url = $links['first']['href'];
                 $query_string = parse_url(urldecode($first_url), PHP_URL_QUERY);
                 parse_str($query_string, $query_array);
                 $first_offset = $query_array['page']['offset'];
@@ -269,7 +270,7 @@ class PluginFetchResourceListFromDrupal extends AbstractFetchResourceListPlugin
                     $this->logger->info(
                         "PluginFetchResourceListFromDrupal has reset Drupal's JSON:API page offset to the first page.",
                         array(
-                            'Pager self URL' => $links['self']
+                            'Pager self URL' => $links['self']['href']
                         )
                     );
                 }

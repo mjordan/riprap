@@ -115,7 +115,7 @@ This is a good opportunity to point out that there are no dependencies between w
 
 > If you are running Islandora in a CLAW Playbook Vagrant guest virtual machine and Riprap on the Vagrant host machine, start the Riprap web server by running `php bin/console server:start *:8001` in the Riprap directory. See the [Islandora Riprap](https://github.com/mjordan/islandora_riprap) README file for more information. Otherwise, the Symfony web server will have a port conflict with the Apache web server mapped to port `8000` on the host machine.
 
-The "islandora" configuration works like the other two sample configurations, but it queries Drupal's [JSON:API](https://www.drupal.org/project/jsonapi) (not included in the default CLAW installation) for the list of resources to audit (using the descriptively named `PluginFetchResourceListFromDrupal` plugin), and it queries the REST API of the Fedora repository that accompanies Drupal in the Islandora stack for the digests of those files (using the `PluginFetchDigestFromFedoraAPI` plugin). Both of those plugins require more configuration options the the other plugins we have seen so far. Any static data a plugin needs can be included in a configuration file.
+The "islandora" configuration works like the other two sample configurations, but it queries Drupal's [JSON:API](https://www.drupal.org/project/jsonapi) for the list of resources to audit (using the descriptively named `PluginFetchResourceListFromDrupal` plugin), and it queries the REST API of the Fedora repository that accompanies Drupal in the Islandora stack for the digests of those files (using the `PluginFetchDigestFromFedoraAPI` plugin). Both of those plugins require more configuration options the the other plugins we have seen so far. Any static data a plugin needs can be included in a configuration file. Note, the JSON:API module is not included in the default CLAW installation, currently using Drupal 8.6, and must be installed separately. However the JSON:API module will be included in Drupal 8.7 as a core module.
 
 Within the Drupal user interface, the [Islandora Riprap](https://github.com/mjordan/islandora_riprap) module provides reports on whether Riprap has recorded any failed fixity check events (i.e., digest mismatches for the same resource) over time. The module gets this information via the Riprap REST API, described in the next section.
 
@@ -145,7 +145,7 @@ You should get a response like this:
 > User-Agent: curl/7.58.0
 > Accept: */*
 > Resource-ID: resources/filesystemexample/resourcefiles/file3.bin
-> 
+>
 < HTTP/1.1 200 OK
 < Host: localhost:8001
 < Date: Mon, 21 Jan 2019 07:07:18 -0800
@@ -154,7 +154,7 @@ You should get a response like this:
 < Cache-Control: no-cache, private
 < Date: Mon, 21 Jan 2019 15:07:18 GMT
 < Content-Type: application/json
-< 
+<
 * Closing connection 0
 
 ```
