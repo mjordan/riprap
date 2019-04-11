@@ -73,7 +73,10 @@ class PluginFetchResourceListFromDrupal extends AbstractFetchResourceListPlugin
         $response = $client->request('GET', $url, [
             'http_errors' => false,
             // @todo: Loop through this array and add each header.
-            'headers' => [$this->jsonapi_authorization_headers[0]],
+            'headers' => [
+                'Accept' => 'application/vnd.api+json',
+                $this->jsonapi_authorization_headers[0]
+            ],
             // Sort descending by 'changed' so new and updated nodes
             // get checked immediately after they are added/updated.
             'query' => ['page[offset]' => $page_offset, 'page[limit]' => $this->page_size, 'sort' => '-changed']
