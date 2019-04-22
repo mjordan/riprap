@@ -21,6 +21,10 @@ use_fedora_urls: true
 gemini_endpoint: 'http://localhost:8000/gemini'
 gemini_auth_header: 'Bearer islandora' 
 jsonapi_page_size: 50
+# The number of resources to check in one Riprap run; if absent, will use
+# value defined in jsonapi_page_size. Must be a multiple of number specified
+# in jsonapi_page_size.
+max_resources: 100
 # Absolute or relative to the Riprap application directory.
 jsonapi_pager_data_file_path: 'var/fetchresourcelist.from.drupal.pager.txt'
 
