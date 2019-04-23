@@ -3,10 +3,15 @@
 
 namespace App\Plugin;
 
+use Symfony\Component\Console\Output\ConsoleOutput;
+use Symfony\Component\Console\Output\Output;
+
 class PluginFetchResourceListFromDrupal extends AbstractFetchResourceListPlugin
 {
     public function execute()
     {
+        $output = new ConsoleOutput();
+
         if (isset($this->settings['drupal_baseurl'])) {
             $this->drupal_base_url = $this->settings['drupal_baseurl'];
         } else {
@@ -75,6 +80,8 @@ class PluginFetchResourceListFromDrupal extends AbstractFetchResourceListPlugin
                     )
                 );
             }
+            $output->writeln("Configuration problem with PluginFetchResourceListFromDrupal. " .
+                "Please see the log for more detail.");
             exit;
         } elseif ($this->max_resources / $this->page_size >= 1) {
             $this->num_jsonapi_pages_per_run = $this->max_resources / $this->page_size;
