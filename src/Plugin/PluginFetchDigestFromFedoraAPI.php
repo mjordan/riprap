@@ -72,7 +72,7 @@ class PluginFetchDigestFromFedoraAPI extends AbstractFetchDigestPlugin
                 'resource_id' => $url,
                 'status_code' => $status_code,
             ));
-            return $status_code;
+            return false;
         }
 
         if ($this->event_detail) {
