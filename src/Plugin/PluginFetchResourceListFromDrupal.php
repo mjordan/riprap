@@ -3,10 +3,15 @@
 
 namespace App\Plugin;
 
+use Symfony\Component\Console\Output\ConsoleOutput;
+use Symfony\Component\Console\Output\Output;
+
 class PluginFetchResourceListFromDrupal extends AbstractFetchResourceListPlugin
 {
     public function execute()
     {
+        $output = new ConsoleOutput();
+
         if (isset($this->settings['drupal_baseurl'])) {
             $this->drupal_base_url = $this->settings['drupal_baseurl'];
         } else {
@@ -49,12 +54,41 @@ class PluginFetchResourceListFromDrupal extends AbstractFetchResourceListPlugin
         } else {
             $this->gemini_auth_header = '';
         }
+
         if (isset($this->settings['jsonapi_page_size'])) {
             $this->page_size = $this->settings['jsonapi_page_size'];
         } else {
             // The maximum Drupal's JSON:API allows.
             $this->page_size = 50;
         }
+        // Must be a multiple of $this->page-size (e.g. 0 remainder if you divide
+        // $this->page_size into $this->max_resources).
+        if (isset($this->settings['max_resources'])) {
+            $this->max_resources = $this->settings['max_resources'];
+        } else {
+            // A single JSON:API page's worth.
+            $this->max_resources = $this->page_size;
+        }
+        if ($this->max_resources % $this->page_size !== 0) {
+            if ($this->logger) {
+                $this->logger->error(
+                    "Configuration problem with PluginFetchResourceListFromDrupal: " .
+                    " max_resources is not a multiple of jsonapi_page_size",
+                    array(
+                        'jsonapi_page_size' => $this->page_size,
+                        'max_resources' => $this->max_resources
+                    )
+                );
+            }
+            $output->writeln("Configuration problem with PluginFetchResourceListFromDrupal. " .
+                "Please see the log for more detail.");
+            exit;
+        } elseif ($this->max_resources / $this->page_size >= 1) {
+            $this->num_jsonapi_pages_per_run = $this->max_resources / $this->page_size;
+        } else {
+            $this->num_jsonapi_pages_per_run = 1;
+        }
+
         if (isset($this->settings['jsonapi_pager_data_file_path'])) {
             $this->page_data_file = $this->settings['jsonapi_pager_data_file_path'];
         } else {
@@ -68,29 +102,33 @@ class PluginFetchResourceListFromDrupal extends AbstractFetchResourceListPlugin
             file_put_contents($this->page_data_file, $page_offset);
         }
 
-        $client = new \GuzzleHttp\Client();
-        $url = $this->drupal_base_url . '/jsonapi/node/' . $this->drupal_content_types[0];
-        $response = $client->request('GET', $url, [
-            'http_errors' => false,
-            // @todo: Loop through this array and add each header.
-            'headers' => [
-                'Accept' => 'application/vnd.api+json',
-                $this->jsonapi_authorization_headers[0]
-            ],
-            // Sort descending by 'changed' so new and updated nodes
-            // get checked immediately after they are added/updated.
-            'query' => ['page[offset]' => $page_offset, 'page[limit]' => $this->page_size, 'sort' => '-changed']
-        ]);
+        $whole_node_list = array('data' => array());
+        for ($p = 1; $p <= $this->num_jsonapi_pages_per_run; $p++) {
+            $client = new \GuzzleHttp\Client();
+            $url = $this->drupal_base_url . '/jsonapi/node/' . $this->drupal_content_types[0];
+            $response = $client->request('GET', $url, [
+                'http_errors' => false,
+                // @todo: Loop through this array and add each header.
+                'headers' => [
+                    'Accept' => 'application/vnd.api+json',
+                    $this->jsonapi_authorization_headers[0]
+                ],
+                // Sort descending by 'changed' so new and updated nodes
+                // get checked immediately after they are added/updated.
+                'query' => ['page[offset]' => $page_offset, 'page[limit]' => $this->page_size, 'sort' => '-changed']
+            ]);
 
-        $status_code = $response->getStatusCode();
-        $node_list = (string) $response->getBody();
-        $node_list_array = json_decode($node_list, true);
+            $status_code = $response->getStatusCode();
+            $node_list_from_jsonapi_json = (string) $response->getBody();
+            $node_list_from_jsonapi = json_decode($node_list_from_jsonapi_json, true);
 
-        if ($status_code === 200) {
-            $this->setPageOffset($page_offset, $node_list_array['links']);
+            if ($status_code === 200) {
+                $whole_node_list['data'] = array_merge($whole_node_list['data'], $node_list_from_jsonapi['data']);
+                $this->setPageOffset($page_offset, $node_list_from_jsonapi['links']);
+            }
         }
 
-        if (count($node_list_array['data']) == 0) {
+        if (count($whole_node_list['data']) == 0) {
             if ($this->logger) {
                 $this->logger->info(
                     "PluginFetchResourceListFromDrupal retrieved an empty node list from Drupal",
@@ -102,7 +140,7 @@ class PluginFetchResourceListFromDrupal extends AbstractFetchResourceListPlugin
         }
 
         $output_resource_records = array();
-        foreach ($node_list_array['data'] as $node) {
+        foreach ($whole_node_list['data'] as $node) {
             $nid = $node['attributes']['drupal_internal__nid'];
             // Get the media associated with this node using the Islandora-supplied Manage Media View.
             $media_client = new \GuzzleHttp\Client();
