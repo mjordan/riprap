@@ -123,7 +123,7 @@ Within the Drupal user interface, the [Islandora Riprap](https://github.com/mjor
 
 > Note: Currently, Riprap's REST API can only be used with the `PluginPersistToDatabase` plugin.
 
-Riprap provides an HTTP REST API, which will allow external applications like Drupal to retrieve fixity check data on specific Fedora resources and to add new and updated fixity check data. For example, a `GET` request to:
+Riprap provides an HTTP REST API, which will allow external applications like Drupal to retrieve fixity check events for specific Fedora resources and to add new and updated fixity check data. For example, a `GET` request to:
 
 `curl -v -H "Resource-ID:http://example.com/resource/12345" http://localhost:8000/api/fixity`
 
@@ -233,6 +233,19 @@ curl -v -X POST -H "Resource-ID:http://example.com/resource/17" http://localhost
 For example, `curl -v -H 'Resource-ID:http://example.com/resources/rest/10' http://localhost:8000/api/fixity?timestamp_start=2018-12-03` would return only the events for `http://example.com/resources/rest/10` that have a timestamp equal to or later than `2018-12-03`.
 
 If you want to `GET` fixity events that are not specific to a resource, for example all failed events, do not include the `Resource-ID` header, e.g., `curl http://localhost:8000/api/fixity?outcome=fail`.
+
+## Command-line utility to get fixity check events
+
+Riprap provides a command-line utility to get fixity events for a specific resource, for example:
+
+`./bin/console app:riprap:get_events --output_format=csv --outcome=fail --resource_id=http://localhost:8080/fcrepo/rest/IMG_1410.tif`
+
+This utility takes the same options as the REST `GET` equivalent as documented above, plus two additional options:
+
+* `--resource-id`: The resource ID that you want fixity events for.
+* `--output_format`: either "json" (the default) or "csv"
+
+If there are no fixity events for the specified resource, the command will output an empty JSON list (if "json" output format is specified) or the string "No events found." if "csv" output format is specified.
 
 ## More about Riprap
 
