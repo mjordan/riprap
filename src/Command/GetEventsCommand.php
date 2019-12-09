@@ -9,7 +9,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputOption;
 
 use Psr\Log\LoggerInterface;
-use \League\Csv\Writer;
+use League\Csv\Writer;
 
 // Note: Until we figure out how to define which persist plugin to use in this controller via
 // a single configuration shared between it and the console command, we are limited to using
@@ -102,14 +102,12 @@ class GetEventsCommand extends Command
         }
 
         $resource_id = $input->getOption('resource_id');
-        $timestamp_start = null;
-        $timestamp_end = null;
-        $outcome = null;
-        // Set default to 'asc' if not in request.
-        $sort = null;
-        // This typecasting makes the default value of $limit and $offset to be 0.
-        $limit = 5;
-        $offset = 0;
+        $timestamp_start = $input->getOption('timestamp_start');
+        $timestamp_end = $input->getOption('timestamp_end');
+        $outcome = $input->getOption('outcome');
+        $limit = (int) $input->getOption('limit');
+        $offset = (int) $input->getOption('offset');
+        $sort = $input->getOption('sort');
 
         // See comment above about hard-coded persist plugin.
         $this->persist_plugin = new PluginPersistToDatabase(array(), $this->logger, $this->entityManager);
@@ -144,7 +142,7 @@ class GetEventsCommand extends Command
                     $csv->insertOne($record);
                 }
                 $csv_string = $csv->getContent();
-                $output->writeln($csv_string);
+                $output->writeln(trim($csv_string));
             } else {
                 // Output a string.
                 $output->writeln('"No events found."');
