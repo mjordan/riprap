@@ -29,6 +29,7 @@ class PluginFetchResourceListFromDrupal extends AbstractFetchResourceListPlugin
             $this->media_auth = '';
         }
         // For now we only use the first one, not sure how to handle multiple content types.
+        // See https://github.com/mjordan/riprap/issues/53.
         if (isset($this->settings['drupal_content_types'])) {
             $this->drupal_content_types = $this->settings['drupal_content_types'];
         } else {
@@ -82,7 +83,7 @@ class PluginFetchResourceListFromDrupal extends AbstractFetchResourceListPlugin
             }
             $output->writeln("Configuration problem with PluginFetchResourceListFromDrupal. " .
                 "Please see the log for more detail.");
-            exit;
+            exit(1);
         } elseif ($this->max_resources / $this->page_size >= 1) {
             $this->num_jsonapi_pages_per_run = $this->max_resources / $this->page_size;
         } else {
@@ -102,6 +103,46 @@ class PluginFetchResourceListFromDrupal extends AbstractFetchResourceListPlugin
             file_put_contents($this->page_data_file, $page_offset);
         }
 
+        // Make an initial ping request to Drupal.
+        $ping_url = $this->drupal_base_url . '/jsonapi/node/' . $this->drupal_content_types[0];
+        $ping_client = new \GuzzleHttp\Client();
+        $ping_response = $ping_client->request('GET', $ping_url, [
+                'http_errors' => false,
+                'headers' => [
+                    'Accept' => 'application/vnd.api+json',
+                    $this->jsonapi_authorization_headers[0]
+                ],
+                // Sort descending by 'changed' so new and updated nodes
+                // get checked immediately after they are added/updated.
+                'query' => ['sort' => '-changed']
+        ]);
+        $ping_status_code = $ping_response->getStatusCode();
+
+        if ($ping_status_code != 200) {
+            if ($this->logger) {
+                $this->logger->error(
+                    "PluginFetchResourceListFromDrupal request returned a non-200 response",
+                    array(
+                        'HTTP response code' => $ping_status_code
+                    )
+                );
+            }
+            $output->writeln("Ping request to Drupal returned a non-200 stataus code. Please .
+                see the Riprap log for more detail.");
+            exit(1);
+        }
+
+        $ping_node_list_from_jsonapi_json = (string) $ping_response->getBody();
+        $ping_node_list_from_jsonapi = json_decode($ping_node_list_from_jsonapi_json, true);
+        // Adjust some variables bases on this ping.
+        if (!isset($ping_node_list_from_jsonapi['links']['next']) &&
+            !isset($ping_node_list_from_jsonapi['links']['prev'])) {
+            // There is only one page of results.
+            $this->num_jsonapi_pages_per_run = 1;
+        }
+
+        // Since JSON:API only provides a maximum of 50 items per page, we
+        // make one request per page for as many pages as we need.
         $whole_node_list = array('data' => array());
         for ($p = 1; $p <= $this->num_jsonapi_pages_per_run; $p++) {
             $client = new \GuzzleHttp\Client();
@@ -137,6 +178,8 @@ class PluginFetchResourceListFromDrupal extends AbstractFetchResourceListPlugin
                     )
                 );
             }
+            $output->writeln("PluginFetchResourceListFromDrupal retrieved an empty node list from Drupal");
+            exit;
         }
 
         $output_resource_records = array();
