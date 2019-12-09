@@ -242,8 +242,8 @@ Riprap provides a command-line utility to get fixity events for a specific resou
 
 This utility takes the same options as the REST `GET` equivalent as documented above, plus two additional options:
 
-* `--resource-id`: The resource ID that you want fixity events for.
-* `--output_format`: either "json" (the default) or "csv"
+* `--resource_id`: The resource ID that you want fixity events for.
+* `--output_format`: either "json" (the default) or "csv".
 
 If there are no fixity events for the specified resource, the command will output an empty JSON list (if "json" output format is specified) or the string "No events found." if "csv" output format is specified.
 
