@@ -95,12 +95,6 @@ class GetEventsCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-
-        if (is_null($input->getOption('resource_id'))) {
-            $output->writeln("You must specify a resource ID using the --resource_id option.");
-            exit(1);
-        }
-
         $resource_id = $input->getOption('resource_id');
         $timestamp_start = $input->getOption('timestamp_start');
         $timestamp_end = $input->getOption('timestamp_end');
