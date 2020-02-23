@@ -119,7 +119,7 @@ class PluginFetchResourceListFromDrupal extends AbstractFetchResourceListPlugin
                     }
                 }
             }
-            $this->setPageOffset($page_number, $num_media); 
+            $this->setPageOffset($page_number, $num_media);
         } else {
             if ($this->logger) {
                 $this->logger->error(
