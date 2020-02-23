@@ -28,7 +28,7 @@ class CheckFixityCommandTest extends KernelTestCase
 
         // The output of the command in the console.
         $output = $commandTester->getDisplay();
-        $this->assertContains('Riprap checked', $output);
+        $this->assertStringContainsString('Riprap checked', $output);
 
         // Riprap has no entries in its db for this resource; this is OK, since this will
         // be the case for new resources detected by the fetchresourcelist plugins.
