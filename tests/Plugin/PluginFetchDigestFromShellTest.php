@@ -6,7 +6,7 @@ use PHPUnit\Framework\TestCase;
 
 class PluginFetchDigestFromShellTest extends TestCase
 {
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->sample_resource_id = 'var/PlugiFetchDigestFromShellTest.test.data';
         if (file_exists($this->sample_resource_id)) {

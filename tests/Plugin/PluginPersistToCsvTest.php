@@ -7,7 +7,7 @@ use App\Entity\FixityCheckEvent;
 
 class PluginPersistToCsvTest extends TestCase
 {
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->output_csv_path = 'var/PluginPersistToCsv.output.csv';
         if (file_exists($this->output_csv_path)) {

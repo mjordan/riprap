@@ -7,7 +7,7 @@ use App\Entity\FixityCheckEvent;
 
 class PluginPostCheckCopyFailuresLogTest extends TestCase
 {
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->failures_log_path = 'var/PluginPostCheckCopyFailuresTest.failureslog.csv';
         if (file_exists($this->failures_log_path)) {

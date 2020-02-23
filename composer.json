@@ -19,7 +19,7 @@
         "symfony/yaml": "*",
         "symfony/maker-bundle": "*",
         "symfony/console": "*",
-        "symfony/flex": "^1.1",
+        "symfony/flex": "*",
         "symfony/framework-bundle": "*",
         "symfony/monolog-bundle": "*",
         "symfony/orm-pack": "*",
@@ -29,12 +29,12 @@
         "symfony/messenger": "*"
     },
     "require-dev": {
-        "symfony/dotenv": "*",
-        "symfony/web-server-bundle": "*",
-        "symfony/phpunit-bridge": "*",
-        "symfony/browser-kit": "*",
         "doctrine/doctrine-fixtures-bundle": "*",
-        "squizlabs/php_codesniffer":"*"
+        "squizlabs/php_codesniffer": "*",
+        "symfony/browser-kit": "*",
+        "symfony/dotenv": "*",
+        "symfony/phpunit-bridge": "^5.0",
+        "symfony/web-server-bundle": "*"
     },
     "config": {
         "preferred-install": {
@@ -83,7 +83,7 @@
     "extra": {
         "symfony": {
             "allow-contrib": false,
-            "require": "4.1.*"
+            "require": "4.4.*"
         }
     }
 }
