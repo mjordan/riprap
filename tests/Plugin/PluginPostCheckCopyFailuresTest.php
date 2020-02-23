@@ -44,7 +44,7 @@ class PluginPostCheckCopyFailuresLogTest extends TestCase
         );
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
         @unlink($this->failures_log_path);
     }

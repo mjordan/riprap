@@ -27,7 +27,7 @@ class PluginFetchDigestFromShellTest extends TestCase
         );
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
         @unlink($this->sample_resource_id);
     }

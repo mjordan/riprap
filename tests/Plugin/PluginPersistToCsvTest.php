@@ -52,7 +52,7 @@ class PluginPersistToCsvTest extends TestCase
         );
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
         @unlink($this->output_csv_path);
     }
