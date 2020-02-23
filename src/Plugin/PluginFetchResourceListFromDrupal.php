@@ -18,27 +18,10 @@ class PluginFetchResourceListFromDrupal extends AbstractFetchResourceListPlugin
             $this->drupal_base_url = 'http://localhost:8000';
         }
         // An array, we need to loop through and add to guzzle request.
-        if (isset($this->settings['jsonapi_authorization_headers'])) {
-            $this->jsonapi_authorization_headers = $this->settings['jsonapi_authorization_headers'];
+        if (isset($this->settings['view_authorization_headers'])) {
+            $this->view_authorization_headers = $this->settings['view_authorization_headers'];
         } else {
-            $this->jsonapi_authorization_headers = array();
-        }
-        if (isset($this->settings['drupal_media_auth'])) {
-            $this->media_auth = $this->settings['drupal_media_auth'];
-        } else {
-            $this->media_auth = '';
-        }
-        // For now we only use the first one, not sure how to handle multiple content types.
-        // See https://github.com/mjordan/riprap/issues/53.
-        if (isset($this->settings['drupal_content_types'])) {
-            $this->drupal_content_types = $this->settings['drupal_content_types'];
-        } else {
-            $this->drupal_content_types = array();
-        }
-        if (isset($this->settings['drupal_media_tags'])) {
-            $this->media_tags = $this->settings['drupal_media_tags'];
-        } else {
-            $this->media_tags = array();
+            $this->view_authorization_headers = array();
         }
         if (isset($this->settings['use_fedora_urls'])) {
             $this->use_fedora_urls = $this->settings['use_fedora_urls'];
@@ -55,70 +38,30 @@ class PluginFetchResourceListFromDrupal extends AbstractFetchResourceListPlugin
         } else {
             $this->gemini_auth_header = '';
         }
-
-        if (isset($this->settings['jsonapi_page_size'])) {
-            $this->page_size = $this->settings['jsonapi_page_size'];
-        } else {
-            // The maximum Drupal's JSON:API allows.
-            $this->page_size = 50;
-        }
-        // Must be a multiple of $this->page-size (e.g. 0 remainder if you divide
-        // $this->page_size into $this->max_resources).
-        if (isset($this->settings['max_resources'])) {
-            $this->max_resources = $this->settings['max_resources'];
-        } else {
-            // A single JSON:API page's worth.
-            $this->max_resources = $this->page_size;
-        }
-        if ($this->max_resources % $this->page_size !== 0) {
-            if ($this->logger) {
-                $this->logger->error(
-                    "Configuration problem with PluginFetchResourceListFromDrupal: " .
-                    " max_resources is not a multiple of jsonapi_page_size",
-                    array(
-                        'jsonapi_page_size' => $this->page_size,
-                        'max_resources' => $this->max_resources
-                    )
-                );
-            }
-            $output->writeln("Configuration problem with PluginFetchResourceListFromDrupal. " .
-                "Please see the log for more detail.");
-            exit(1);
-        } elseif ($this->max_resources / $this->page_size >= 1) {
-            $this->num_jsonapi_pages_per_run = $this->max_resources / $this->page_size;
-        } else {
-            $this->num_jsonapi_pages_per_run = 1;
-        }
-
-        if (isset($this->settings['jsonapi_pager_data_file_path'])) {
-            $this->page_data_file = $this->settings['jsonapi_pager_data_file_path'];
+        if (isset($this->settings['views_pager_data_file_path'])) {
+            $this->page_data_file = $this->settings['views_pager_data_file_path'];
         } else {
             $this->page_data_file = '';
         }
-
         if (file_exists($this->page_data_file)) {
-            $page_offset = (int) trim(file_get_contents($this->page_data_file));
+            $page_number = (int) trim(file_get_contents($this->page_data_file));
         } else {
-            $page_offset = 0;
+            $page_number = 1;
             file_put_contents($this->page_data_file, $page_offset);
         }
 
         // Make an initial ping request to Drupal.
-        $ping_url = $this->drupal_base_url . '/jsonapi/node/' . $this->drupal_content_types[0];
+        $ping_url = $this->drupal_base_url . '/riprap_resource_list?page=1';
         $ping_client = new \GuzzleHttp\Client();
         $ping_response = $ping_client->request('GET', $ping_url, [
                 'http_errors' => false,
                 'headers' => [
                     'Accept' => 'application/vnd.api+json',
-                    $this->jsonapi_authorization_headers[0]
-                ],
-                // Sort descending by 'changed' so new and updated nodes
-                // get checked immediately after they are added/updated.
-                'query' => ['sort' => '-changed']
+                    $this->view_authorization_headers[0]
+                ]
         ]);
-        $ping_status_code = $ping_response->getStatusCode();
 
-        if ($ping_status_code != 200) {
+        if ($ping_response->getStatusCode() != 200) {
             if ($this->logger) {
                 $this->logger->error(
                     "PluginFetchResourceListFromDrupal request returned a non-200 response",
@@ -127,138 +70,64 @@ class PluginFetchResourceListFromDrupal extends AbstractFetchResourceListPlugin
                     )
                 );
             }
-            $output->writeln("Ping request to Drupal returned a non-200 stataus code. Please .
-                see the Riprap log for more detail.");
+            $output->writeln("Ping request to Drupal returned a non-200 stataus code. Please " .
+                "see the Riprap log for more detail.");
             exit(1);
         }
 
-        $ping_node_list_from_jsonapi_json = (string) $ping_response->getBody();
-        $ping_node_list_from_jsonapi = json_decode($ping_node_list_from_jsonapi_json, true);
-        // Adjust some variables bases on this ping.
-        if (!isset($ping_node_list_from_jsonapi['links']['next']) &&
-            !isset($ping_node_list_from_jsonapi['links']['prev'])) {
-            // There is only one page of results.
-            $this->num_jsonapi_pages_per_run = 1;
-        }
-
-        // Since JSON:API only provides a maximum of 50 items per page, we
-        // make one request per page for as many pages as we need.
-        $whole_node_list = array('data' => array());
-        for ($p = 1; $p <= $this->num_jsonapi_pages_per_run; $p++) {
-            $client = new \GuzzleHttp\Client();
-            $url = $this->drupal_base_url . '/jsonapi/node/' . $this->drupal_content_types[0];
-            $response = $client->request('GET', $url, [
-                'http_errors' => false,
-                // @todo: Loop through this array and add each header.
-                'headers' => [
-                    'Accept' => 'application/vnd.api+json',
-                    $this->jsonapi_authorization_headers[0]
-                ],
-                // Sort descending by 'changed' so new and updated nodes
-                // get checked immediately after they are added/updated.
-                'query' => ['page[offset]' => $page_offset, 'page[limit]' => $this->page_size, 'sort' => '-changed']
-            ]);
-
-            $status_code = $response->getStatusCode();
-            $node_list_from_jsonapi_json = (string) $response->getBody();
-            $node_list_from_jsonapi = json_decode($node_list_from_jsonapi_json, true);
-
-            if ($status_code === 200) {
-                $whole_node_list['data'] = array_merge($whole_node_list['data'], $node_list_from_jsonapi['data']);
-                $this->setPageOffset($page_offset, $node_list_from_jsonapi['links']);
-            }
-        }
-
-        if (count($whole_node_list['data']) == 0) {
+        $ping_media_list = (string) $ping_response->getBody();
+        $ping_media_list = json_decode($ping_media_list, true);
+        if (count($ping_media_count) == 0) {
             if ($this->logger) {
-                $this->logger->info(
-                    "PluginFetchResourceListFromDrupal retrieved an empty node list from Drupal",
-                    array(
-                        'HTTP response code' => $status_code
-                    )
+                $this->logger->error(
+                    "PluginFetchResourceListFromDrupal retrieved an empty media list"
                 );
             }
-            $output->writeln("PluginFetchResourceListFromDrupal retrieved an empty node list from Drupal");
-            exit;
+            $output->writeln("PluginFetchResourceListFromDrupal retrieved an empty media list");
+            exit(1);
         }
 
-        $output_resource_records = array();
-        foreach ($whole_node_list['data'] as $node) {
-            $nid = $node['attributes']['drupal_internal__nid'];
-            // Get the media associated with this node using the Islandora-supplied Manage Media View.
-            $media_client = new \GuzzleHttp\Client();
-            $media_url = $this->drupal_base_url . '/node/' . $nid . '/media';
-            $media_response = $media_client->request('GET', $media_url, [
-                'http_errors' => false,
-                'auth' => $this->media_auth,
-                'query' => ['_format' => 'json']
-            ]);
-            $media_status_code = $media_response->getStatusCode();
-            $media_list = (string) $media_response->getBody();
+        // Query the View to get list of media.
+        $client = new \GuzzleHttp\Client();
+        $url = $this->drupal_base_url . 'riprap_resource_list?page=' . $page_number;
+        $page_response = $client->request('GET', $url, [
+            'http_errors' => false,
+            'headers' => [
+                $this->view_authorization_headers[0]
+            ]
+        ]);
+
+        if ($page_response->getStatusCode() == 200) {
+            $media_list = (string) $page_response->getBody();
             $media_list = json_decode($media_list, true);
+        }
 
-            if (count($media_list) === 0) {
-                if ($this->logger) {
-                    $this->logger->info(
-                        "PluginFetchResourceListFromDrupal is skipping node with an empty media list.",
-                        array(
-                            'Node ID' => $nid
-                        )
-                    );
-                }
-                continue;
-            }
-
-            // Loop through all the media and pick the ones that are tagged with terms in $taxonomy_terms_to_check.
+        // Loop through all the media perform fixity event check.
+        $num_media = count($media_list);
+        if ($num_media > 0) {
             foreach ($media_list as $media) {
-                if (count($media['field_media_use'])) {
-                    foreach ($media['field_media_use'] as $term) {
-                        if (in_array($term['url'], $this->media_tags)) {
-                            // Get the timestamp of the current revision.
-                            // Will be in ISO8601 format.
-                            $revised = $media['revision_created'][0]['value'];
-                            if ($this->use_fedora_urls) {
-                                // @todo: getFedoraUrl() returns false on failure, so build in logic here to log that
-                                // the resource ID / URL cannot be found. (But, http responses are already logged in
-                                // getFedoraUrl() so maybe we don't need to log here?)
-                                if (isset($media['field_media_image'])) {
-                                    $fedora_url = $this->getFedoraUrl($media['field_media_image'][0]['target_uuid']);
-                                    if (strlen($fedora_url)) {
-                                        $resource_record_object = new \stdClass;
-                                        $resource_record_object->resource_id = $fedora_url;
-                                        $resource_record_object->last_modified_timestamp = $revised;
-                                        $output_resource_records[] = $resource_record_object;
-                                    }
-                                } else {
-                                    $fedora_url = $this->getFedoraUrl($media['field_media_file'][0]['target_uuid']);
-                                    if (strlen($fedora_url)) {
-                                        $resource_record_object = new \stdClass;
-                                        $resource_record_object->resource_id = $fedora_url;
-                                        $resource_record_object->last_modified_timestamp = $revised;
-                                        $output_resource_records[] = $resource_record_object;
-                                    }
-                                }
-                            } else {
-                                if (isset($media['field_media_image'])) {
-                                    if (strlen($media['field_media_image'][0]['url'])) {
-                                        $resource_record_object = new \stdClass;
-                                        $resource_record_object->resource_id = $media['field_media_image'][0]['url'];
-                                        $resource_record_object->last_modified_timestamp = $revised;
-                                        $output_resource_records[] = $resource_record_object;
-                                    }
-                                } else {
-                                    if (strlen($media['field_media_file'][0]['url'])) {
-                                        $resource_record_object = new \stdClass;
-                                        $resource_record_object->resource_id = $media['field_media_file'][0]['url'];
-                                        $resource_record_object->last_modified_timestamp = $revised;
-                                        $output_resource_records[] = $resource_record_object;
-                                    }
-                                }
-                            }
-                        }
+                if ($this->use_fedora_urls) {
+                    // @todo: getFedoraUrl() returns false on failure, so build in logic here to log that
+                    // the resource ID / URL cannot be found. (But, http responses are already logged in
+                    // getFedoraUrl() so maybe we don't need to log here?)
+                    $fedora_url = $this->getFedoraUrl($media['uuid']);
+                    if (strlen($fedora_url)) {
+                        $resource_record_object = new \stdClass;
+                        $resource_record_object->resource_id = $fedora_url;
+                        $resource_record_object->last_modified_timestamp = $media['changed'];
+                        $output_resource_records[] = $resource_record_object;
                     }
                 }
             }
+            $this->setPageOffset($page_number, $num_media); 
+        } else {
+            if ($this->logger) {
+                $this->logger->error(
+                    "PluginFetchResourceListFromDrupal retrieved an empty media list"
+                );
+            }
+            $output->writeln("PluginFetchResourceListFromDrupal retrieved an empty media list");
+            exit(1);
         }
 
         // $this->logger is null while testing.
@@ -321,44 +190,23 @@ class PluginFetchResourceListFromDrupal extends AbstractFetchResourceListPlugin
     }
 
    /**
-    * Sets the page offset to use in the next JSON:API request.
+    * Sets the page offset to use in the next REST request to the Drupal View.
     *
-    * @param int $page_offset
-    *   The page offset used in the current JSON:API request.
-    * @param string $links
-    *   The 'links' array member from the JSON:API response.
+    * @param int $page_number
+    *   The page number used in the current request.
     */
-    private function setPageOffset($page_offset, $links)
+    private function setPageNumber($page_number, $num_media)
     {
-        // We are not on the last page, so increment the page offset counter.
-        // See https://www.drupal.org/docs/8/modules/jsonapi/pagination for
-        // info on the JSON API paging logic.
-        // As of 8.x-2.x links are link objects. E.g. `$links['next']['href']`.
-        if (array_key_exists('next', $links)) {
-            $next_url = $links['next']['href'];
-            $query_string = parse_url(urldecode($next_url), PHP_URL_QUERY);
-            parse_str($query_string, $query_array);
-            $next_offset = $query_array['page']['offset'];
-            file_put_contents($this->page_data_file, trim($next_offset));
+        // Views REST responses don't include pagination info. See
+        // https://www.drupal.org/project/drupal/issues/2982729.
+        // For now, we use Views REST serializer's behavior of
+        // returning an empty response when the provided page number
+        // exceeds the number of pages.
+        if ($num_media == 0) {
+            $next_page_number = 1;
         } else {
-            // We are on the last page, so reset the offset value to start the
-            // verification cycle from the beginning.
-            if (array_key_exists('first', $links)) {
-                $first_url = $links['first']['href'];
-                $query_string = parse_url(urldecode($first_url), PHP_URL_QUERY);
-                parse_str($query_string, $query_array);
-                $first_offset = $query_array['page']['offset'];
-                file_put_contents($this->page_data_file, trim($first_offset));
-
-                if ($this->logger) {
-                    $this->logger->info(
-                        "PluginFetchResourceListFromDrupal has reset Drupal's JSON:API page offset to the first page.",
-                        array(
-                            'Pager self URL' => $links['self']['href']
-                        )
-                    );
-                }
-            }
+            $next_page_number = $page_number + 1;
         }
+        file_put_contents($this->page_data_file, trim($next_page_number));
     }
 }
