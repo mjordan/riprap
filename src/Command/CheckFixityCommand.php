@@ -40,7 +40,7 @@ class CheckFixityCommand extends Command
             );
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $stopwatch = new Stopwatch();
         $stopwatch->start('fixity_check');
@@ -192,6 +192,8 @@ class CheckFixityCommand extends Command
 
         $output->writeln("Riprap checked $num_resource_records resources ($num_successful_events successful events, " .
             "$num_failed_events failed events) in $duration seconds.");
+
+        return 1;
     }
 
     /**
