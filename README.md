@@ -27,8 +27,6 @@ Various combinations of Riprap's current fixity auditing capabilities are illust
 * [composer](https://getcomposer.org/)
 * An SQLite, MySQL, or PostgreSQL relational database, with appropriate PHP drivers.
 
-While not a requirement, a [module for Islandora](https://github.com/mjordan/islandora_riprap) is available that provides node-level fixity reports on binary resources using data from Riprap. Similar reporting tools could be developed for other platforms.
-
 ## Installation
 
 1. Clone this git repository
@@ -47,6 +45,8 @@ Once Riprap is installed and configured, run it to generate the initial fixity v
 `php bin/console app:riprap:check_fixity --settings=some_config.yml`
 
 where `some_config.yml` is your configuration file.
+
+While not a requirement, a [module for Islandora](https://github.com/mjordan/islandora_riprap) is available that provides node-level fixity reports on binary resources using data from Riprap. Similar reporting tools could be developed for other platforms.
 
 ## The sample configuration files
 
@@ -121,7 +121,7 @@ Within the Drupal user interface, the [Islandora Riprap](https://github.com/mjor
 
 ## Riprap's REST API
 
-> Note: Currently, Riprap's REST API can only be used with the `PluginPersistToDatabase` plugin.
+> Note: Riprap's REST API can only be used with the `PluginPersistToDatabase` plugin.
 
 Riprap provides an HTTP REST API, which will allow external applications like Drupal to retrieve fixity check events for specific Fedora resources and to add new and updated fixity check data. For example, a `GET` request to:
 
@@ -132,7 +132,7 @@ would return a list of all fixity events for the Fedora resource `http://example
 Assuming you have run Riprap with the "sample_db_config.yml" configuration file, you can see the API in action by running:
 
 1. `php bin/console server:start`
-1. `curl -v -H 'Resource-ID: resources/filesystemexample/resourcefiles/file3.bin' http://localhost:8001/api/fixity' http://localhost:8000/api/fixity`
+1. `curl -v -H 'Resource-ID: resources/filesystemexample/resourcefiles/file3.bin' http://localhost:8000/api/fixity`
 
 You should get a response like this:
 
