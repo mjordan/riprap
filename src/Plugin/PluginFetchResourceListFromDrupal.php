@@ -101,6 +101,7 @@ class PluginFetchResourceListFromDrupal extends AbstractFetchResourceListPlugin
             $media_list = json_decode($media_list, true);
         }
 
+	var_dump($media_list);
         // Loop through all the media perform fixity event check.
         $num_media = count($media_list);
         $output_resource_records = [];
@@ -110,11 +111,10 @@ class PluginFetchResourceListFromDrupal extends AbstractFetchResourceListPlugin
                     // @todo: getFedoraUrl() returns false on failure, so build in logic here to log that
                     // the resource ID / URL cannot be found. (But, http responses are already logged in
                     // getFedoraUrl() so maybe we don't need to log here?)
-                    $fedora_url = $this->getFedoraUrl($media['uuid']);
-                    var_dump($fedora_url);
-                    if (strlen($fedora_url)) {
+                    $file_fedora_url = $this->getFedoraUrl($media['mid']);
+                    if (strlen($file_fedora_url)) {
                         $resource_record_object = new \stdClass;
-                        $resource_record_object->resource_id = $fedora_url;
+                        $resource_record_object->resource_id = $file_fedora_url;
                         $resource_record_object->last_modified_timestamp = $media['changed'];
                         $output_resource_records[] = $resource_record_object;
                     }
@@ -122,6 +122,7 @@ class PluginFetchResourceListFromDrupal extends AbstractFetchResourceListPlugin
             }
             $this->setPageNumber($page_number, $num_media);
         } else {
+            $this->setPageNumber($page_number, $num_media);
             if ($this->logger) {
                 $this->logger->error(
                     "PluginFetchResourceListFromDrupal retrieved an empty media list"
@@ -142,23 +143,43 @@ class PluginFetchResourceListFromDrupal extends AbstractFetchResourceListPlugin
    /**
     * Get a Fedora URL for a File entity from Gemini.
     *
-    * @param string $uuid
-    *   The File entity's UUID.
+    * @param string $mid
+    *   The media ID.
     *
     * @return string
     *    The Fedora URL corresponding to the UUID, or false.
     */
-    private function getFedoraUrl($uuid)
+    private function getFedoraUrl($mid)
     {
+        // First, retrieve the media entity from Drupal.
+        $media_url = $this->drupal_base_url . '/media/' . $mid . '?_format=json';
+        $media_client = new \GuzzleHttp\Client();
+        $media_response = $media_client->request('GET', $media_url, [
+            'http_errors' => false,
+	    'auth' => [$this->view_authorization_user, $this->view_authorization_password]
+	]);
+	$media_response_body = $media_response->getBody()->getContents();
+	$media_response_body = json_decode($media_response_body, true);
+	if (isset($media_response_body['field_media_image'])) {
+	    $file_field = 'field_media_image';
+	}
+	if (isset($media_response_body['field_media_file'])) {
+	    $file_field = 'field_media_file';
+	}
+	$target_file_uuid = $media_response_body[$file_field][0]['target_uuid'];
+
+        // Then query Gemini to get the target file's Fedora URL.
         try {
             $client = new \GuzzleHttp\Client();
             $options = [
                 'http_errors' => false,
                 'headers' => ['Authorization' => $this->gemini_auth_header],
             ];
-            $url = $this->gemini_endpoint . '/' . $uuid;
+	    $url = $this->gemini_endpoint . '/' . $target_file_uuid;
+	    var_dump($url);
             $response = $client->request('GET', $url, $options);
-            $code = $response->getStatusCode();
+	    $code = $response->getStatusCode();
+	    var_dump($code);
             if ($code == 200) {
                 $body = $response->getBody()->getContents();
                 $body_array = json_decode($body, true);

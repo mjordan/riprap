@@ -1,4 +1,7 @@
 # Sample Riprap config file for using Islandora/database plugins.
+# Requires that the "Riprap resource list" View be enabled in
+# the Islandora instance. This View is bundled with the Islandora Riprap
+# module.
 
 ####################
 # General settings #
@@ -6,9 +9,12 @@
 
 fixity_algorithm: sha256
 
-###########
-# Plugins #
-###########
+# Absolute or relative to the Riprap application directory.
+failures_log_path: '/tmp/riprap_failed_events.log'
+
+###################
+# Plugin settings #
+###################
 
 plugins.fetchresourcelist: ['PluginFetchResourceListFromDrupal']
 drupal_baseurl: 'http://localhost:8000'
@@ -27,5 +33,4 @@ fedoraapi_digest_header_leader_pattern: "^.+="
 plugins.persist: PluginPersistToDatabase
 
 plugins.postcheck: ['PluginPostCheckCopyFailures']
-# Absolute or relative to the Riprap application directory.
-failures_log_path: '/tmp/riprap_failed_events.log'
+
