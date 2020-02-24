@@ -17,11 +17,15 @@ class PluginFetchResourceListFromDrupal extends AbstractFetchResourceListPlugin
         } else {
             $this->drupal_base_url = 'http://localhost:8000';
         }
-        // An array, we need to loop through and add to guzzle request.
-        if (isset($this->settings['view_authorization_headers'])) {
-            $this->view_authorization_headers = $this->settings['view_authorization_headers'];
+        if (isset($this->settings['view_authorization_user'])) {
+            $this->view_authorization_user = $this->settings['view_authorization_user'];
         } else {
-            $this->view_authorization_headers = array();
+            $this->view_authorization_user = 'admin';
+        }
+        if (isset($this->settings['view_authorization_password'])) {
+            $this->view_authorization_password = $this->settings['view_authorization_password'];
+        } else {
+            $this->view_authorization_password = 'islandora';
         }
         if (isset($this->settings['use_fedora_urls'])) {
             $this->use_fedora_urls = $this->settings['use_fedora_urls'];
@@ -47,18 +51,15 @@ class PluginFetchResourceListFromDrupal extends AbstractFetchResourceListPlugin
             $page_number = (int) trim(file_get_contents($this->page_data_file));
         } else {
             $page_number = 1;
-            file_put_contents($this->page_data_file, $page_offset);
+            file_put_contents($this->page_data_file, $page_number);
         }
 
         // Make an initial ping request to Drupal.
         $ping_url = $this->drupal_base_url . '/riprap_resource_list?page=1';
         $ping_client = new \GuzzleHttp\Client();
         $ping_response = $ping_client->request('GET', $ping_url, [
-                'http_errors' => false,
-                'headers' => [
-                    'Accept' => 'application/vnd.api+json',
-                    $this->view_authorization_headers[0]
-                ]
+            'http_errors' => false,
+            'auth' => [$this->view_authorization_user, $this->view_authorization_password]
         ]);
 
         if ($ping_response->getStatusCode() != 200) {
@@ -66,7 +67,7 @@ class PluginFetchResourceListFromDrupal extends AbstractFetchResourceListPlugin
                 $this->logger->error(
                     "PluginFetchResourceListFromDrupal request returned a non-200 response",
                     array(
-                        'HTTP response code' => $ping_status_code
+                        'HTTP response code' => $ping_response->getStatusCode()
                     )
                 );
             }
@@ -77,7 +78,7 @@ class PluginFetchResourceListFromDrupal extends AbstractFetchResourceListPlugin
 
         $ping_media_list = (string) $ping_response->getBody();
         $ping_media_list = json_decode($ping_media_list, true);
-        if (count($ping_media_count) == 0) {
+        if (count($ping_media_list) == 0) {
             if ($this->logger) {
                 $this->logger->error(
                     "PluginFetchResourceListFromDrupal retrieved an empty media list"
@@ -87,14 +88,12 @@ class PluginFetchResourceListFromDrupal extends AbstractFetchResourceListPlugin
             exit(1);
         }
 
-        // Query the View to get list of media.
+        // If we've made it this far, query the View to get list of media.
         $client = new \GuzzleHttp\Client();
-        $url = $this->drupal_base_url . 'riprap_resource_list?page=' . $page_number;
+        $url = $this->drupal_base_url . '/riprap_resource_list?page=' . $page_number;
         $page_response = $client->request('GET', $url, [
             'http_errors' => false,
-            'headers' => [
-                $this->view_authorization_headers[0]
-            ]
+            'auth' => [$this->view_authorization_user, $this->view_authorization_password]
         ]);
 
         if ($page_response->getStatusCode() == 200) {
@@ -104,6 +103,7 @@ class PluginFetchResourceListFromDrupal extends AbstractFetchResourceListPlugin
 
         // Loop through all the media perform fixity event check.
         $num_media = count($media_list);
+        $output_resource_records = [];
         if ($num_media > 0) {
             foreach ($media_list as $media) {
                 if ($this->use_fedora_urls) {
@@ -111,6 +111,7 @@ class PluginFetchResourceListFromDrupal extends AbstractFetchResourceListPlugin
                     // the resource ID / URL cannot be found. (But, http responses are already logged in
                     // getFedoraUrl() so maybe we don't need to log here?)
                     $fedora_url = $this->getFedoraUrl($media['uuid']);
+                    var_dump($fedora_url);
                     if (strlen($fedora_url)) {
                         $resource_record_object = new \stdClass;
                         $resource_record_object->resource_id = $fedora_url;
@@ -119,7 +120,7 @@ class PluginFetchResourceListFromDrupal extends AbstractFetchResourceListPlugin
                     }
                 }
             }
-            $this->setPageOffset($page_number, $num_media);
+            $this->setPageNumber($page_number, $num_media);
         } else {
             if ($this->logger) {
                 $this->logger->error(
