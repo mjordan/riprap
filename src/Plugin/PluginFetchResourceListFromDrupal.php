@@ -101,7 +101,7 @@ class PluginFetchResourceListFromDrupal extends AbstractFetchResourceListPlugin
             $media_list = json_decode($media_list, true);
         }
 
-	var_dump($media_list);
+        var_dump($media_list);
         // Loop through all the media perform fixity event check.
         $num_media = count($media_list);
         $output_resource_records = [];
@@ -156,17 +156,17 @@ class PluginFetchResourceListFromDrupal extends AbstractFetchResourceListPlugin
         $media_client = new \GuzzleHttp\Client();
         $media_response = $media_client->request('GET', $media_url, [
             'http_errors' => false,
-	    'auth' => [$this->view_authorization_user, $this->view_authorization_password]
-	]);
-	$media_response_body = $media_response->getBody()->getContents();
-	$media_response_body = json_decode($media_response_body, true);
-	if (isset($media_response_body['field_media_image'])) {
-	    $file_field = 'field_media_image';
-	}
-	if (isset($media_response_body['field_media_file'])) {
-	    $file_field = 'field_media_file';
-	}
-	$target_file_uuid = $media_response_body[$file_field][0]['target_uuid'];
+            'auth' => [$this->view_authorization_user, $this->view_authorization_password]
+        ]);
+        $media_response_body = $media_response->getBody()->getContents();
+        $media_response_body = json_decode($media_response_body, true);
+        if (isset($media_response_body['field_media_image'])) {
+            $file_field = 'field_media_image';
+        }
+        if (isset($media_response_body['field_media_file'])) {
+            $file_field = 'field_media_file';
+        }
+        $target_file_uuid = $media_response_body[$file_field][0]['target_uuid'];
 
         // Then query Gemini to get the target file's Fedora URL.
         try {
@@ -175,11 +175,11 @@ class PluginFetchResourceListFromDrupal extends AbstractFetchResourceListPlugin
                 'http_errors' => false,
                 'headers' => ['Authorization' => $this->gemini_auth_header],
             ];
-	    $url = $this->gemini_endpoint . '/' . $target_file_uuid;
-	    var_dump($url);
+            $url = $this->gemini_endpoint . '/' . $target_file_uuid;
+            var_dump($url);
             $response = $client->request('GET', $url, $options);
-	    $code = $response->getStatusCode();
-	    var_dump($code);
+            $code = $response->getStatusCode();
+            var_dump($code);
             if ($code == 200) {
                 $body = $response->getBody()->getContents();
                 $body_array = json_decode($body, true);
