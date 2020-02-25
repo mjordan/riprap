@@ -50,48 +50,11 @@ class PluginFetchResourceListFromDrupal extends AbstractFetchResourceListPlugin
         if (file_exists($this->page_data_file)) {
             $page_number = (int) trim(file_get_contents($this->page_data_file));
         } else {
-            $page_number = 1;
+            $page_number = 0;
             file_put_contents($this->page_data_file, $page_number);
         }
 
-        // Make an initial ping request to Drupal.
-        $ping_url = $this->drupal_base_url . '/riprap_resource_list?page=1';
-        $ping_client = new \GuzzleHttp\Client();
-        $ping_response = $ping_client->request('GET', $ping_url, [
-            'http_errors' => false,
-            'auth' => [$this->drupal_user, $this->drupal_password]
-        ]);
-
-        if ($ping_response->getStatusCode() != 200) {
-            if ($this->logger) {
-                $this->logger->error(
-                    "PluginFetchResourceListFromDrupal request returned a non-200 response",
-                    array(
-                        'HTTP response code' => $ping_response->getStatusCode()
-                    )
-                );
-            }
-            $output->writeln("Ping request to Drupal returned a non-200 stataus code. Please " .
-                "see the Riprap log for more detail.");
-            exit(1);
-        }
-
-        $empty_media_list_message = "PluginFetchResourceListFromDrupal retrieved an empty media list. " .
-            "This probably means we've finished checking all your media, but you should " .
-            "check to make sure your \"Riprap resource list\" View is still working. The next time " .
-            "Riprap runs, it will restart a fixity check cycle.";
-
-        $ping_media_list = (string) $ping_response->getBody();
-        $ping_media_list = json_decode($ping_media_list, true);
-        if (count($ping_media_list) == 0) {
-            if ($this->logger) {
-                $this->logger->error($empty_media_list_message);
-            }
-            $output->writeln($empty_media_list_message);
-            exit(1);
-        }
-
-        // If we've made it this far, query the View to get list of media.
+        // Query the View to get list of media.
         $client = new \GuzzleHttp\Client();
         $url = $this->drupal_base_url . '/riprap_resource_list?page=' . $page_number;
         $page_response = $client->request('GET', $url, [
@@ -103,6 +66,11 @@ class PluginFetchResourceListFromDrupal extends AbstractFetchResourceListPlugin
             $media_list = (string) $page_response->getBody();
             $media_list = json_decode($media_list, true);
         }
+
+        $empty_media_list_message = "PluginFetchResourceListFromDrupal retrieved an empty media list. " .
+            "This probably means we've finished checking all your media, but you should " .
+            "check to make sure your \"Riprap resource list\" View is still working. The next time " .
+            "Riprap runs, it will restart a fixity check cycle.";
 
         // Loop through all the media perform fixity event check.
         $num_media = count($media_list);
@@ -224,7 +192,7 @@ class PluginFetchResourceListFromDrupal extends AbstractFetchResourceListPlugin
         // exceeds the number of pages. In the meantime, we show
         // the user the $empty_media_list_message, above.
         if ($num_media == 0) {
-            $next_page_number = 1;
+            $next_page_number = 0;
         } else {
             $next_page_number = $page_number + 1;
         }
