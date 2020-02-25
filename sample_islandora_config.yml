@@ -2,6 +2,10 @@
 # Requires that the "Riprap resource list" View be enabled in
 # the Islandora instance. This View is bundled with the Islandora Riprap
 # module.
+#
+# This plugin is agnostic to which media have fixity event checks performed
+# on them. The filters in the "Riprap resource list" View determine that.
+# See the View's filter criteria GUI for examples.
 
 ####################
 # General settings #
@@ -10,7 +14,7 @@
 fixity_algorithm: sha256
 
 # Absolute or relative to the Riprap application directory.
-failures_log_path: '/tmp/riprap_failed_events.log'
+failures_log_path: 'var/riprap_failed_events.log'
 
 ###################
 # Plugin settings #
@@ -18,8 +22,8 @@ failures_log_path: '/tmp/riprap_failed_events.log'
 
 plugins.fetchresourcelist: ['PluginFetchResourceListFromDrupal']
 drupal_baseurl: 'http://localhost:8000'
-view_authorization_user: admin
-view_authorization_password: islandora
+drupal_user: admin
+drupal_password: islandora
 use_fedora_urls: true
 gemini_endpoint: 'http://localhost:8000/gemini'
 gemini_auth_header: 'Bearer islandora' 

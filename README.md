@@ -302,7 +302,7 @@ Running this command after reinstalling PHPUnit Bridge installs PHPUnit and all 
 
 Riprap follows the [PSR2](https://www.php-fig.org/psr/psr-2/) coding standard. To check you code, from within the `riprap` directory, run:
 
-` ./vendor/bin/phpcs`
+`./vendor/bin/phpcs`
 
 ### Maintainer
 
