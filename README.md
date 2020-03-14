@@ -46,13 +46,13 @@ Once Riprap is installed and configured, run it to generate the initial fixity v
 
 where `some_config.yml` is your configuration file.
 
-While not a requirement, a [module for Islandora](https://github.com/mjordan/islandora_riprap) is available that provides node-level fixity reports on binary resources using data from Riprap. Similar reporting tools could be developed for other platforms.
+While not a requirement, a [module for Islandora](https://github.com/mjordan/islandora_riprap) is available that provides node-level fixity reports on binary resources using data, a graph showing all failed fixity events, and a View that provides a flexible way for repository admins to determine which media are audited. Similar tools could be developed for other platforms. This module also lets you use Drupal's cron to schedule when Riprap runs.
 
 ## The sample configuration files
 
 Riprap comes with three sample configuration files:
 
-* `sample_csv_config.yml`: This configuration checks the fixity of the files listed in a CSV file, and persists fixity check events to another CSV file.
+* `sample_csv_config.yml`: This configuration checks the fixity of the files listed in a CSV file, and persists fixity check events to another CSV file. This configuration is intended for demonstration and testing purposes only, not for production use.
 * `sample_db_config.yml`: This configuration checks the fixity of the files in a specific directory, and persists fixity check events to a relational database.
 * `sample_islandora_config.yml`: This configuration is used in conjuction with an Islandora 8.x-1.x instance, such as the one provided by the [Islandora Vagrant Playbook](https://github.com/Islandora-Devops/islandora-playbook). It audits the fixity of resources in a Fedora 5 repository and persists the resulting fixity check events to a relational database. This configuration provides two fetch resource list plugins. If you are using Islandora Riprap, you should use the `PluginFetchResourceListFromDrupalView` plugin since it offers a lot more flexibility in determining which media Riprap will check.
 
