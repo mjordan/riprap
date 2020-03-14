@@ -54,7 +54,7 @@ Riprap comes with three sample configuration files:
 
 * `sample_csv_config.yml`: This configuration checks the fixity of the files listed in a CSV file, and persists fixity check events to another CSV file.
 * `sample_db_config.yml`: This configuration checks the fixity of the files in a specific directory, and persists fixity check events to a relational database.
-* `sample_islandora_config.yml`: This configuration is used in conjuction with an Islandora 8.x-1.x instance, such as the one provided by the [CLAW Vagrant Playbook](https://github.com/Islandora-Devops/claw-playbook). It audits the fixity of resources in a Fedora 5 repository and persists the resulting fixity check events to a relational database.
+* `sample_islandora_config.yml`: This configuration is used in conjuction with an Islandora 8.x-1.x instance, such as the one provided by the [Islandora Vagrant Playbook](https://github.com/Islandora-Devops/islandora-playbook). It audits the fixity of resources in a Fedora 5 repository and persists the resulting fixity check events to a relational database. This configuration provides two fetch resource list plugins. If you are using Islandora Riprap, you should use the `PluginFetchResourceListFromDrupalView` plugin since it offers a lot more flexibility in determining which media Riprap will check.
 
 ### The sample CSV configuration
 
@@ -113,11 +113,11 @@ This is a good opportunity to point out that there are no dependencies between w
 
 ### The sample Islandora configuration
 
-> If you are running Islandora in a CLAW Playbook Vagrant guest virtual machine and Riprap on the Vagrant host machine, start the Riprap web server by running `php bin/console server:start *:8001` in the Riprap directory. See the [Islandora Riprap](https://github.com/mjordan/islandora_riprap) README file for more information. Otherwise, the Symfony web server will have a port conflict with the Apache web server mapped to port `8000` on the host machine.
+> If you are running Islandora in a Islandora Playbook Vagrant guest virtual machine and Riprap on the Vagrant host machine, start the Riprap web server by running `php bin/console server:start *:8001` in the Riprap directory. See the [Islandora Riprap](https://github.com/mjordan/islandora_riprap) README file for more information. Otherwise, the Symfony web server will have a port conflict with the Apache web server mapped to port `8000` on the host machine.
 
-The "islandora" configuration works like the other two sample configurations, but it queries Drupal's [JSON:API](https://www.drupal.org/project/jsonapi) for the list of resources to audit (using the descriptively named `PluginFetchResourceListFromDrupal` plugin), and it queries the REST API of the Fedora repository that accompanies Drupal in the Islandora stack for the digests of those files (using the `PluginFetchDigestFromFedoraAPI` plugin). Both of those plugins require more configuration options the the other plugins we have seen so far. Any static data a plugin needs can be included in a configuration file. Note, the JSON:API module is not included in the default CLAW installation, currently using Drupal 8.6, and must be installed separately. However the JSON:API module will be included in Drupal 8.7 as a core module.
+The "islandora" configuration works like the other two sample configurations, but it offers two fetch resource list plugins. If you use the `PluginFetchResourceListFromDrupal` fetch resource list plugin, it queries Drupal's [JSON:API](https://www.drupal.org/project/jsonapi) for the list of resources to audit. The `PluginFetchResourceListFromDrupalView` plugin uses the Drupal View provided by the [Islandora Riprap](https://github.com/mjordan/islandora_riprap) module and offers considerably more flexibility in determining which media Riprap audits. Both of these plugins query the REST API of the Fedora repository that accompanies Drupal in the Islandora stack for the digests of those media (using the `PluginFetchDigestFromFedoraAPI` plugin). 
 
-Within the Drupal user interface, the [Islandora Riprap](https://github.com/mjordan/islandora_riprap) module provides reports on whether Riprap has recorded any failed fixity check events (i.e., digest mismatches for the same resource) over time. The module gets this information via the Riprap REST API, described in the next section.
+Within the Drupal user interface, Islandora Riprap provides reports on whether Riprap has recorded any failed fixity check events (i.e., digest mismatches for the same resource) over time and also a graph showing any failed fixity events. The module gets this information via the Riprap REST API, described in the next section.
 
 ## Riprap's REST API
 
