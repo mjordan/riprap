@@ -15,6 +15,14 @@ Riprap generates and records fixity check events as described in the "Fixity, in
 
 All events must have a value of `success` or `fail`, using values from the Library of Congress' Preservation [Event Outcome](http://id.loc.gov/vocabulary/preservation/eventOutcome.html) vocabulary.
 
+As an example of how applications can use the data provided by Riprap's REST interface, the [Islandora Riprap](https://github.com/mjordan/islandora_riprap) Drupal module integrates fixity event information at the file level:
+
+![Overview](docs/images/islandora_riprap_details.png)
+
+and at the repository level:
+
+![Overview](docs/images/fixity_events_report_failures.png)
+
 ## Current status
 
 Riprap's major functionality is in place, with the exception of the ActiveMQ event queue listener and write operations (`POST` and `PATCH`) in the REST API.
