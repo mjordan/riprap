@@ -1,0 +1,41 @@
+# Sample Riprap config file for using Islandora/database plugins.
+
+####################
+# General settings #
+####################
+
+fixity_algorithm: sha256
+
+###########
+# Plugins #
+###########
+
+plugins.fetchresourcelist: ['PluginFetchResourceListFromDrupal']
+drupal_baseurl: 'http://localhost:8000'
+# adim/islandora
+jsonapi_authorization_headers: ['Authorization: Basic YWRtaW46aXNsYW5kb3Jh']
+drupal_media_auth: ['admin', 'islandora']
+drupal_content_types: ['islandora_object']
+# You will likely need to adjust the term ID in the drupal_media_tags setting.
+drupal_media_tags: ['/taxonomy/term/15']
+use_fedora_urls: true
+gemini_endpoint: 'http://localhost:8000/gemini'
+gemini_auth_header: 'Bearer islandora' 
+# Can be a maximum of 50.
+jsonapi_page_size: 50
+# The number of resources to check in one Riprap run; if absent, will use
+# value defined in jsonapi_page_size. Must be a multiple of number specified
+# in jsonapi_page_size.
+max_resources: 1000
+# Absolute or relative to the Riprap application directory.
+jsonapi_pager_data_file_path: 'var/fetchresourcelist.from.drupal.pager.txt'
+
+plugins.fetchdigest: PluginFetchDigestFromFedoraAPI
+fedoraapi_method: HEAD
+fedoraapi_digest_header_leader_pattern: "^.+="
+
+plugins.persist: PluginPersistToDatabase
+
+plugins.postcheck: ['PluginPostCheckCopyFailures']
+# Absolute or relative to the Riprap application directory.
+failures_log_path: '/tmp/riprap_failed_events.log'

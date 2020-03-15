@@ -20,8 +20,6 @@ failures_log_path: 'var/riprap_failed_events.log'
 # Plugin settings #
 ###################
 
-# Use this plugin if you want to use JSON:API to list media to check.
-# plugins.fetchresourcelist: ['PluginFetchResourceListFromDrupal']
 # Use this plugin if you want to use the 'Riprap resource (media) list' View provided by Islandora Riprap.
 plugins.fetchresourcelist: ['PluginFetchResourceListFromDrupalView']
 drupal_baseurl: 'http://localhost:8000'
