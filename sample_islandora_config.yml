@@ -11,7 +11,7 @@
 # General settings #
 ####################
 
-thin: true
+# thin: true
 fixity_algorithm: sha256
 
 # Absolute or relative to the Riprap application directory.

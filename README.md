@@ -257,6 +257,23 @@ If there are no fixity events for the specified resource, the command will outpu
 
 ## More about Riprap
 
+### Thin mode
+
+By default, Riprap persists all fixity check events to its database. Over time, that can result is a *lot* of fixity events. For example, 100,000 resources each checked twice a year would result in 200,000 events in the first year. Over 5 years, assuming no additional new resources, the number of events would rise to 1,000,000.
+
+Repository managers who are only interested in failed events, and in retaining the initial and most recent successful event for a given resource, may want to reduce storage requirements and database size by runnin Riprap in 'thin' mode. To run Riprap in thin mode, add `thin: true` to your settings file like this:
+
+```
+####################
+# General settings #
+####################
+
+thin: true
+fixity_algorithm: sha256
+```
+
+Note that when run in thin mode even once, Riprap will delete all existing successful events for a resource before it adds the current successful event. Those previous events are not recoverable. If you remove `thin: true` from you settings file, or set it to 'false', Riprap will not delete any existing events, it will simply add new ones.
+
 ### Plugins
 
 One of Riprap's principle design requirements is flexibility. To meet this goal, it uses plugins to process most of its input and output. We have already been introduced to three types (and different combinations of) plugins in the sample configurations above:

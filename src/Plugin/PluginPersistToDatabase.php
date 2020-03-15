@@ -49,8 +49,10 @@ class PluginPersistToDatabase extends AbstractPersistEventPlugin
 		    ->delete(FixityCheckEvent::class, 'f')
 		    ->where('f.resource_id = :resource_id')
 		    ->andWhere('f.timestamp > :timestamp')
-		    ->setParameter(':resource_id', $resource_id)
-		    ->setParameter(':timestamp', $initial_event[0]['timestamp']);
+		    ->setParameter('resource_id', $resource_id)
+		    ->setParameter('timestamp', $initial_event[0]['timestamp'])
+		    ->getQuery()
+                    ->execute();
 	    }
 
             $this->entityManager->persist($event);
@@ -61,7 +63,6 @@ class PluginPersistToDatabase extends AbstractPersistEventPlugin
         } catch (Exception $e) {
 	    $this->entityManager->getConnection()->rollBack();
 	    throw $e;
-	    var_dump($e->getMessage());
             $this->logger->error(
                 "Persist plugin ran but encountered an error.",
                 array(
