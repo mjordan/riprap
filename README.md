@@ -272,7 +272,7 @@ thin: true
 fixity_algorithm: sha256
 ```
 
-Note that when run in thin mode even once, Riprap will delete all existing successful events for a resource before it adds the current successful event. Those previous events are not recoverable. If you remove `thin: true` from you settings file, or set it to 'false', Riprap will not delete any existing events, it will simply add new ones.
+Note that when run in thin mode even once, Riprap will delete all existing successful events for a resource before it adds the current successful event. Those previous events are not recoverable. If you remove `thin: true` from you settings file, or set `thin` to `false`, Riprap will not delete any existing events, it will simply add new ones. Also note that thin mode does not delete any failed fixity events.
 
 ### Plugins
 
