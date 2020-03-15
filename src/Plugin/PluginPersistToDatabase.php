@@ -39,11 +39,29 @@ class PluginPersistToDatabase extends AbstractPersistEventPlugin
 
     public function persistEvent($event)
     {
+        // Start transaction 
+        $this->entityManager->getConnection()->beginTransaction();
         try {
+            if ($this->thin) {
+	        $resource_id = $event->getResourceId();
+		$initial_event = $this->getEvents($resource_id, 'success', null, null, 1, null, null);
+		$qb = $this->entityManager->createQueryBuilder()
+		    ->delete(FixityCheckEvent::class, 'f')
+		    ->where('f.resource_id = :resource_id')
+		    ->andWhere('f.timestamp > :timestamp')
+		    ->setParameter(':resource_id', $resource_id)
+		    ->setParameter(':timestamp', $initial_event[0]['timestamp']);
+	    }
+
             $this->entityManager->persist($event);
             $this->entityManager->flush();
+	    // End transaction 
+            $this->entityManager->getConnection()->commit();
             return true;
         } catch (Exception $e) {
+	    $this->entityManager->getConnection()->rollBack();
+	    throw $e;
+	    var_dump($e->getMessage());
             $this->logger->error(
                 "Persist plugin ran but encountered an error.",
                 array(

@@ -4,7 +4,6 @@ namespace App\Repository;
 
 use App\Entity\FixityCheckEvent;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-// use Symfony\Bridge\Doctrine\RegistryInterface;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -19,10 +18,6 @@ class FixityCheckEventRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, FixityCheckEvent::class);
     }
-
-//    /**
-//     * @return FixityCheckEvent[] Returns an array of FixityCheckEvent objects
-//     */
 
     /**
      * Finds the most recent successful entry in the 'event' table for the current resource.
@@ -75,7 +70,7 @@ class FixityCheckEventRepository extends ServiceEntityRepository
     }
 
     /**
-     * Finds all entries in the 'event' table for the current resource, with URL request parameters.
+     * Finds all entries in the 'event' table for the current resource.
      *
      * @param string|null $resource_id
      *   The URL of the resource.
