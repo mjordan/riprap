@@ -58,11 +58,11 @@ While not a requirement, a [module for Islandora](https://github.com/mjordan/isl
 
 ## The sample configuration files
 
-Riprap comes with three sample configuration files:
+Riprap comes with four sample configuration files:
 
 * `sample_csv_config.yml`: This configuration checks the fixity of the files listed in a CSV file, and persists fixity check events to another CSV file. This configuration is intended for demonstration and testing purposes only, not for production use.
 * `sample_db_config.yml`: This configuration checks the fixity of the files in a specific directory, and persists fixity check events to a relational database.
-* `sample_islandora_config.yml`: This configuration is used in conjuction with an Islandora 8.x-1.x instance, such as the one provided by the [Islandora Vagrant Playbook](https://github.com/Islandora-Devops/islandora-playbook). It audits the fixity of resources in a Fedora 5 repository and persists the resulting fixity check events to a relational database. This configuration provides two fetch resource list plugins. If you are using Islandora Riprap, you should use the `PluginFetchResourceListFromDrupalView` plugin since it offers a lot more flexibility in determining which media Riprap will check.
+* `sample_islandora_config.yml` and `sample_islandora_jsonapi_config.yml`: These configurations are used in conjuction with an Islandora 8.x-1.x instance, such as the one provided by the [Islandora Vagrant Playbook](https://github.com/Islandora-Devops/islandora-playbook). They audit the fixity of resources in a Fedora 5 repository and persists the resulting fixity check events to a relational database. Each configuration uses a different fetch resource list plugins, as described in more detail below. If you are just starting to use Islandora Riprap, you should base your configuration on `sample_islandora_config.yml` because it uses the `PluginFetchResourceListFromDrupalView`, which offers substantial flexibility in determining which media Riprap will check.
 
 ### The sample CSV configuration
 
