@@ -69,8 +69,8 @@ class PluginFetchResourceListFromDrupalView extends AbstractFetchResourceListPlu
 
         $empty_media_list_message = "PluginFetchResourceListFromDrupal retrieved an empty media list. " .
             "This probably means Riprap has finished checking all your media. However, if Riprap " .
-	    "shows this message the next time it runs, you should check to make sure " .
-	    "your \"Riprap resource list\" Drupal View is working properly.";
+            "shows this message the next time it runs, you should check to make sure " .
+            "your \"Riprap resource list\" Drupal View is working properly.";
 
         // Loop through all the media perform fixity event check.
         $num_media = count($media_list);

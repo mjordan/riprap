@@ -26,13 +26,13 @@ abstract class AbstractPersistEventPlugin
     {
         $this->settings = $settings;
         $this->logger = $logger;
-	$this->entityManager = $entityManager;
+        $this->entityManager = $entityManager;
 
-	if (isset($this->settings['thin']) && $this->settings['thin']) {
+        if (isset($this->settings['thin']) && $this->settings['thin']) {
             $this->thin = true;
-	} else {
+        } else {
             $this->thin = false;
-	}
+        }
     }
 
     /**
