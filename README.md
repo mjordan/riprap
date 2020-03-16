@@ -15,13 +15,48 @@ Riprap generates and stores fixity check events as described in the "Fixity, int
 
 All events must have a value of `success` or `fail`, using values from the Library of Congress' Preservation [Event Outcome](http://id.loc.gov/vocabulary/preservation/eventOutcome.html) vocabulary.
 
-As an example of how applications can use the data provided by Riprap's REST interface, the [Islandora Riprap](https://github.com/mjordan/islandora_riprap) Drupal module integrates fixity event information at the file level:
+As examples of how applications can use the data provided by Riprap's REST interface, the [Islandora Riprap](https://github.com/mjordan/islandora_riprap) Drupal module integrates fixity event information at the file level:
 
 ![Overview](docs/images/islandora_riprap_details.png)
 
 and at the repository level:
 
 ![Overview](docs/images/fixity_events_report_failures.png)
+
+The Islandora PREMIS module also queries Riprap's REST interface to get fixity check events that it then includes in the RDF serialization of its PREMIS metadata:
+
+```
+<7b44c786-6d7e-4764-b278-d1ac1d503d99>
+  a <http://id.loc.gov/vocabulary/preservation/eventType/fix>, cryphashfunc:sha256 ;
+  rdf:value "6933a46f55f27a62689406ea33c650b1c16d6268ee81f6c6a2a89c63aeec9d27" ;
+  dc:created "2019-12-21T15:41:00-0600" ;
+  premis:outcome "success" .
+
+<http://localhost:8000/user/1> a schema:Person .
+<324bd1b9-0a38-400d-bd07-2026801e1040>
+  a <http://id.loc.gov/vocabulary/preservation/eventType/fix>, cryphashfunc:sha256 ;
+  rdf:value "6933a46f55f27a62689406ea33c650b1c16d6268ee81f6c6a2a89c63aeec9d27" ;
+  dc:created "2019-12-22T11:44:31-0600" ;
+  premis:outcome "success" .
+
+<458f3e38-34c8-412d-879f-0ec3c5a1c37c>
+  a <http://id.loc.gov/vocabulary/preservation/eventType/fix>, cryphashfunc:sha256 ;
+  rdf:value "6933a46f55f27a62689406ea33c650b1c16d6268ee81f6c6a2a89c63aeec9d27" ;
+  dc:created "2019-12-22T16:16:37-0600" ;
+  premis:outcome "success" .
+
+<eb7951ac-3baf-4661-a181-76ef0995744b>
+  a <http://id.loc.gov/vocabulary/preservation/eventType/fix>, cryphashfunc:sha256 ;
+  rdf:value "6933a46f55f27a62689406ea33c650b1c16d6268ee81f6c6a2a89c63aeec9d27" ;
+  dc:created "2019-12-23T11:28:13-0600" ;
+  premis:outcome "success" .
+
+<d3e39c84-ae5d-44bb-b8ce-fbe9289b1f31>
+  a <http://id.loc.gov/vocabulary/preservation/eventType/fix>, cryphashfunc:sha256 ;
+  rdf:value "6933a46f55f27a62689406ea33c650b1c16d6268ee81f6c6a2a89c63aeec9d27" ;
+  dc:created "2019-12-23T16:19:05-0600" ;
+  premis:outcome "success" .
+```
 
 ## Current status
 
