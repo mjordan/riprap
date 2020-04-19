@@ -26,13 +26,13 @@
         "symfony/security-bundle": "*",
         "symfony/swiftmailer-bundle": "*",
         "symfony/stopwatch": "*",
-        "symfony/messenger": "*"
+        "symfony/messenger": "*",
+        "symfony/dotenv": "*"
     },
     "require-dev": {
         "doctrine/doctrine-fixtures-bundle": "*",
         "squizlabs/php_codesniffer": "*",
         "symfony/browser-kit": "*",
-        "symfony/dotenv": "*",
         "symfony/phpunit-bridge": "^5.0",
         "symfony/web-server-bundle": "*"
     },
