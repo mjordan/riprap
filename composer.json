@@ -33,7 +33,8 @@
         "doctrine/doctrine-fixtures-bundle": "*",
         "squizlabs/php_codesniffer": "*",
         "symfony/browser-kit": "*",
-        "symfony/phpunit-bridge": "^5.0"
+        "symfony/phpunit-bridge": "^5.0",
+        "symfony/web-server-bundle": "*"
     },
     "config": {
         "preferred-install": {
