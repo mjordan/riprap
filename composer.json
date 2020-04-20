@@ -16,6 +16,7 @@
         "league/csv":"^9.3",
         "ext-ctype": "*",
         "ext-iconv": "*",
+        "doctrine/doctrine-fixtures-bundle": "*",
         "symfony/yaml": "*",
         "symfony/maker-bundle": "*",
         "symfony/console": "*",
@@ -30,7 +31,6 @@
         "symfony/dotenv": "*"
     },
     "require-dev": {
-        "doctrine/doctrine-fixtures-bundle": "*",
         "squizlabs/php_codesniffer": "*",
         "symfony/browser-kit": "*",
         "symfony/phpunit-bridge": "^5.0",
