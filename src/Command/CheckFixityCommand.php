@@ -193,7 +193,7 @@ class CheckFixityCommand extends Command
         $output->writeln("Riprap checked $num_resource_records resources ($num_successful_events successful events, " .
             "$num_failed_events failed events) in $duration seconds.");
 
-        return 1;
+        return 0;
     }
 
     /**
