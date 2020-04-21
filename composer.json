@@ -33,8 +33,7 @@
     "require-dev": {
         "squizlabs/php_codesniffer": "*",
         "symfony/browser-kit": "*",
-        "symfony/phpunit-bridge": "^5.0",
-        "symfony/web-server-bundle": "*"
+        "symfony/phpunit-bridge": "^5.0"
     },
     "config": {
         "preferred-install": {

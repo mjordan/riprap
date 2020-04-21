@@ -76,6 +76,7 @@ Various combinations of Riprap's current fixity auditing capabilities are illust
 1. `cd riprap`
 1. `php composer.phar install` (or equivalent on your system, e.g., `./composer install`)
 1. If necessary, create the database as described [here](docs/databases.md).
+1. If you want to try Riprap's REST interface, you can install the [Symfony Local Web Server](https://symfony.com/doc/current/setup/symfony_server.html). Note that this server is part of the [Symfony binary](https://symfony.com/download), which is not required by Riprap itself. 
 
 We will eventually support deployment via Ansible.
 
@@ -156,7 +157,7 @@ This is a good opportunity to point out that there are no dependencies between w
 
 ### The sample Islandora configuration
 
-> If you are running Islandora in a Islandora Playbook Vagrant guest virtual machine and Riprap on the Vagrant host machine, start the Riprap web server by running `php bin/console server:start *:8001` in the Riprap directory. See the [Islandora Riprap](https://github.com/mjordan/islandora_riprap) README file for more information. Otherwise, the Symfony web server will have a port conflict with the Apache web server mapped to port `8000` on the host machine.
+> If you are running Islandora in a Islandora Playbook Vagrant guest virtual machine and Riprap on the Vagrant host machine, start the Symfony Local Web Server by running `symfony server:start *:8001` in the Riprap directory. See the [Islandora Riprap](https://github.com/mjordan/islandora_riprap) README file for more information. Otherwise, the Symfony web server will have a port conflict with the Apache web server mapped to port `8000` on the host machine.
 
 There are two sample Islandora configuration files. The first (and recommended), `sample_islandora_config.yml`, uses the `PluginFetchResourceListFromDrupalView` plugin, which requires a Drupal View installed by the [Islandora Riprap](https://github.com/mjordan/islandora_riprap) module. This plugin and View combination offer the most flexibility in determining which Drupal media Riprap audits. The second sample Islandora confiuration file, `sample_islandora_jsonapi_config.yml`, uses the `PluginFetchResourceListFromDrupal` plugin. Instead of using a Drupal View to determine which media to audit, that plugin uses Drupal's JSON:API. This configuration (and plugin) will likely be deprecated in the future and should not be used when configuring Islandora to use Riprap.
 
@@ -172,9 +173,9 @@ Riprap provides an HTTP REST API, which will allow external applications like Dr
 
 would return a list of all fixity events for the Fedora resource `http://example.com/repository/resource/12345`.
 
-Assuming you have run Riprap with the "sample_db_config.yml" configuration file, you can see the API in action by running:
+Assuming you have run Riprap with the "sample_db_config.yml" configuration file, and that you have installed the Symfony Local Web Server, you can see the API in action by running:
 
-1. `php bin/console server:start`
+1. `symfony server:start`
 1. `curl -v -H 'Resource-ID: resources/filesystemexample/resourcefiles/file3.bin' http://localhost:8000/api/fixity`
 
 You should get a response like this:
