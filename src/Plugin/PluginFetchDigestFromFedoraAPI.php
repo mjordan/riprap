@@ -11,7 +11,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 
 /**
- * Class for the Riprap PluginFetchDigestFromShell plugin.
+ * Class for the Riprap PluginFetchDigestFromFedoraAPI plugin.
  */
 class PluginFetchDigestFromFedoraAPI extends AbstractFetchDigestPlugin
 {
@@ -68,7 +68,7 @@ class PluginFetchDigestFromFedoraAPI extends AbstractFetchDigestPlugin
             return $digest_header_value;
         } else {
             // If the HTTP status code is not in the allowed list, log it.
-            $this->logger->warning("check_fixity cannot retrieve digest from repository.", array(
+            $this->logger->warning("check_fixity cannot retrieve digest from Fedora repository.", array(
                 'resource_id' => $url,
                 'status_code' => $status_code,
             ));
