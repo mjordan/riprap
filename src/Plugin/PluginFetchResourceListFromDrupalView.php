@@ -1,5 +1,5 @@
 <?php
-// src/Plugin/PluginFetchResourceListFromDrupal.php
+// src/Plugin/PluginFetchResourceListFromDrupalView.php
 
 namespace App\Plugin;
 
@@ -12,6 +12,11 @@ class PluginFetchResourceListFromDrupalView extends AbstractFetchResourceListPlu
     {
         $output = new ConsoleOutput();
 
+        if (isset($this->settings['fixity_algorithm'])) {
+            $this->fixity_algorithm = $this->settings['fixity_algorithm'];
+        } else {
+            $this->fixity_algorithm = 'sha1';
+        }
         if (isset($this->settings['drupal_baseurl'])) {
             $this->drupal_base_url = $this->settings['drupal_baseurl'];
         } else {
@@ -27,6 +32,9 @@ class PluginFetchResourceListFromDrupalView extends AbstractFetchResourceListPlu
         } else {
             $this->drupal_password = 'islandora';
         }
+
+        $this->drupal_file_fieldnames = $this->settings['drupal_file_fieldnames'];
+
         if (isset($this->settings['use_fedora_urls'])) {
             $this->use_fedora_urls = $this->settings['use_fedora_urls'];
         } else {
@@ -86,10 +94,10 @@ class PluginFetchResourceListFromDrupalView extends AbstractFetchResourceListPlu
         $output_resource_records = [];
         foreach ($media_list as $media) {
             if ($this->use_fedora_urls) {
-                // @todo: getFedoraUrl() returns false on failure, so build in logic here to log that
+                // @todo: getFileUrlFromFedora() returns false on failure, so build in logic here to log that
                 // the resource ID / URL cannot be found. (But, http responses are already logged in
-                // getFedoraUrl() so maybe we don't need to log here?)
-                $file_fedora_url = $this->getFedoraUrl($media['mid']);
+                // getFileUrlFromFedora() so maybe we don't need to log here?)
+                $file_fedora_url = $this->getFileUrlFromFedora($media['mid']);
                 if (strlen($file_fedora_url)) {
                     $resource_record_object = new \stdClass;
                     $resource_record_object->resource_id = $file_fedora_url;
@@ -97,6 +105,18 @@ class PluginFetchResourceListFromDrupalView extends AbstractFetchResourceListPlu
                     $output_resource_records[] = $resource_record_object;
                 }
             }
+            if (!$this->use_fedora_urls) {
+                // @todo: getFileUrlFromDrupal() returns false on failure, so build in logic here to log that
+                // the resource ID / URL cannot be found. (But, http responses are already logged in
+                // getFileUrlFromFedora() so maybe we don't need to log here?)
+                $file_drupal_url = $this->getFileUuidFromDrupal($media['mid']);
+                if (strlen($file_drupal_url)) {
+                    $resource_record_object = new \stdClass;
+                    $resource_record_object->resource_id = $file_drupal_url;
+                    $resource_record_object->last_modified_timestamp = $media['changed'];
+                    $output_resource_records[] = $resource_record_object;
+                }
+            }            
         }
         $this->setPageNumber($page_number, $num_media);
 
@@ -115,9 +135,9 @@ class PluginFetchResourceListFromDrupalView extends AbstractFetchResourceListPlu
     *   The media ID.
     *
     * @return string
-    *    The Fedora URL corresponding to the UUID, or false.
+    *    The Fedora URL corresponding to the media ID, or false.
     */
-    private function getFedoraUrl($mid)
+    private function getFileUrlFromFedora($mid)
     {
         // First, retrieve the media entity from Drupal.
         $media_url = $this->drupal_base_url . '/media/' . $mid . '?_format=json';
@@ -128,11 +148,12 @@ class PluginFetchResourceListFromDrupalView extends AbstractFetchResourceListPlu
         ]);
         $media_response_body = $media_response->getBody()->getContents();
         $media_response_body = json_decode($media_response_body, true);
-        if (isset($media_response_body['field_media_image'])) {
-            $file_field = 'field_media_image';
-        }
-        if (isset($media_response_body['field_media_file'])) {
-            $file_field = 'field_media_file';
+
+        foreach ($this->drupal_file_fieldnames as $file_fieldname) {
+            if (isset($media_response_body[$file_fieldname])) {
+                $file_field = $file_fieldname;
+                break;
+            }
         }
         $target_file_uuid = $media_response_body[$file_field][0]['target_uuid'];
 
@@ -155,7 +176,7 @@ class PluginFetchResourceListFromDrupalView extends AbstractFetchResourceListPlu
             } else {
                 if ($this->logger) {
                     $this->logger->error(
-                        "PluginFetchResourceListFromDrupal could not get Fedora URL from Gemini.",
+                        "PluginFetchResourceListFromDrupal could not get Fedora File URL from Gemini.",
                         array(
                             'HTTP response code' => $code
                         )
@@ -166,7 +187,7 @@ class PluginFetchResourceListFromDrupalView extends AbstractFetchResourceListPlu
         } catch (Exception $e) {
             if ($this->logger) {
                 $this->logger->error(
-                    "PluginFetchResourceListFromDrupal could not get Fedora URL from Gemini.",
+                    "PluginFetchResourceListFromDrupal could not get Fedora File URL from Gemini.",
                     array(
                         'HTTP response code' => $code,
                         'Exception message' => $e->getMessage()
@@ -175,6 +196,67 @@ class PluginFetchResourceListFromDrupalView extends AbstractFetchResourceListPlu
             }
             return false;
         }
+    }
+
+   /**
+    * Get a URL for a File entity from Drupal.
+    *
+    * @param string $mid
+    *   The media ID.
+    *
+    * @return string
+    *    The UUID of the file, or false. We use the UUID to get the
+    *    digest and URL from the /islandora_riprap/checksum endpoint.
+    */
+    private function getFileUuidFromDrupal($mid)
+    {
+        // Retrieve the media entity from Drupal.
+        try {
+            $url = $this->drupal_base_url . '/media/' . $mid . '?_format=json';
+            $client = new \GuzzleHttp\Client();
+            $response = $client->request('GET', $url, [
+                'http_errors' => false,
+                'auth' => [$this->drupal_user, $this->drupal_password]
+            ]);
+            $code = $response->getStatusCode();
+            $body = $response->getBody()->getContents();
+            $body = json_decode($body, true);
+
+            foreach ($this->drupal_file_fieldnames as $file_fieldname) {
+                if (isset($body[$file_fieldname])) {
+                    $file_field = $file_fieldname;
+                    break;
+                }
+            }
+            if ($code == 200) {
+                $body = $response->getBody()->getContents();
+                $body_array = json_decode($body, true);
+                return $body_array[$file_field][0]['url'];
+            } elseif ($code == 404) {
+                return false;
+            } else {
+                if ($this->logger) {
+                    $this->logger->error(
+                        "PluginFetchResourceListFromDrupal could not get File URL from Drupal.",
+                        array(
+                            'HTTP response code' => $code
+                        )
+                    );
+                }
+                return false;
+            }
+        } catch (Exception $e) {
+            if ($this->logger) {
+                $this->logger->error(
+                    "PluginFetchResourceListFromDrupal could not get File URL from Drupal.",
+                    array(
+                        'HTTP response code' => $code,
+                        'Exception message' => $e->getMessage()
+                    )
+                );
+            }
+            return false;
+        }            
     }
 
    /**

@@ -6,13 +6,19 @@
 # This plugin is agnostic to which media have fixity event checks performed
 # on them. The filters in the "Riprap resource list" View determine that.
 # See the View's filter criteria GUI for examples.
+#
+# This plugin differs from sample_islandora_config.yml in that it gets the
+# media file's digest from Drupal, not Fedora. To do this, it calls the
+# /islandora_riprap/checksum/{file_hash}/{algorithm} endpoint added by the
+# Islandora Riprap module.
 
 ####################
 # General settings #
 ####################
 
 # thin: true
-fixity_algorithm: sha256
+# One of 'md5', 'sha1', or 'sha256'.
+fixity_algorithm: sha1
 
 # Absolute or relative to the Riprap application directory.
 failures_log_path: 'var/riprap_failed_events.log'
@@ -26,18 +32,14 @@ plugins.fetchresourcelist: ['PluginFetchResourceListFromDrupalView']
 drupal_baseurl: 'http://localhost:8000'
 drupal_user: admin
 drupal_password: islandora
-use_fedora_urls: true
-gemini_endpoint: 'http://localhost:8000/gemini'
-gemini_auth_header: 'Bearer islandora' 
 # Absolute or relative to the Riprap application directory.
 views_pager_data_file_path: 'var/fetchresourcelist.from.drupal.pager.txt'
+use_fedora_urls: false
 
 # Required. Non-standard or custom media need to have the fieldname they use to contain the file added to this list.
 drupal_file_fieldnames: ['field_media_audio', 'field_media_document', 'field_edited_text', 'field_media_file', 'field_media_image', 'field_media_video_file']
 
-plugins.fetchdigest: PluginFetchDigestFromFedoraAPI
-fedoraapi_method: HEAD
-fedoraapi_digest_header_leader_pattern: "^.+="
+plugins.fetchdigest: PluginFetchDigestFromDrupal
 
 plugins.persist: PluginPersistToDatabase
 
