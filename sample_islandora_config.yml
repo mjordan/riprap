@@ -26,7 +26,6 @@ plugins.fetchresourcelist: ['PluginFetchResourceListFromDrupalView']
 drupal_baseurl: 'http://localhost:8000'
 drupal_user: admin
 drupal_password: islandora
-use_fedora_urls: true
 gemini_endpoint: 'http://localhost:8000/gemini'
 gemini_auth_header: 'Bearer islandora' 
 # Absolute or relative to the Riprap application directory.

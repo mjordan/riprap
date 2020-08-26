@@ -35,11 +35,6 @@ class PluginFetchResourceListFromDrupalView extends AbstractFetchResourceListPlu
 
         $this->drupal_file_fieldnames = $this->settings['drupal_file_fieldnames'];
 
-        if (isset($this->settings['use_fedora_urls'])) {
-            $this->use_fedora_urls = $this->settings['use_fedora_urls'];
-        } else {
-            $this->use_fedora_urls = true;
-        }
         if (isset($this->settings['gemini_endpoint'])) {
             $this->gemini_endpoint = $this->settings['gemini_endpoint'];
         } else {
@@ -93,7 +88,7 @@ class PluginFetchResourceListFromDrupalView extends AbstractFetchResourceListPlu
 
         $output_resource_records = [];
         foreach ($media_list as $media) {
-            if ($this->use_fedora_urls) {
+            if ($this->settings['plugins.fetchdigest'] == 'PluginFetchDigestFromFedoraAPI') {
                 // @todo: getFileUrlFromFedora() returns false on failure, so build in logic here to log that
                 // the resource ID / URL cannot be found. (But, http responses are already logged in
                 // getFileUrlFromFedora() so maybe we don't need to log here?)
@@ -105,7 +100,7 @@ class PluginFetchResourceListFromDrupalView extends AbstractFetchResourceListPlu
                     $output_resource_records[] = $resource_record_object;
                 }
             }
-            if (!$this->use_fedora_urls) {
+            if ($this->settings['plugins.fetchdigest'] == 'PluginFetchDigestFromDrupal') {
                 // @todo: getFileUrlFromDrupal() returns false on failure, so build in logic here to log that
                 // the resource ID / URL cannot be found. (But, http responses are already logged in
                 // getFileUrlFromFedora() so maybe we don't need to log here?)
@@ -229,9 +224,9 @@ class PluginFetchResourceListFromDrupalView extends AbstractFetchResourceListPlu
                 }
             }
             if ($code == 200) {
-                $body = $response->getBody()->getContents();
-                $body_array = json_decode($body, true);
-                return $body_array[$file_field][0]['url'];
+                if (isset($body[$file_field][0]['url'])) {
+                    return $body[$file_field][0]['target_uuid'];
+                }
             } elseif ($code == 404) {
                 return false;
             } else {
@@ -272,7 +267,8 @@ class PluginFetchResourceListFromDrupalView extends AbstractFetchResourceListPlu
         // For now, we use Views REST serializer's behavior of
         // returning an empty response when the provided page number
         // exceeds the number of pages. In the meantime, we show
-        // the user the $empty_media_list_message, above.
+        // the user the $empty_media_list_message, above. Riprap
+        // issue https://github.com/mjordan/riprap/issues/69.
         if ($num_media == 0) {
             $next_page_number = 0;
         } else {

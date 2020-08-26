@@ -19,18 +19,7 @@ class PluginFetchDigestFromDrupal extends AbstractFetchDigestPlugin
      * Gets the resource's digest from the REST endpoint provided by Islandora Riprap.
      *
      * @param string $resource_id
-     *    This is probably wrong.
-     *    The media's Drupal media ID. From this, we get the file's URL
-     *    using the following logic: with this media ID, we perform
-     *    a REST request to get the media. That request's response
-     *    contains an entry for the field that contains the file, e.g.
-     *    field_media_audio, field_media_document, field_edited_text,
-     *    field_media_file, field_media_image, field_media_video_file.
-     *    Within that entry, we get the file's URL, and from that, we
-     *    can get the file's digest.
-     *
-     * @return string $digest
-     *   The digest value.
+     *    This file's UUID.
      *
      * @return string|bool
      *   The digest value, false on error.     
@@ -41,6 +30,16 @@ class PluginFetchDigestFromDrupal extends AbstractFetchDigestPlugin
             $this->drupal_base_url = $this->settings['drupal_baseurl'];
         } else {
             $this->drupal_base_url = 'http://localhost:8000';
+        }
+        if (isset($this->settings['drupal_user'])) {
+            $this->drupal_user = $this->settings['drupal_user'];
+        } else {
+            $this->drupal_user = 'admin';
+        }
+        if (isset($this->settings['drupal_password'])) {
+            $this->drupal_password = $this->settings['drupal_password'];
+        } else {
+            $this->drupal_password = 'islandora';
         }
 
         if (isset($this->settings['fixity_algorithm'])) {
@@ -60,10 +59,7 @@ class PluginFetchDigestFromDrupal extends AbstractFetchDigestPlugin
             return;
         }
 
-        // @todo: Request is to /islandora_riprap/checksum/{file_uuid}/{algorithm},
-        // not to the resource URI as with Fedora.
-        $get_digest_url = $this->drupal_base_url .
-            '/islandora_riprap/checksum/' . $resource_id . '/' . $this->fixity_algorithm;
+        $get_digest_url = $this->drupal_base_url . '/islandora_riprap/checksum/' . $resource_id . '/' . $this->fixity_algorithm;
 
         $response = $client->request('GET', $get_digest_url, [
             'http_errors' => false,
@@ -73,7 +69,7 @@ class PluginFetchDigestFromDrupal extends AbstractFetchDigestPlugin
         $allowed_codes = array(200);
         if (in_array($status_code, $allowed_codes)) {
             $response_body = json_decode($response->getBody(), true);
-            return $response_body[0]->checksum;
+            return $response_body[0]['checksum'];
         } else {
             // If the HTTP status code is not in the allowed list, log it.
             $this->logger->warning("check_fixity cannot retrieve digest from Drupal.", array(
