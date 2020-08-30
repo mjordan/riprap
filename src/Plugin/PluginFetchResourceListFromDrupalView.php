@@ -104,10 +104,10 @@ class PluginFetchResourceListFromDrupalView extends AbstractFetchResourceListPlu
                 // @todo: getFileUrlFromDrupal() returns false on failure, so build in logic here to log that
                 // the resource ID / URL cannot be found. (But, http responses are already logged in
                 // getFileUrlFromFedora() so maybe we don't need to log here?)
-                $file_drupal_url = $this->getFileUuidFromDrupal($media['mid']);
-                if (strlen($file_drupal_url)) {
+                $file_drupal_uri = $this->getFileUriFromDrupal($media['mid']);
+                if (strlen($file_drupal_uri)) {
                     $resource_record_object = new \stdClass;
-                    $resource_record_object->resource_id = $file_drupal_url;
+                    $resource_record_object->resource_id = $file_drupal_uri;
                     $resource_record_object->last_modified_timestamp = $media['changed'];
                     $output_resource_records[] = $resource_record_object;
                 }
@@ -194,16 +194,16 @@ class PluginFetchResourceListFromDrupalView extends AbstractFetchResourceListPlu
     }
 
    /**
-    * Get a URL for a File entity from Drupal.
+    * Get a URI for a File entity from Drupal.
     *
     * @param string $mid
     *   The media ID.
     *
     * @return string
-    *    The UUID of the file, or false. We use the UUID to get the
-    *    digest and URL from the /islandora_riprap/checksum endpoint.
+    *    The Drupal URI of the file, or false. We use the URI to get the
+    *    digest from the /islandora_riprap/checksum endpoint.
     */
-    private function getFileUuidFromDrupal($mid)
+    private function getFileUriFromDrupal($mid)
     {
         // Retrieve the media entity from Drupal.
         try {
@@ -223,16 +223,26 @@ class PluginFetchResourceListFromDrupalView extends AbstractFetchResourceListPlu
                     break;
                 }
             }
+            // Then the file entity to get its URI.
             if ($code == 200) {
-                if (isset($body[$file_field][0]['url'])) {
-                    return $body[$file_field][0]['target_uuid'];
+                if (isset($body[$file_field][0]['target_id'])) {
+                    $file_id = $body[$file_field][0]['target_id'];
+                    $file_url = $this->drupal_base_url . '/entity/file/' . $file_id . '?_format=json';
+                    $file_response = $client->request('GET', $file_url, [
+                        'http_errors' => false,
+                        'auth' => [$this->drupal_user, $this->drupal_password]
+                    ]);
+                    $file_code = $file_response->getStatusCode();
+                    $file_body = $file_response->getBody()->getContents();
+                    $file_body = json_decode($file_body, true);
+                    return $file_body['uri'][0]['value'];
                 }
             } elseif ($code == 404) {
                 return false;
             } else {
                 if ($this->logger) {
                     $this->logger->error(
-                        "PluginFetchResourceListFromDrupal could not get File URL from Drupal.",
+                        "PluginFetchResourceListFromDrupal could not get File URI from Drupal.",
                         array(
                             'HTTP response code' => $code
                         )
@@ -243,7 +253,7 @@ class PluginFetchResourceListFromDrupalView extends AbstractFetchResourceListPlu
         } catch (Exception $e) {
             if ($this->logger) {
                 $this->logger->error(
-                    "PluginFetchResourceListFromDrupal could not get File URL from Drupal.",
+                    "PluginFetchResourceListFromDrupal could not get File URI from Drupal.",
                     array(
                         'HTTP response code' => $code,
                         'Exception message' => $e->getMessage()

@@ -98,7 +98,10 @@ Riprap comes with four sample configuration files:
 
 * `sample_csv_config.yml`: This configuration checks the fixity of the files listed in a CSV file, and persists fixity check events to another CSV file. This configuration is intended for demonstration and testing purposes only, not for production use.
 * `sample_db_config.yml`: This configuration checks the fixity of the files in a specific directory, and persists fixity check events to a relational database.
-* `sample_islandora_config.yml` and `sample_islandora_jsonapi_config.yml`: These configurations are used in conjuction with an Islandora 8.x-1.x instance, such as the one provided by the [Islandora Vagrant Playbook](https://github.com/Islandora-Devops/islandora-playbook). They audit the fixity of resources in a Fedora 5 repository and persist the resulting fixity check events to a relational database. Each configuration uses a different fetch resource list plugin, as described in more detail below. If you are just starting to use Islandora Riprap, you should base your configuration on `sample_islandora_config.yml` because it uses the `PluginFetchResourceListFromDrupalView` plugin, which offers substantial flexibility in determining which media Riprap will check.
+* Islandora configurations: These are used in conjuction with an Islandora 8.x-1.x instance, such as the one provided by the [Islandora Vagrant Playbook](https://github.com/Islandora-Devops/islandora-playbook). 
+  * `sample_islandora_config.yml`: This configuration audits the fixity of resources in a Fedora 5 repository and persists the resulting fixity check events to a relational database. Requires the [Islandora Riprap](https://github.com/mjordan/islandora_riprap) Drupal module.
+  * `sample_islandora_config_fetch_digest_from_drupal.yml`: This configuration audits the fixity of resources in Drupal and persists the resulting fixity check events to a relational database. This configuration is useful if your Islandora is not using Fedora. Requires the [Islandora Riprap](https://github.com/mjordan/islandora_riprap) Drupal module.
+  * `sample_islandora_jsonapi_config.yml`: This configuration is deprecated. You should be using one of other Islandora configurations.
 
 ### The sample CSV configuration
 

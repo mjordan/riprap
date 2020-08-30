@@ -19,7 +19,7 @@ class PluginFetchDigestFromDrupal extends AbstractFetchDigestPlugin
      * Gets the resource's digest from the REST endpoint provided by Islandora Riprap.
      *
      * @param string $resource_id
-     *    This file's UUID.
+     *    This file's Drupal (filesystem) URI.
      *
      * @return string|bool
      *   The digest value, false on error.     
@@ -59,7 +59,8 @@ class PluginFetchDigestFromDrupal extends AbstractFetchDigestPlugin
             return;
         }
 
-        $get_digest_url = $this->drupal_base_url . '/islandora_riprap/checksum/' . $resource_id . '/' . $this->fixity_algorithm;
+        $get_digest_url = $this->drupal_base_url . '/islandora_riprap/checksum?file_uri=' .
+            $resource_id . '&algorithm=' . $this->fixity_algorithm;
 
         $response = $client->request('GET', $get_digest_url, [
             'http_errors' => false,
@@ -75,6 +76,8 @@ class PluginFetchDigestFromDrupal extends AbstractFetchDigestPlugin
             $this->logger->warning("check_fixity cannot retrieve digest from Drupal.", array(
                 'resource_id' => $url,
                 'status_code' => $status_code,
+                'algorithm' => $algorithm,
+                'resource_id' => $resource_id,
             ));
             return false;
         }
