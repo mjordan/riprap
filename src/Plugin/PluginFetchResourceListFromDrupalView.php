@@ -111,7 +111,7 @@ class PluginFetchResourceListFromDrupalView extends AbstractFetchResourceListPlu
                     $resource_record_object->last_modified_timestamp = $media['changed'];
                     $output_resource_records[] = $resource_record_object;
                 }
-            }            
+            }
         }
         $this->setPageNumber($page_number, $num_media);
 
@@ -261,7 +261,7 @@ class PluginFetchResourceListFromDrupalView extends AbstractFetchResourceListPlu
                 );
             }
             return false;
-        }            
+        }
     }
 
    /**

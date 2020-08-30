@@ -22,7 +22,7 @@ class PluginFetchDigestFromDrupal extends AbstractFetchDigestPlugin
      *    This file's Drupal (filesystem) URI.
      *
      * @return string|bool
-     *   The digest value, false on error.     
+     *   The digest value, false on error.
      */
     public function execute($resource_id)
     {
