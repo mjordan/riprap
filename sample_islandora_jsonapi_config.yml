@@ -1,5 +1,8 @@
 # Sample Riprap config file for using Islandora/database plugins.
 
+# Note: PluginFetchResourceListFromDrupal is being deprecated and will be
+# removed from the Riprap codebase at the end of 2020.
+
 ####################
 # General settings #
 ####################

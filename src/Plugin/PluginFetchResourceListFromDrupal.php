@@ -1,6 +1,9 @@
 <?php
 // src/Plugin/PluginFetchResourceListFromDrupal.php
 
+// Note: This plugin is being deprecated and will be removed from the
+// Riprap codebase at the end of 2020.
+
 namespace App\Plugin;
 
 use Symfony\Component\Console\Output\ConsoleOutput;
