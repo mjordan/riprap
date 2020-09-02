@@ -32,7 +32,6 @@ The Islandora PREMIS module also queries Riprap's REST interface to get fixity c
   dc:created "2019-12-21T15:41:00-0600" ;
   premis:outcome "success" .
 
-<http://localhost:8000/user/1> a schema:Person .
 <324bd1b9-0a38-400d-bd07-2026801e1040>
   a <http://id.loc.gov/vocabulary/preservation/eventType/fix>, cryphashfunc:sha256 ;
   rdf:value "6933a46f55f27a62689406ea33c650b1c16d6268ee81f6c6a2a89c63aeec9d27" ;
