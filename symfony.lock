@@ -74,6 +74,9 @@
     "doctrine/reflection": {
         "version": "v1.0.0"
     },
+    "doctrine/sql-formatter": {
+        "version": "1.1.1"
+    },
     "egulias/email-validator": {
         "version": "2.1.5"
     },
@@ -88,6 +91,15 @@
     },
     "jdorn/sql-formatter": {
         "version": "v1.2.17"
+    },
+    "laminas/laminas-code": {
+        "version": "3.4.1"
+    },
+    "laminas/laminas-eventmanager": {
+        "version": "3.3.0"
+    },
+    "laminas/laminas-zendframework-bridge": {
+        "version": "1.1.1"
     },
     "league/csv": {
         "version": "9.4.1"
@@ -209,6 +221,9 @@
             "ref": "87c585d24de9f43bca80ebcfd5cf5cb39445d95f"
         }
     },
+    "symfony/http-client-contracts": {
+        "version": "v2.3.1"
+    },
     "symfony/http-foundation": {
         "version": "v4.1.4"
     },
@@ -273,6 +288,9 @@
     "symfony/polyfill-intl-idn": {
         "version": "v1.11.0"
     },
+    "symfony/polyfill-intl-normalizer": {
+        "version": "v1.20.0"
+    },
     "symfony/polyfill-mbstring": {
         "version": "v1.9.0"
     },
@@ -281,6 +299,9 @@
     },
     "symfony/polyfill-php73": {
         "version": "v1.14.0"
+    },
+    "symfony/polyfill-php80": {
+        "version": "v1.20.0"
     },
     "symfony/property-access": {
         "version": "v4.1.4"
@@ -338,6 +359,9 @@
     },
     "symfony/yaml": {
         "version": "v4.1.4"
+    },
+    "webimpress/safe-writer": {
+        "version": "2.1.0"
     },
     "zendframework/zend-code": {
         "version": "3.3.1"
