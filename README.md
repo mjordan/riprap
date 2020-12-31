@@ -65,7 +65,7 @@ Various combinations of Riprap's current fixity auditing capabilities are illust
 
 ## Requirements
 
-* PHP 7.2 or higher
+* PHP 7.4 or higher
 * [composer](https://getcomposer.org/)
 * An SQLite, MySQL, or PostgreSQL relational database, with appropriate PHP drivers.
 
