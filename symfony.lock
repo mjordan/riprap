@@ -128,9 +128,6 @@
     "psr/container": {
         "version": "1.0.0"
     },
-    "psr/event-dispatcher": {
-        "version": "1.0.0"
-    },
     "psr/http-message": {
         "version": "1.0.1"
     },
@@ -154,9 +151,6 @@
     },
     "swiftmailer/swiftmailer": {
         "version": "v6.1.3"
-    },
-    "symfony/amqp-messenger": {
-        "version": "v5.2.1"
     },
     "symfony/browser-kit": {
         "version": "v4.1.4"
@@ -193,9 +187,6 @@
     },
     "symfony/doctrine-bridge": {
         "version": "v4.1.4"
-    },
-    "symfony/doctrine-messenger": {
-        "version": "v5.2.1"
     },
     "symfony/dom-crawler": {
         "version": "v4.1.4"
@@ -300,9 +291,6 @@
             "tests/bootstrap.php"
         ]
     },
-    "symfony/polyfill-intl-grapheme": {
-        "version": "v1.20.0"
-    },
     "symfony/polyfill-intl-idn": {
         "version": "v1.11.0"
     },
@@ -324,13 +312,7 @@
     "symfony/property-access": {
         "version": "v4.1.4"
     },
-    "symfony/property-info": {
-        "version": "v5.2.1"
-    },
     "symfony/proxy-manager-bridge": {
-        "version": "v5.2.1"
-    },
-    "symfony/redis-messenger": {
         "version": "v5.2.1"
     },
     "symfony/routing": {
@@ -368,9 +350,6 @@
     },
     "symfony/stopwatch": {
         "version": "v4.1.6"
-    },
-    "symfony/string": {
-        "version": "v5.2.1"
     },
     "symfony/swiftmailer-bundle": {
         "version": "2.5",
