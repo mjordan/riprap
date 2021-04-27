@@ -32,19 +32,14 @@ class PluginFetchResourceListFromDrupalView extends AbstractFetchResourceListPlu
         } else {
             $this->drupal_password = 'islandora';
         }
+        if (isset($this->settings['fedora_baseurl'])) {
+            $this->fedora_base_url = $this->settings['fedora_baseurl'];
+        } else {
+            $this->fedora_base_url = 'http://localhost:8080/fcrepo/rest';
+        }
 
         $this->drupal_file_fieldnames = $this->settings['drupal_file_fieldnames'];
 
-        if (isset($this->settings['gemini_endpoint'])) {
-            $this->gemini_endpoint = $this->settings['gemini_endpoint'];
-        } else {
-            $this->gemini_endpoint = '';
-        }
-        if (isset($this->settings['gemini_auth_header'])) {
-            $this->gemini_auth_header = $this->settings['gemini_auth_header'];
-        } else {
-            $this->gemini_auth_header = '';
-        }
         if (isset($this->settings['views_pager_data_file_path'])) {
             $this->page_data_file = $this->settings['views_pager_data_file_path'];
         } else {
@@ -150,47 +145,13 @@ class PluginFetchResourceListFromDrupalView extends AbstractFetchResourceListPlu
                 break;
             }
         }
-        $target_file_uuid = $media_response_body[$file_field][0]['target_uuid'];
+        $target_file_flysystem_url = $media_response_body[$file_field][0]['url'];
 
-        // Then query Gemini to get the target file's Fedora URL.
-        try {
-            $client = new \GuzzleHttp\Client();
-            $options = [
-                'http_errors' => false,
-                'headers' => ['Authorization' => $this->gemini_auth_header],
-            ];
-            $url = $this->gemini_endpoint . '/' . $target_file_uuid;
-            $response = $client->request('GET', $url, $options);
-            $code = $response->getStatusCode();
-            if ($code == 200) {
-                $body = $response->getBody()->getContents();
-                $body_array = json_decode($body, true);
-                return $body_array['fedora'];
-            } elseif ($code == 404) {
-                return false;
-            } else {
-                if ($this->logger) {
-                    $this->logger->error(
-                        "PluginFetchResourceListFromDrupal could not get Fedora File URL from Gemini.",
-                        array(
-                            'HTTP response code' => $code
-                        )
-                    );
-                }
-                return false;
-            }
-        } catch (Exception $e) {
-            if ($this->logger) {
-                $this->logger->error(
-                    "PluginFetchResourceListFromDrupal could not get Fedora File URL from Gemini.",
-                    array(
-                        'HTTP response code' => $code,
-                        'Exception message' => $e->getMessage()
-                    )
-                );
-            }
-            return false;
-        }
+	// Then convert the URL from the Media to the binary resource URL in Fedora.
+        $target_file_flysystem_url = stripslashes($target_file_flysystem_url);
+        $file_path = preg_replace('#^.*_flysystem/fedora/#', '', $target_file_flysystem_url);
+	$fedora_file_url = rtrim($this->fedora_base_url, '/') . '/' . $file_path;
+	return $fedora_file_url;
     }
 
    /**

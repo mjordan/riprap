@@ -26,8 +26,7 @@ plugins.fetchresourcelist: ['PluginFetchResourceListFromDrupalView']
 drupal_baseurl: 'http://localhost:8000'
 drupal_user: admin
 drupal_password: islandora
-gemini_endpoint: 'http://localhost:8000/gemini'
-gemini_auth_header: 'Bearer islandora' 
+fedora_baseurl: 'http://127.0.0.1:8080/fcrepo/rest'
 # Absolute or relative to the Riprap application directory.
 views_pager_data_file_path: 'var/fetchresourcelist.from.drupal.pager.txt'
 
