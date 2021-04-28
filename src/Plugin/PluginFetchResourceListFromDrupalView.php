@@ -150,8 +150,8 @@ class PluginFetchResourceListFromDrupalView extends AbstractFetchResourceListPlu
 	// Then convert the URL from the Media to the binary resource URL in Fedora.
         $target_file_flysystem_url = stripslashes($target_file_flysystem_url);
         $file_path = preg_replace('#^.*_flysystem/fedora/#', '', $target_file_flysystem_url);
-	$fedora_file_url = rtrim($this->fedora_base_url, '/') . '/' . $file_path;
-	return $fedora_file_url;
+        $fedora_file_url = rtrim($this->fedora_base_url, '/') . '/' . $file_path;
+        return $fedora_file_url;
     }
 
    /**
