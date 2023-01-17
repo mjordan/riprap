@@ -10,25 +10,27 @@
         }
     ],
     "require": {
-        "php": "^7.4",
-        "guzzlehttp/guzzle": "~6.0",
-        "ramsey/uuid": "~3.0",
-        "league/csv":"^9.3",
         "ext-ctype": "*",
         "ext-iconv": "*",
+        "doctrine/doctrine-bundle": "^2.7",
         "doctrine/doctrine-fixtures-bundle": "*",
-        "symfony/yaml": "*",
-        "symfony/maker-bundle": "*",
+        "doctrine/doctrine-migrations-bundle": "^3.2",
+        "doctrine/orm": "^2.12",
+        "guzzlehttp/guzzle": "~6.0",
+        "league/csv": "^9.3",
+        "ramsey/uuid": "~3.0",
         "symfony/console": "*",
+        "symfony/dotenv": "*",
         "symfony/flex": "*",
         "symfony/framework-bundle": "*",
-        "symfony/monolog-bundle": "*",
-        "symfony/orm-pack": "*",
-        "symfony/security-bundle": "*",
-        "symfony/swiftmailer-bundle": "*",
-        "symfony/stopwatch": "*",
+        "symfony/maker-bundle": "*",
         "symfony/messenger": "*",
-        "symfony/dotenv": "*"
+        "symfony/monolog-bundle": "*",
+        "symfony/proxy-manager-bridge": "4.4.*",
+        "symfony/security-bundle": "*",
+        "symfony/stopwatch": "*",
+        "symfony/swiftmailer-bundle": "*",
+        "symfony/yaml": "*"
     },
     "require-dev": {
         "squizlabs/php_codesniffer": "*",
@@ -39,7 +41,10 @@
         "preferred-install": {
             "*": "dist"
         },
-        "sort-packages": true
+        "sort-packages": true,
+        "allow-plugins": {
+            "symfony/flex": true
+        }
     },
     "autoload": {
         "psr-4": {
